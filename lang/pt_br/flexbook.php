@@ -203,6 +203,7 @@ $string['mynotes'] = 'Minhas anotações';
 $string['nextchapter'] = 'Próximo capítulo';
 $string['nobookmarks'] = 'Você ainda não favoritou nada neste FlexBook.';
 $string['nocontents'] = 'Este capítulo ainda não possui blocos.';
+$string['nocontenttypes'] = 'Nenhum tipo de conteúdo do FlexBook está disponível. Limpe os caches do Moodle e conclua a atualização do plugin.';
 $string['noflexbooks'] = 'Não há FlexBooks neste curso.';
 $string['nohighlights'] = 'Você ainda não destacou nenhum trecho neste FlexBook.';
 $string['nonotes'] = 'Você ainda não criou anotações neste FlexBook.';
@@ -303,4 +304,3 @@ $string['wssubmit_question_answer'] = 'Envia uma resposta a uma pergunta do Flex
 $string['wsupdate_note'] = 'Atualiza uma anotação privada.';
 $string['yellow'] = 'Amarelo';
 
-$string["nocontenttypes"] = "Nenhum tipo de conteúdo do FlexBook está disponível. Limpe os caches do Moodle e conclua a atualização do plugin para que os subplugins de conteúdo incluídos sejam descobertos.";

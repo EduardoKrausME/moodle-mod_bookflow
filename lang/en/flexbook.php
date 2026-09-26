@@ -203,6 +203,7 @@ $string['mynotes'] = 'My notes';
 $string['nextchapter'] = 'Next chapter';
 $string['nobookmarks'] = 'You have not bookmarked anything in this FlexBook.';
 $string['nocontents'] = 'This chapter does not have content blocks yet.';
+$string['nocontenttypes'] = 'No FlexBook content types are available. Purge Moodle caches and complete the plugin upgrade.';
 $string['noflexbooks'] = 'There are no FlexBooks in this course.';
 $string['nohighlights'] = 'You have not highlighted any text in this FlexBook.';
 $string['nonotes'] = 'You have not created notes in this FlexBook.';
@@ -303,4 +304,3 @@ $string['wssubmit_question_answer'] = 'Submit an answer to a FlexBook question.'
 $string['wsupdate_note'] = 'Update a private note.';
 $string['yellow'] = 'Yellow';
 
-$string["nocontenttypes"] = "No FlexBook content types are available. Purge Moodle caches and complete the plugin upgrade so the bundled content subplugins are discovered.";
