@@ -1,0 +1,201 @@
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * progress_tracker.js
+ *
+ * @package   mod_flexbook
+ * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+define(["core/ajax", "core/notification", "core/str"], function(Ajax, Notification, Str) {
+    const viewed = new Set();
+    const queued = new Set();
+    const timers = new Map();
+    let flushTimer = null;
+
+    const updateProgress = function(result) {
+        document.querySelectorAll("[data-region='progress']").forEach(function(region) {
+            const bar = region.querySelector(".progress-bar");
+            const progress = region.querySelector(".progress");
+            const label = region.querySelector("[data-region='progress-label']");
+            const percentage = Math.round(result.percentage);
+            if (bar) {
+                bar.style.width = percentage + "%";
+            }
+            if (progress) {
+                progress.setAttribute("aria-valuenow", percentage);
+            }
+            if (label) {
+                label.textContent = percentage + "%";
+            }
+        });
+        if (result.activitycompleted) {
+            Str.get_string("activitycompletedmessage", "mod_flexbook").then(function(message) {
+                const region = document.querySelector(".flexbook-reader-progress");
+                if (region && !region.querySelector(".alert-success")) {
+                    const notice = document.createElement("div");
+                    notice.className = "alert alert-success mt-2";
+                    notice.setAttribute("role", "status");
+                    notice.textContent = message;
+                    region.appendChild(notice);
+                }
+                return message;
+            }).catch(Notification.exception);
+        }
+    };
+
+    const flush = function(flexbookId) {
+        if (flushTimer) {
+            window.clearTimeout(flushTimer);
+        }
+        flushTimer = null;
+        const contentIds = Array.from(queued);
+        queued.clear();
+        if (!contentIds.length) {
+            return;
+        }
+        Ajax.call([{
+            methodname: "mod_flexbook_mark_contents_viewed",
+            args: {flexbookid: flexbookId, contentids: contentIds}
+        }])[0].then(updateProgress).catch(Notification.exception);
+    };
+
+    const queueViewed = function(flexbookId, contentId) {
+        if (viewed.has(contentId)) {
+            return;
+        }
+        viewed.add(contentId);
+        queued.add(contentId);
+        if (!flushTimer) {
+            flushTimer = window.setTimeout(function() {
+                flush(flexbookId);
+            }, 800);
+        }
+    };
+
+    const complete = function(flexbookId, contentId, metric, details) {
+        return Ajax.call([{
+            methodname: "mod_flexbook_mark_content_completed",
+            args: {
+                flexbookid: flexbookId,
+                contentid: contentId,
+                metric: metric,
+                details: JSON.stringify(details || {})
+            }
+        }])[0].then(updateProgress).catch(Notification.exception);
+    };
+
+    const savePosition = function(flexbookId, chapterId, contentId) {
+        Ajax.call([{
+            methodname: "mod_flexbook_save_user_position",
+            args: {
+                flexbookid: flexbookId,
+                chapterid: chapterId,
+                contentid: contentId,
+                scrollposition: Math.max(0, Math.round(window.scrollY))
+            }
+        }])[0].catch(Notification.exception);
+    };
+
+    const init = function(flexbookId, chapterId) {
+        const blocks = document.querySelectorAll(
+            ".flexbook-content[data-track-progress='1']"
+        );
+        const positionBlocks = document.querySelectorAll(".flexbook-content");
+
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+                const block = entry.target;
+                const contentId = Number(block.dataset.contentId);
+                const completionType = block.dataset.completionType;
+                const completionValue = Number(block.dataset.completionValue || 0);
+
+                if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
+                    queueViewed(flexbookId, contentId);
+                    if (completionType === "timed" && !timers.has(contentId)) {
+                        flush(flexbookId);
+                        const timer = window.setTimeout(function() {
+                            complete(flexbookId, contentId, 100, {visibleSeconds: completionValue});
+                            timers.delete(contentId);
+                        }, (Math.max(1, completionValue) + 1) * 1000);
+                        timers.set(contentId, timer);
+                    }
+                } else if (timers.has(contentId)) {
+                    window.clearTimeout(timers.get(contentId));
+                    timers.delete(contentId);
+                }
+            });
+        }, {threshold: [0.5]});
+
+        blocks.forEach(function(block) {
+            observer.observe(block);
+        });
+
+        const positionObserver = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+                if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
+                    savePosition(flexbookId, chapterId, Number(entry.target.dataset.contentId));
+                }
+            });
+        }, {threshold: [0.5]});
+        positionBlocks.forEach(function(block) {
+            positionObserver.observe(block);
+        });
+
+        document.addEventListener("click", function(event) {
+            const manual = event.target.closest("[data-action='flexbook-complete-manual']");
+            if (manual) {
+                complete(flexbookId, Number(manual.dataset.contentId), 100, {manual: true});
+            }
+            const download = event.target.closest("[data-flexbook-download]");
+            if (download) {
+                complete(flexbookId, Number(download.dataset.flexbookDownload), 100, {download: true});
+            }
+        });
+
+        document.addEventListener("submit", function(event) {
+            const form = event.target.closest("[data-flexbook-question]");
+            if (!form) {
+                return;
+            }
+            event.preventDefault();
+            const selected = form.querySelector("input[name='answer']:checked");
+            if (!selected) {
+                return;
+            }
+            Ajax.call([{
+                methodname: "mod_flexbook_submit_question_answer",
+                args: {
+                    flexbookid: flexbookId,
+                    contentid: Number(form.dataset.flexbookQuestion),
+                    answer: JSON.stringify(selected.value)
+                }
+            }])[0].then(function(result) {
+                const feedback = form.querySelector("[data-region='question-feedback']");
+                if (feedback) {
+                    feedback.textContent = result.feedback;
+                }
+                return Ajax.call([{
+                    methodname: "mod_flexbook_get_user_progress",
+                    args: {flexbookid: flexbookId}
+                }])[0];
+            }).then(updateProgress).catch(Notification.exception);
+        });
+    };
+
+    return {init: init};
+});

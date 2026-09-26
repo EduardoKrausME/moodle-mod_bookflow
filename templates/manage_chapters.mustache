@@ -1,0 +1,40 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_flexbook/manage_chapters
+
+    Example context (json):
+    {
+        Aqui tem que criar o context em inglês
+    }
+}}
+
+<div class="table-responsive mt-4">
+    <table class="table">
+        <thead><tr><th>{{#str}}chapter, mod_flexbook{{/str}}</th><th>{{#str}}required, mod_flexbook{{/str}}</th><th>{{#str}}hidden, mod_flexbook{{/str}}</th><th>{{#str}}actions{{/str}}</th></tr></thead>
+        <tbody>
+        {{#chapters}}
+            <tr>
+                <td><a href="{{{viewurl}}}">{{title}}</a></td>
+                <td>{{required}}</td>
+                <td>{{hidden}}</td>
+                <td><a href="{{{editurl}}}">{{#str}}edit{{/str}}</a> · <a href="{{{deleteurl}}}">{{#str}}delete{{/str}}</a></td>
+            </tr>
+        {{/chapters}}
+        </tbody>
+    </table>
+</div>

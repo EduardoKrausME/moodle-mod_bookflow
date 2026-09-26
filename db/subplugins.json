@@ -1,0 +1,8 @@
+{
+  "plugintypes": {
+    "flexbookcontent": "mod/flexbook/content"
+  },
+  "subplugintypes": {
+    "flexbookcontent": "content"
+  }
+}

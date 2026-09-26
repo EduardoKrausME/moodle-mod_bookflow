@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="mod/flexbook/db" VERSION="20260726" COMMENT="XMLDB file for mod_flexbook">
+  <TABLES>
+    <TABLE NAME="flexbook" COMMENT="FlexBook activities">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true"/>
+        <FIELD NAME="intro" TYPE="text" NOTNULL="false"/>
+        <FIELD NAME="introformat" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="numbering" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="1"/>
+        <FIELD NAME="defaultcontenttype" TYPE="char" LENGTH="50" NOTNULL="true" DEFAULT="html"/>
+        <FIELD NAME="completionmode" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="completionpercentage" TYPE="int" LENGTH="3" NOTNULL="true" DEFAULT="80"/>
+        <FIELD NAME="requiremandatory" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="enablebookmarks" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1"/>
+        <FIELD NAME="enablenotes" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1"/>
+        <FIELD NAME="enablesearch" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1"/>
+        <FIELD NAME="enabletracking" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1"/>
+        <FIELD NAME="estimatedtime" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="course" TYPE="foreign" FIELDS="course" REFTABLE="course" REFFIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="flexbook_chapters" COMMENT="Chapters and subchapters">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="flexbookid" TYPE="int" LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="parentid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="title" TYPE="char" LENGTH="255" NOTNULL="true"/>
+        <FIELD NAME="description" TYPE="text" NOTNULL="false"/>
+        <FIELD NAME="descriptionformat" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="1"/>
+        <FIELD NAME="sortorder" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="hidden" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="required" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="estimatedtime" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="flexbookid" TYPE="foreign" FIELDS="flexbookid" REFTABLE="flexbook" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="parentid" UNIQUE="false" FIELDS="parentid"/>
+        <INDEX NAME="sortorder" UNIQUE="false" FIELDS="flexbookid, sortorder"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="flexbook_contents" COMMENT="Independent chapter content blocks">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="chapterid" TYPE="int" LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="type" TYPE="char" LENGTH="50" NOTNULL="true"/>
+        <FIELD NAME="title" TYPE="char" LENGTH="255" NOTNULL="false"/>
+        <FIELD NAME="sortorder" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="data1" TYPE="text" NOTNULL="false"/>
+        <FIELD NAME="data2" TYPE="text" NOTNULL="false"/>
+        <FIELD NAME="data3" TYPE="text" NOTNULL="false"/>
+        <FIELD NAME="auxint1" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="auxint2" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="auxint3" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="trackprogress" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1"/>
+        <FIELD NAME="required" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="weight" TYPE="number" LENGTH="10" DECIMALS="4" NOTNULL="true" DEFAULT="1"/>
+        <FIELD NAME="completiontype" TYPE="char" LENGTH="50" NOTNULL="true" DEFAULT="view"/>
+        <FIELD NAME="completionvalue" TYPE="number" LENGTH="10" DECIMALS="2" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="hidden" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="estimatedtime" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="chapterid" TYPE="foreign" FIELDS="chapterid" REFTABLE="flexbook_chapters" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="type" UNIQUE="false" FIELDS="type"/>
+        <INDEX NAME="sortorder" UNIQUE="false" FIELDS="chapterid, sortorder"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="flexbook_user_progress" COMMENT="Per-user block progress">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="flexbookid" TYPE="int" LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="chapterid" TYPE="int" LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="contentid" TYPE="int" LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="status" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="progress" TYPE="number" LENGTH="10" DECIMALS="4" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="details" TYPE="text" NOTNULL="false"/>
+        <FIELD NAME="viewcount" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="timeviewed" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="firstaccess" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="lastaccess" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="timecompleted" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="flexbookid" TYPE="foreign" FIELDS="flexbookid" REFTABLE="flexbook" REFFIELDS="id"/>
+        <KEY NAME="chapterid" TYPE="foreign" FIELDS="chapterid" REFTABLE="flexbook_chapters" REFFIELDS="id"/>
+        <KEY NAME="contentid" TYPE="foreign" FIELDS="contentid" REFTABLE="flexbook_contents" REFFIELDS="id"/>
+        <KEY NAME="userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="usercontent" UNIQUE="true" FIELDS="userid, contentid"/>
+        <INDEX NAME="userflexbook" UNIQUE="false" FIELDS="userid, flexbookid"/>
+        <INDEX NAME="status" UNIQUE="false" FIELDS="flexbookid, status"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="flexbook_chapter_progress" COMMENT="Per-user chapter access and completion">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="flexbookid" TYPE="int" LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="chapterid" TYPE="int" LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="status" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="1"/>
+        <FIELD NAME="viewcount" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="1"/>
+        <FIELD NAME="timeviewed" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="firstaccess" TYPE="int" LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="lastaccess" TYPE="int" LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="timecompleted" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="flexbookid" TYPE="foreign" FIELDS="flexbookid" REFTABLE="flexbook" REFFIELDS="id"/>
+        <KEY NAME="chapterid" TYPE="foreign" FIELDS="chapterid" REFTABLE="flexbook_chapters" REFFIELDS="id"/>
+        <KEY NAME="userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="userchapter" UNIQUE="true" FIELDS="userid, chapterid"/>
+        <INDEX NAME="status" UNIQUE="false" FIELDS="flexbookid, status"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="flexbook_user_state" COMMENT="Per-user reading state and aggregate progress">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="flexbookid" TYPE="int" LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="lastchapterid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="lastcontentid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="scrollposition" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="progress" TYPE="number" LENGTH="6" DECIMALS="2" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="timeviewed" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="firstaccess" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="lastaccess" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="timecompleted" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="flexbookid" TYPE="foreign" FIELDS="flexbookid" REFTABLE="flexbook" REFFIELDS="id"/>
+        <KEY NAME="userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="userflexbook" UNIQUE="true" FIELDS="userid, flexbookid"/>
+        <INDEX NAME="lastaccess" UNIQUE="false" FIELDS="flexbookid, lastaccess"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="flexbook_bookmarks" COMMENT="User favorites">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="flexbookid" TYPE="int" LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="itemtype" TYPE="char" LENGTH="20" NOTNULL="true"/>
+        <FIELD NAME="chapterid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="contentid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="flexbookid" TYPE="foreign" FIELDS="flexbookid" REFTABLE="flexbook" REFFIELDS="id"/>
+        <KEY NAME="userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="useritem" UNIQUE="true" FIELDS="userid, flexbookid, itemtype, chapterid, contentid"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="flexbook_notes" COMMENT="Private user notes">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="flexbookid" TYPE="int" LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="chapterid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="contentid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="note" TYPE="text" NOTNULL="true"/>
+        <FIELD NAME="selectiontext" TYPE="text" NOTNULL="false"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="flexbookid" TYPE="foreign" FIELDS="flexbookid" REFTABLE="flexbook" REFFIELDS="id"/>
+        <KEY NAME="userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="userflexbook" UNIQUE="false" FIELDS="userid, flexbookid"/>
+        <INDEX NAME="contentid" UNIQUE="false" FIELDS="contentid"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="flexbook_highlights" COMMENT="Private user text highlights">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="flexbookid" TYPE="int" LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="chapterid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="contentid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="selectiontext" TYPE="text" NOTNULL="true"/>
+        <FIELD NAME="selector" TYPE="text" NOTNULL="true"/>
+        <FIELD NAME="color" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="yellow"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="flexbookid" TYPE="foreign" FIELDS="flexbookid" REFTABLE="flexbook" REFFIELDS="id"/>
+        <KEY NAME="userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="usercontent" UNIQUE="false" FIELDS="userid, contentid"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="flexbook_questions" COMMENT="Question block definitions">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="contentid" TYPE="int" LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="questiontext" TYPE="text" NOTNULL="true"/>
+        <FIELD NAME="optionsjson" TYPE="text" NOTNULL="true"/>
+        <FIELD NAME="answerjson" TYPE="text" NOTNULL="false"/>
+        <FIELD NAME="feedback" TYPE="text" NOTNULL="false"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="contentid" TYPE="foreign" FIELDS="contentid" REFTABLE="flexbook_contents" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="contentid" UNIQUE="true" FIELDS="contentid"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="flexbook_question_attempts" COMMENT="User question attempts">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="questionid" TYPE="int" LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="answerjson" TYPE="text" NOTNULL="true"/>
+        <FIELD NAME="iscorrect" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="attemptnumber" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="1"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="questionid" TYPE="foreign" FIELDS="questionid" REFTABLE="flexbook_questions" REFFIELDS="id"/>
+        <KEY NAME="userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="userquestion" UNIQUE="false" FIELDS="userid, questionid"/>
+      </INDEXES>
+    </TABLE>
+  </TABLES>
+</XMLDB>
