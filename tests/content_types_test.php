@@ -61,9 +61,14 @@ final class content_types_test extends advanced_testcase {
             "tabs",
             "video",
         ];
+        $options = content_type_manager::get_type_options();
         foreach ($types as $type) {
             $this->assertArrayHasKey($type, $classes);
             $this->assertTrue(is_subclass_of($classes[$type], content::class));
+            $this->assertSame($type, $classes[$type]::get_type());
+            $this->assertNotSame("", trim($classes[$type]::get_name()));
+            $this->assertArrayHasKey($type, $options);
+            $this->assertNotSame("", trim($options[$type]));
         }
     }
 
