@@ -47,6 +47,12 @@ class content_form_mapper {
         "download",
     ];
 
+    /** @var array Structured content types whose item bodies are HTML editors. */
+    private const STRUCTURED_EDITOR_TYPES = [
+        "accordion",
+        "tabs",
+    ];
+
     /**
      * Gets the filemanager options for one content type.
      *
@@ -157,8 +163,28 @@ class content_form_mapper {
             case "accordion":
             case "tabs":
                 $items = self::decode_items($record->data1 ?? "[]");
-                $record->itemtitle = array_column($items, "title");
-                $record->itemcontent = array_column($items, "content");
+                $rowcount = max(2, count($items));
+                $draftitemid = 0;
+                $record->itemtitle = [];
+                $record->itemcontent = [];
+                for ($index = 0; $index < $rowcount; $index++) {
+                    $item = $items[$index] ?? [];
+                    $record->itemtitle[] = (string) ($item["title"] ?? "");
+                    $text = file_prepare_draft_area(
+                        $draftitemid,
+                        $context->id,
+                        "mod_flexbook",
+                        "content",
+                        $itemid ?: null,
+                        $editoroptions,
+                        (string) ($item["content"] ?? "")
+                    );
+                    $record->itemcontent[] = [
+                        "text" => $text ?? "",
+                        "format" => FORMAT_HTML,
+                        "itemid" => $draftitemid,
+                    ];
+                }
                 break;
 
             case "flashcards":
@@ -245,7 +271,7 @@ class content_form_mapper {
                 $count = max(count($titles), count($contents));
                 for ($i = 0; $i < $count; $i++) {
                     $title = trim((string) ($titles[$i] ?? ""));
-                    $content = trim((string) ($contents[$i] ?? ""));
+                    $content = self::editor_text($contents[$i] ?? "");
                     if ($title === "" && $content === "") {
                         continue;
                     }
@@ -359,6 +385,48 @@ class content_form_mapper {
         array $editoroptions,
         array $fileoptions
     ): ?string {
+        if (in_array($type, self::STRUCTURED_EDITOR_TYPES, true)) {
+            $titles = (array) ($submitted->itemtitle ?? []);
+            $contents = (array) ($submitted->itemcontent ?? []);
+            $draftitemid = 0;
+            foreach ($contents as $content) {
+                if (is_array($content) && !empty($content["itemid"])) {
+                    $draftitemid = (int) $content["itemid"];
+                    break;
+                }
+            }
+
+            if ($draftitemid) {
+                file_save_draft_area_files(
+                    $draftitemid,
+                    $context->id,
+                    "mod_flexbook",
+                    "content",
+                    $itemid,
+                    $editoroptions
+                );
+            }
+
+            $items = [];
+            $count = max(count($titles), count($contents));
+            for ($index = 0; $index < $count; $index++) {
+                $title = trim((string) ($titles[$index] ?? ""));
+                $text = self::editor_text($contents[$index] ?? "");
+                if ($draftitemid && $text !== "") {
+                    $text = file_rewrite_urls_to_pluginfile($text, $draftitemid);
+                }
+                if ($title === "" && $text === "") {
+                    continue;
+                }
+                $items[] = [
+                    "title" => $title,
+                    "content" => $text,
+                ];
+            }
+
+            return self::encode_items($items);
+        }
+
         if (in_array($type, self::EDITOR_TYPES, true)) {
             $editor = (array) ($submitted->data1_editor ?? []);
             $draftitemid = (int) ($editor["itemid"] ?? 0);
@@ -415,6 +483,19 @@ class content_form_mapper {
      */
     private static function get_filearea(string $type): string {
         return $type === "download" ? "download" : "content";
+    }
+
+    /**
+     * Extracts the text part from an editor value.
+     *
+     * @param mixed $value Form value.
+     * @return string
+     */
+    private static function editor_text($value): string {
+        if (is_array($value)) {
+            return trim((string) ($value["text"] ?? ""));
+        }
+        return trim((string) $value);
     }
 
     /**
