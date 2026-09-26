@@ -26,7 +26,6 @@ namespace mod_flexbook\completion;
 
 use core_completion\activity_custom_completion;
 use mod_flexbook\progress\progress_manager;
-use moodle_exception;
 use Override;
 
 /**
@@ -41,9 +40,8 @@ class custom_completion extends activity_custom_completion {
      */
     #[Override]
     public function get_state(string $rule): int {
-        if ($rule !== "completionmode") {
-            throw new moodle_exception("invalidcompletionrule", "mod_flexbook");
-        }
+        $this->validate_rule($rule);
+
         $manager = new progress_manager();
         return $manager->completion_requirements_met($this->cm->instance, $this->userid)
             ? COMPLETION_COMPLETE
@@ -67,8 +65,9 @@ class custom_completion extends activity_custom_completion {
      */
     #[Override]
     public function get_custom_rule_descriptions(): array {
-        $flexbook = $this->cm->customdata["customcompletionrules"] ?? null;
-        $percentage = $flexbook["completionpercentage"] ?? 80;
+        $customdata = (array) $this->cm->customdata;
+        $percentage = $customdata["completionpercentage"] ?? 80;
+
         return [
             "completionmode" => get_string("completiondescription", "mod_flexbook", $percentage),
         ];

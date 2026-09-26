@@ -1,0 +1,69 @@
+<?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * custom_completion_test.php
+ *
+ * @package   mod_flexbook
+ * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+namespace mod_flexbook;
+
+use advanced_testcase;
+use mod_flexbook\completion\custom_completion;
+
+/**
+ * Tests the FlexBook custom completion integration with Moodle core.
+ */
+final class custom_completion_test extends advanced_testcase {
+    /**
+     * Percentage mode must remain enabled even though its configured value is zero.
+     *
+     * @return void
+     */
+    public function test_percentage_mode_exposes_only_the_real_completion_rule(): void {
+        $this->resetAfterTest();
+
+        $course = $this->getDataGenerator()->create_course(["enablecompletion" => 1]);
+        $user = $this->getDataGenerator()->create_and_enrol($course, "student");
+        $generator = $this->getDataGenerator()->get_plugin_generator("mod_flexbook");
+        $flexbook = $generator->create_instance([
+            "course" => $course->id,
+            "name" => "Completion test",
+            "completion" => COMPLETION_TRACKING_AUTOMATIC,
+            "completionmode" => FLEXBOOK_COMPLETION_PERCENTAGE,
+            "completionpercentage" => 80,
+        ]);
+        $chapter = $generator->create_chapter($flexbook);
+        $generator->create_content($chapter);
+
+        rebuild_course_cache($course->id, true);
+        $cmrecord = get_coursemodule_from_instance("flexbook", $flexbook->id, $course->id, false, MUST_EXIST);
+        $cm = get_fast_modinfo($course)->get_cm($cmrecord->id);
+        $customdata = (array) $cm->customdata;
+
+        $this->assertSame(["completionmode" => 1], $customdata["customcompletionrules"]);
+        $this->assertSame(FLEXBOOK_COMPLETION_PERCENTAGE, $customdata["completionmode"]);
+        $this->assertSame(80, $customdata["completionpercentage"]);
+
+        $completion = new custom_completion($cm, $user->id);
+        $this->assertTrue($completion->is_defined("completionmode"));
+        $this->assertFalse($completion->is_defined("completionpercentage"));
+        $this->assertSame(COMPLETION_INCOMPLETE, $completion->get_state("completionmode"));
+    }
+}

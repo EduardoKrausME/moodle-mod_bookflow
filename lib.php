@@ -123,10 +123,13 @@ function flexbook_get_coursemodule_info(stdClass $coursemodule): ?cached_cm_info
 
     $info = new cached_cm_info();
     $info->name = $flexbook->name;
-    $info->customdata = ["customcompletionrules" => [
-        "completionmode" => $flexbook->completionmode,
-        "completionpercentage" => $flexbook->completionpercentage,
-    ]];
+    $info->customdata = [
+        "completionmode" => (int) $flexbook->completionmode,
+        "completionpercentage" => (int) $flexbook->completionpercentage,
+        "customcompletionrules" => [
+            "completionmode" => 1,
+        ],
+    ];
     if ($coursemodule->showdescription) {
         $info->content = format_module_intro("flexbook", $flexbook, $coursemodule->id, false);
     }
