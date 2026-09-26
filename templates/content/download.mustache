@@ -24,7 +24,7 @@
 }}
 
 <div class="flexbook-download">
-    <h3>{{title}}</h3>
-    <p>{{data2}}</p>
+    {{#title}}<h3>{{title}}</h3>{{/title}}
+    {{#data2}}<p>{{data2}}</p>{{/data2}}
     <a class="btn btn-outline-primary" href="{{{source}}}" download data-flexbook-download="{{id}}">{{#str}}download{{/str}}</a>
 </div>
