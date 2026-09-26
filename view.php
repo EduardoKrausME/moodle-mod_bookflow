@@ -56,6 +56,8 @@ $progressmanager = new progress_manager();
 $progress = $progressmanager->calculate_user_progress($flexbook->id, $USER->id);
 $lastposition = $progressmanager->get_last_position($flexbook->id, $USER->id);
 $chapters = $DB->get_records("flexbook_chapters", ["flexbookid" => $flexbook->id], "sortorder, id");
+$haschapters = !empty($chapters);
+$canmanagechapters = has_capability("mod/flexbook:managechapters", $context);
 if (!$editing) {
     $chapters = array_filter($chapters, fn($chapter) => !$chapter->hidden);
 }
@@ -125,6 +127,20 @@ $PAGE->navbar->add(format_string($flexbook->name), new moodle_url("/mod/flexbook
 
 echo $OUTPUT->header();
 
+if (!$haschapters) {
+    $emptymessage = $canmanagechapters
+        ? get_string("emptyflexbookteacher", "mod_flexbook")
+        : get_string("emptyflexbookstudent", "mod_flexbook");
+    echo $OUTPUT->notification($emptymessage, \core\output\notification::NOTIFY_INFO);
+    if ($canmanagechapters) {
+        echo $OUTPUT->single_button(
+            new moodle_url("/mod/flexbook/chapters.php", ["id" => $cm->id]),
+            get_string("addchapter", "mod_flexbook"),
+            "get"
+        );
+    }
+}
+
 if (!$chapterid) {
     $accessedchapters = $DB->count_records_sql(
         "SELECT COUNT(DISTINCT p.chapterid)
@@ -179,7 +195,7 @@ if (!$chapterid) {
             : "",
         "continuechapter" => $lastposition->chaptertitle ?? "",
         "manageurl" => (new moodle_url("/mod/flexbook/chapters.php", ["id" => $cm->id]))->out(false),
-        "canmanage" => has_capability("mod/flexbook:managechapters", $context),
+        "canmanage" => $canmanagechapters,
         "bookmarksurl" => (new moodle_url("/mod/flexbook/bookmarks.php", ["id" => $cm->id]))->out(false),
         "notesurl" => (new moodle_url("/mod/flexbook/notes.php", ["id" => $cm->id]))->out(false),
         "reporturl" => (new moodle_url("/mod/flexbook/report.php", ["id" => $cm->id]))->out(false),
