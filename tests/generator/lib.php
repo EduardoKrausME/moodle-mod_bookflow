@@ -25,6 +25,8 @@
 use mod_flexbook\chapter_manager;
 use mod_flexbook\content_manager;
 
+require_once(__DIR__ . "/../../lib.php");
+
 /**
  * Generates FlexBook fixtures for automated tests.
  */
