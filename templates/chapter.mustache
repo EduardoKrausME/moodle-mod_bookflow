@@ -66,7 +66,48 @@
         </div>
 
         {{#editing}}
-            <a class="btn btn-primary" href="{{{addcontenturl}}}">{{#str}}addcontent, mod_flexbook{{/str}}</a>
+            {{#hasaddcontenttypes}}
+                <button class="btn btn-primary"
+                        type="button"
+                        data-toggle="modal"
+                        data-target="#flexbook-add-content-modal-{{chapterid}}">
+                    {{#str}}addcontent, mod_flexbook{{/str}}
+                </button>
+
+                <div class="modal fade"
+                     id="flexbook-add-content-modal-{{chapterid}}"
+                     tabindex="-1"
+                     role="dialog"
+                     aria-labelledby="flexbook-add-content-title-{{chapterid}}"
+                     aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="flexbook-add-content-title-{{chapterid}}">
+                                    {{#str}}selectcontenttype, mod_flexbook{{/str}}
+                                </h5>
+                                <button type="button"
+                                        class="close"
+                                        data-dismiss="modal"
+                                        aria-label="{{#str}}closebuttontitle{{/str}}">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <p class="text-muted">{{#str}}selectcontenttypedescription, mod_flexbook{{/str}}</p>
+                                <div class="list-group">
+                                    {{#addcontenttypes}}
+                                        <a class="list-group-item list-group-item-action"
+                                           href="{{{url}}}">
+                                            {{name}}
+                                        </a>
+                                    {{/addcontenttypes}}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {{/hasaddcontenttypes}}
         {{/editing}}
         {{> mod_flexbook/chapter_navigation}}
     </main>
