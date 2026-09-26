@@ -289,10 +289,14 @@ final class progress_manager_test extends advanced_testcase {
         $reflection = new ReflectionClass(custom_completion::class);
         $completion = $reflection->newInstanceWithoutConstructor();
 
-        $this->assertSame(["completionmode"], $completion::get_defined_custom_rules());
+        $this->assertSame(
+            ["completionmode", "completionpercentage"],
+            $completion::get_defined_custom_rules()
+        );
         $this->assertSame([
             "completionview",
             "completionmode",
+            "completionpercentage",
             "completionusegrade",
             "completionpassgrade",
         ], $completion->get_sort_order());
