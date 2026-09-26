@@ -114,7 +114,7 @@ abstract class template_content extends content {
 
         $itemsdata = static::$type === "question"
             ? ($this->record->data2 ?? "[]")
-            : $primarydata;
+            : $rewrittenprimarydata;
         $items = json_decode($itemsdata ?: "[]", true);
         if (!is_array($items)) {
             $items = [];
