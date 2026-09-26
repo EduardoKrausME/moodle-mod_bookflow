@@ -78,6 +78,53 @@ class content_form_mapper {
     }
 
     /**
+     * Prepares the shared draft area used by repeated HTML editors.
+     *
+     * All accordion or tab item editors share one draft area so newly added
+     * rows can upload files without creating file areas that cannot be merged
+     * safely into the content block.
+     *
+     * @param string $type Content type.
+     * @param stdClass|null $content Existing content record.
+     * @param context_module $context Activity context.
+     * @param array $editoroptions Editor options.
+     * @return int Draft area item id, or zero for non-structured content.
+     */
+    public static function prepare_structured_draft(
+        string $type,
+        ?stdClass $content,
+        context_module $context,
+        array $editoroptions
+    ): int {
+        if (!in_array($type, self::STRUCTURED_EDITOR_TYPES, true)) {
+            return 0;
+        }
+
+        $draftitemid = 0;
+        $submitted = data_submitted();
+        if ($submitted && !empty($submitted->itemcontent) && is_array($submitted->itemcontent)) {
+            foreach ($submitted->itemcontent as $editor) {
+                $editor = (array) $editor;
+                if (!empty($editor["itemid"])) {
+                    $draftitemid = (int) $editor["itemid"];
+                    break;
+                }
+            }
+        }
+
+        file_prepare_draft_area(
+            $draftitemid,
+            $context->id,
+            "mod_flexbook",
+            "content",
+            $content->id ?? null,
+            $editoroptions
+        );
+
+        return $draftitemid;
+    }
+
+    /**
      * Gets the initial number of repeated fields for a structured block.
      *
      * @param stdClass|null $content Existing content record.
@@ -111,7 +158,8 @@ class content_form_mapper {
         string $type,
         context_module $context,
         array $editoroptions,
-        array $fileoptions
+        array $fileoptions,
+        int $structureddraftid = 0
     ): stdClass {
         $itemid = (int) ($record->id ?? $record->contentid ?? 0);
 
@@ -164,7 +212,17 @@ class content_form_mapper {
             case "tabs":
                 $items = self::decode_items($record->data1 ?? "[]");
                 $rowcount = max(2, count($items));
-                $draftitemid = 0;
+                $draftitemid = $structureddraftid;
+                if (!$draftitemid) {
+                    file_prepare_draft_area(
+                        $draftitemid,
+                        $context->id,
+                        "mod_flexbook",
+                        "content",
+                        $itemid ?: null,
+                        $editoroptions
+                    );
+                }
                 $record->itemtitle = [];
                 $record->itemcontent = [];
                 for ($index = 0; $index < $rowcount; $index++) {
