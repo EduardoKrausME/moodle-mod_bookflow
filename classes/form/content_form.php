@@ -224,7 +224,7 @@ class content_form extends moodleform {
 
             case "accordion":
             case "tabs":
-                $this->add_title_content_repeater($repeatcount);
+                $this->add_title_content_repeater($repeatcount, $editoroptions);
                 break;
 
             case "flashcards":
@@ -287,17 +287,19 @@ class content_form extends moodleform {
      * Adds a repeater for accordion and tab items.
      *
      * @param int $repeatcount Initial number of rows.
+     * @param array $editoroptions Editor options.
      * @return void
      */
-    private function add_title_content_repeater(int $repeatcount): void {
+    private function add_title_content_repeater(int $repeatcount, array $editoroptions): void {
         $mform = $this->_form;
         $repeat = [
             $mform->createElement("text", "itemtitle", get_string("itemtitle", "mod_flexbook"), ["size" => 56]),
             $mform->createElement(
-                "textarea",
+                "editor",
                 "itemcontent",
                 get_string("itemcontent", "mod_flexbook"),
-                ["rows" => 6, "cols" => 80]
+                ["rows" => 10],
+                $editoroptions
             ),
         ];
         $options = [
@@ -506,11 +508,24 @@ class content_form extends moodleform {
         $count = 0;
         $size = max(count($left), count($right));
         for ($i = 0; $i < $size; $i++) {
-            if (trim((string) ($left[$i] ?? "")) !== ""
-                    || trim((string) ($right[$i] ?? "")) !== "") {
+            if ($this->value_text($left[$i] ?? "") !== ""
+                    || $this->value_text($right[$i] ?? "") !== "") {
                 $count++;
             }
         }
         return $count;
+    }
+
+    /**
+     * Extracts comparable text from a normal or editor form value.
+     *
+     * @param mixed $value Form value.
+     * @return string
+     */
+    private function value_text($value): string {
+        if (is_array($value)) {
+            return trim((string) ($value["text"] ?? ""));
+        }
+        return trim((string) $value);
     }
 }
