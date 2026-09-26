@@ -102,16 +102,20 @@ abstract class template_content extends content {
     protected function export_data(bool $editing): array {
         $format = static::$type == "markdown" ? FORMAT_MARKDOWN : FORMAT_HTML;
         $primarydata = $this->record->data1 ?? "";
+        $filearea = static::$type === "download" ? "download" : "content";
         $rewrittenprimarydata = file_rewrite_pluginfile_urls(
             $primarydata,
             "pluginfile.php",
             $this->context->id,
             "mod_flexbook",
-            "content",
+            $filearea,
             $this->record->id
         );
 
-        $items = json_decode($primarydata ?: "[]", true);
+        $itemsdata = static::$type === "question"
+            ? ($this->record->data2 ?? "[]")
+            : $primarydata;
+        $items = json_decode($itemsdata ?: "[]", true);
         if (!is_array($items)) {
             $items = [];
         }
