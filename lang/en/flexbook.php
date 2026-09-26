@@ -108,6 +108,7 @@ $string['continuereading'] = 'Continue where I left off';
 $string['copyof'] = 'Copy of {$a}';
 $string['cover'] = 'Cover image';
 $string['createchapterfirst'] = 'Create a chapter before adding content.';
+$string['createfirstchapter'] = 'Create first chapter';
 $string['currentposition'] = 'Current position';
 $string['defaultcontenttype'] = 'Default content type';
 $string['donottrack'] = 'Do not include in progress';
