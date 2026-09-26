@@ -120,6 +120,12 @@ if ($chapterid) {
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string($chapterid ? "editchapter" : "addchapter", "mod_flexbook"));
+if (!$chapterid) {
+    echo $OUTPUT->notification(
+        get_string("chaptercreationhelp", "mod_flexbook"),
+        \core\output\notification::NOTIFY_INFO
+    );
+}
 $form->display();
 
 if ($chapters) {
