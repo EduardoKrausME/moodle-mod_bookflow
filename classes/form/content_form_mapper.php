@@ -153,6 +153,11 @@ class content_form_mapper {
         }
 
         switch ($type) {
+            case "markdown":
+            case "code":
+                $record->rawcontent = (string) ($record->data1 ?? "");
+                break;
+
             case "accordion":
             case "tabs":
                 $items = self::decode_items($record->data1 ?? "[]");
