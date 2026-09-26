@@ -157,6 +157,12 @@ $editoroptions = [
 ];
 $fileoptions = content_form_mapper::get_file_options($type, $editoroptions);
 $repeatcount = content_form_mapper::get_repeat_count($content, $type);
+$structureddraftid = content_form_mapper::prepare_structured_draft(
+    $type,
+    $content,
+    $context,
+    $editoroptions
+);
 
 $formurl = new moodle_url("/mod/flexbook/content.php", $pageparams);
 $form = new content_form($formurl->out(false), [
@@ -165,6 +171,7 @@ $form = new content_form($formurl->out(false), [
     "editoroptions" => $editoroptions,
     "fileoptions" => $fileoptions,
     "repeatcount" => $repeatcount,
+    "structureddraftid" => $structureddraftid,
 ]);
 
 if ($content) {
@@ -174,7 +181,8 @@ if ($content) {
         $type,
         $context,
         $editoroptions,
-        $fileoptions
+        $fileoptions,
+        $structureddraftid
     );
     $form->set_data($content);
 } else {
