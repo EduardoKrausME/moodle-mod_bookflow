@@ -29,7 +29,7 @@ use coding_exception;
 use mod_flexbook\hook\content_types;
 use mod_flexbook\content_type_manager;
 use mod_flexbook\types\content;
-use mod_flexbook\types\html;
+use flexbookcontent_html\types\html;
 
 /**
  * Tests core content type registration and hook validation.

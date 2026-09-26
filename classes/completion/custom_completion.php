@@ -41,7 +41,7 @@ class custom_completion extends activity_custom_completion {
      */
     #[Override]
     public function get_state(string $rule): int {
-        if (!in_array($rule, ["completionmode", "completionpercentage", "requiremandatory"])) {
+        if ($rule !== "completionmode") {
             throw new moodle_exception("invalidcompletionrule", "mod_flexbook");
         }
         $manager = new progress_manager();

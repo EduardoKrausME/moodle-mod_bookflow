@@ -1054,7 +1054,7 @@ class api extends external_api {
             "completed" => $completed,
             "total" => $total,
             "pendingrequired" => $manager->get_pending_required_count($flexbookid, $userid),
-            "activitycompleted" => $manager->completion_requirements_met($flexbookid, $userid),
+            "activitycompleted" => $manager->completion_requirements_met($flexbookid, $userid, $progress),
         ];
     }
 

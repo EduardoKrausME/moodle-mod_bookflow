@@ -25,10 +25,10 @@
 defined('MOODLE_INTERNAL') || die;
 
 $plugin->component = "flexbookcontent_question";
-$plugin->version = 2026081300;
+$plugin->version = 2026092600;
 $plugin->requires = 2024042200;
 $plugin->maturity = MATURITY_STABLE;
-$plugin->release = "0.1.5";
+$plugin->release = "0.1.6";
 $plugin->dependencies = [
-    "mod_flexbook" => 2026081300,
+    "mod_flexbook" => 2026092600,
 ];

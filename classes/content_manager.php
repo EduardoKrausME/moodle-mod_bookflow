@@ -31,6 +31,18 @@ use stdClass;
  * Manages FlexBook content block records and ordering.
  */
 class content_manager {
+    /** @var array Fields whose change can alter derived progress or completion. */
+    private const PROGRESS_FIELDS = [
+        "chapterid",
+        "hidden",
+        "trackprogress",
+        "required",
+        "weight",
+        "completiontype",
+        "completionvalue",
+        "auxint1",
+    ];
+
     /**
      * Creates a content block.
      *
@@ -51,7 +63,9 @@ class content_manager {
             question_manager::sync_from_content($id);
         }
         $flexbookid = self::get_flexbookid($data->chapterid);
-        progress_recalculator::recalculate_all($flexbookid);
+        if (empty($data->hidden) && !empty($data->trackprogress)) {
+            progress_recalculator::recalculate_all($flexbookid);
+        }
         return $id;
     }
 
@@ -73,10 +87,18 @@ class content_manager {
         if ($data->type == "question") {
             question_manager::sync_from_content($data->id);
         }
-        progress_recalculator::recalculate_all(self::get_flexbookid($current->chapterid));
-        if ($current->chapterid != $data->chapterid) {
+        $updated = $DB->get_record("flexbook_contents", ["id" => $data->id], "*", MUST_EXIST);
+        $oldflexbookid = self::get_flexbookid($current->chapterid);
+        $newflexbookid = self::get_flexbookid($updated->chapterid);
+        if (self::progress_structure_changed($current, $updated)) {
+            progress_recalculator::recalculate_all($oldflexbookid);
+            if ($newflexbookid != $oldflexbookid) {
+                progress_recalculator::recalculate_all($newflexbookid);
+            }
+        }
+        if ($current->chapterid != $updated->chapterid) {
             self::normalize_sortorder($current->chapterid);
-            self::normalize_sortorder($data->chapterid);
+            self::normalize_sortorder($updated->chapterid);
         }
         return $result;
     }
@@ -115,7 +137,7 @@ class content_manager {
         $DB->delete_records("flexbook_highlights", ["contentid" => $contentid]);
         $DB->delete_records("flexbook_contents", ["id" => $contentid]);
         self::normalize_sortorder($content->chapterid);
-        if ($recalculate) {
+        if ($recalculate && empty($content->hidden) && !empty($content->trackprogress)) {
             progress_recalculator::recalculate_all($flexbookid);
         }
     }
@@ -206,4 +228,21 @@ class content_manager {
         global $DB;
         return $DB->get_field("flexbook_chapters", "flexbookid", ["id" => $chapterid], MUST_EXIST);
     }
+
+    /**
+     * Checks whether an update changes progress-relevant structure.
+     *
+     * @param stdClass $before Previous record.
+     * @param stdClass $after Updated record.
+     * @return bool
+     */
+    private static function progress_structure_changed(stdClass $before, stdClass $after): bool {
+        foreach (self::PROGRESS_FIELDS as $field) {
+            if ((string) ($before->{$field} ?? "") !== (string) ($after->{$field} ?? "")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

@@ -130,23 +130,28 @@ if ($view == "chapters") {
     $table->define_baseurl($PAGE->url);
     $table->setup();
     $table->start_output();
-    foreach ($DB->get_records("flexbook_chapters", ["flexbookid" => $flexbook->id], "sortorder") as $chapter) {
-        $stats = $DB->get_record_sql(
-            "SELECT COALESCE(SUM(p.viewcount), 0) AS views,
-                    COUNT(DISTINCT p.userid) AS uniqueusers,
-                    AVG(p.timeviewed) AS averagetime,
-                    SUM(CASE WHEN p.status = :completed THEN 1 ELSE 0 END) AS completions
-               FROM {flexbook_chapter_progress} p
-              WHERE p.chapterid = :chapterid",
-            [
-                "chapterid" => $chapter->id,
-                "completed" => progress_manager::STATUS_COMPLETED,
-            ]
-        );
-        $rate = $stats->uniqueusers ? round($stats->completions / $stats->uniqueusers * 100, 1) : 0;
+
+    $sql = "SELECT ch.id, ch.title,
+                   COALESCE(SUM(p.viewcount), 0) AS views,
+                   COUNT(DISTINCT p.userid) AS uniqueusers,
+                   COALESCE(AVG(p.timeviewed), 0) AS averagetime,
+                   COALESCE(SUM(CASE WHEN p.status = :completed THEN 1 ELSE 0 END), 0) AS completions
+              FROM {flexbook_chapters} ch
+         LEFT JOIN {flexbook_chapter_progress} p ON p.chapterid = ch.id
+             WHERE ch.flexbookid = :flexbookid
+          GROUP BY ch.id, ch.title, ch.sortorder
+          ORDER BY ch.sortorder, ch.id";
+    $chapterstats = $DB->get_records_sql($sql, [
+        "completed" => progress_manager::STATUS_COMPLETED,
+        "flexbookid" => $flexbook->id,
+    ]);
+    foreach ($chapterstats as $stats) {
+        $rate = $stats->uniqueusers
+            ? round($stats->completions / $stats->uniqueusers * 100, 1)
+            : 0;
         $abandonment = $stats->uniqueusers ? round(100 - $rate, 1) : 0;
         $table->add_data([
-            format_string($chapter->title),
+            format_string($stats->title),
             $stats->views,
             $stats->uniqueusers,
             format_float($rate, 1) . "%",
@@ -193,6 +198,72 @@ if ($view == "chapters") {
     }
     $table->finish_output();
 } else {
+    $completedbyuser = $DB->get_records_sql(
+        "SELECT p.userid,
+                COALESCE(SUM(CASE WHEN p.status = :completed THEN 1 ELSE 0 END), 0) AS completedblocks
+           FROM {flexbook_user_progress} p
+          WHERE p.flexbookid = :flexbookid
+       GROUP BY p.userid",
+        [
+            "completed" => progress_manager::STATUS_COMPLETED,
+            "flexbookid" => $flexbook->id,
+        ]
+    );
+
+    $accessedbyuser = $DB->get_records_sql(
+        "SELECT userid, COUNT(id) AS accessedchapters
+           FROM {flexbook_chapter_progress}
+          WHERE flexbookid = :flexbookid
+       GROUP BY userid",
+        ["flexbookid" => $flexbook->id]
+    );
+
+    $requiredtotal = $DB->count_records_sql(
+        "SELECT COUNT(c.id)
+           FROM {flexbook_contents} c
+           JOIN {flexbook_chapters} ch ON ch.id = c.chapterid
+          WHERE ch.flexbookid = :flexbookid
+            AND ch.hidden = 0
+            AND c.hidden = 0
+            AND c.trackprogress = 1
+            AND c.required = 1",
+        ["flexbookid" => $flexbook->id]
+    );
+    $requiredbyuser = $DB->get_records_sql(
+        "SELECT p.userid, COUNT(p.id) AS completedrequired
+           FROM {flexbook_user_progress} p
+           JOIN {flexbook_contents} c ON c.id = p.contentid
+           JOIN {flexbook_chapters} ch ON ch.id = c.chapterid
+          WHERE ch.flexbookid = :flexbookid
+            AND ch.hidden = 0
+            AND c.hidden = 0
+            AND c.trackprogress = 1
+            AND c.required = 1
+            AND p.status = :completed
+       GROUP BY p.userid",
+        [
+            "flexbookid" => $flexbook->id,
+            "completed" => progress_manager::STATUS_COMPLETED,
+        ]
+    );
+
+    $questionsbyuser = $DB->get_records_sql(
+        "SELECT a.userid, COUNT(a.id) AS questions
+           FROM {flexbook_question_attempts} a
+           JOIN {flexbook_questions} q ON q.id = a.questionid
+           JOIN {flexbook_contents} c ON c.id = q.contentid
+           JOIN {flexbook_chapters} ch ON ch.id = c.chapterid
+          WHERE ch.flexbookid = :flexbookid
+       GROUP BY a.userid",
+        ["flexbookid" => $flexbook->id]
+    );
+    $chaptertitles = $DB->get_records_menu(
+        "flexbook_chapters",
+        ["flexbookid" => $flexbook->id],
+        "",
+        "id, title"
+    );
+
     $table = new flexible_table("flexbook-user-report-{$flexbook->id}");
     $table->define_columns([
         "fullname", "progress", "chapters", "completedblocks", "pendingrequired",
@@ -214,39 +285,20 @@ if ($view == "chapters") {
     $table->start_output();
     foreach ($enrolled as $user) {
         $state = $statebyuser[$user->id] ?? null;
-        $stats = $DB->get_record_sql(
-            "SELECT SUM(CASE WHEN p.status = :completed THEN 1 ELSE 0 END) AS completedblocks
-               FROM {flexbook_user_progress} p
-              WHERE p.flexbookid = :flexbookid AND p.userid = :userid",
-            [
-                "completed" => progress_manager::STATUS_COMPLETED,
-                "flexbookid" => $flexbook->id,
-                "userid" => $user->id,
-            ]
-        );
-        $accessedchapters = $DB->count_records("flexbook_chapter_progress", [
-            "flexbookid" => $flexbook->id,
-            "userid" => $user->id,
-        ]);
-        $pending = (new progress_manager())
-            ->get_pending_required_count($flexbook->id, $user->id);
+        $completedblocks = (int) ($completedbyuser[$user->id]->completedblocks ?? 0);
+        $accessedchapters = (int) ($accessedbyuser[$user->id]->accessedchapters ?? 0);
+        $completedrequired = (int) ($requiredbyuser[$user->id]->completedrequired ?? 0);
+        $pending = max(0, $requiredtotal - $completedrequired);
         $position = $state && $state->lastchapterid
-            ? $DB->get_field("flexbook_chapters", "title", ["id" => $state->lastchapterid])
+            ? ($chaptertitles[$state->lastchapterid] ?? get_string("notstarted", "mod_flexbook"))
             : get_string("notstarted", "mod_flexbook");
-        $questions = $DB->count_records_sql(
-            "SELECT COUNT(a.id)
-               FROM {flexbook_question_attempts} a
-               JOIN {flexbook_questions} q ON q.id = a.questionid
-               JOIN {flexbook_contents} c ON c.id = q.contentid
-               JOIN {flexbook_chapters} ch ON ch.id = c.chapterid
-              WHERE ch.flexbookid = :flexbookid AND a.userid = :userid",
-            ["flexbookid" => $flexbook->id, "userid" => $user->id]
-        );
+        $questions = (int) ($questionsbyuser[$user->id]->questions ?? 0);
+
         $table->add_data([
             fullname($user),
             format_float($state->progress ?? 0, 1) . "%",
             $accessedchapters,
-            $stats->completedblocks ?? 0,
+            $completedblocks,
             $pending,
             $state ? userdate($state->firstaccess) : "-",
             $state ? userdate($state->lastaccess) : "-",

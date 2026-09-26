@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * progress_recalculator.php
+ * Queues aggregate progress recalculation after structural changes.
  *
  * @package   mod_flexbook
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
@@ -24,27 +24,25 @@
 
 namespace mod_flexbook;
 
-use mod_flexbook\progress\progress_manager;
+use core\task\manager;
+use mod_flexbook\task\recalculate_progress;
 
 /**
- * Recalculates progress after structural content changes.
+ * Schedules progress recalculation outside the teacher request.
  */
 class progress_recalculator {
     /**
-     * Recalculates aggregate progress for all users in a FlexBook.
+     * Queues recalculation for all users that already have state in a FlexBook.
      *
      * @param int $flexbookid FlexBook ID.
      * @return void
      */
     public static function recalculate_all(int $flexbookid): void {
-        global $DB;
-
-        $userids = $DB->get_fieldset_select("flexbook_user_state", "userid", "flexbookid = ?", [$flexbookid]);
-        $manager = new progress_manager();
-        foreach ($userids as $userid) {
-            $manager->calculate_user_progress($flexbookid, $userid);
-            $manager->recalculate_chapters($flexbookid, $userid);
-            $manager->update_completion($flexbookid, $userid);
-        }
+        $task = new recalculate_progress();
+        $task->set_custom_data([
+            "flexbookid" => $flexbookid,
+            "afteruserid" => 0,
+        ]);
+        manager::queue_adhoc_task($task, true);
     }
 }

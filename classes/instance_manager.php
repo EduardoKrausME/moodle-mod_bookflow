@@ -57,10 +57,17 @@ class instance_manager {
     public static function update(stdClass $data): bool {
         global $DB;
 
+        $current = $DB->get_record("flexbook", ["id" => $data->instance], "*", MUST_EXIST);
         $data->id = $data->instance;
         $data->timemodified = time();
         $result = $DB->update_record("flexbook", $data);
         self::save_cover($data);
+
+        $updated = $DB->get_record("flexbook", ["id" => $data->id], "*", MUST_EXIST);
+        if ((string) $current->completionmode !== (string) $updated->completionmode
+                || (string) $current->completionpercentage !== (string) $updated->completionpercentage) {
+            progress_recalculator::recalculate_all($data->id);
+        }
         return $result;
     }
 

@@ -24,6 +24,7 @@
 
 use mod_flexbook\form\chapter_form;
 use mod_flexbook\chapter_manager;
+use mod_flexbook\progress\progress_manager;
 
 require_once(__DIR__ . "/../../config.php");
 
@@ -125,6 +126,12 @@ if (!$chapterid) {
         get_string("chaptercreationhelp", "mod_flexbook"),
         \core\output\notification::NOTIFY_INFO
     );
+}
+if ($cm->completion != COMPLETION_TRACKING_NONE) {
+    $completionwarning = (new progress_manager())->get_completion_configuration_warning($flexbook->id);
+    if ($completionwarning) {
+        echo $OUTPUT->notification($completionwarning, \core\output\notification::NOTIFY_WARNING);
+    }
 }
 $form->display();
 

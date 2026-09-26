@@ -29,6 +29,7 @@ use context_module;
 use mod_flexbook\completion\custom_completion;
 use mod_flexbook\content_manager;
 use mod_flexbook\progress\progress_manager;
+use mod_flexbook\task\recalculate_progress;
 use mod_flexbook_generator;
 use Override;
 use ReflectionClass;
@@ -143,6 +144,7 @@ class progress_manager_test extends advanced_testcase {
         $this->assertEquals(100, $manager->calculate_user_progress($this->flexbook->id, $this->user->id));
 
         $second = $this->generator->create_content($this->chapter);
+        $this->execute_recalculation_task();
         $this->assertEquals(50, $DB->get_field("flexbook_user_state", "progress", [
             "flexbookid" => $this->flexbook->id,
             "userid" => $this->user->id,
@@ -293,4 +295,82 @@ class progress_manager_test extends advanced_testcase {
             "completionpassgrade",
         ], $completion->get_sort_order());
     }
+
+    /**
+     * Tests that a forged media jump does not immediately complete the block and
+     * metric updates do not inflate the view counter.
+     *
+     * @return void
+     */
+    public function test_media_metric_is_bounded_by_server_elapsed_time(): void {
+        global $DB;
+
+        $content = $this->generator->create_content($this->chapter, [
+            "type" => "video",
+            "completiontype" => "percent",
+            "completionvalue" => 80,
+        ]);
+        $manager = new progress_manager();
+
+        $manager->update_content_metric(
+            $this->flexbook->id,
+            $this->user->id,
+            $content->id,
+            100,
+            ["watchedSeconds" => 100, "duration" => 100]
+        );
+        $manager->update_content_metric(
+            $this->flexbook->id,
+            $this->user->id,
+            $content->id,
+            100,
+            ["watchedSeconds" => 100, "duration" => 100]
+        );
+
+        $record = $DB->get_record("flexbook_user_progress", [
+            "userid" => $this->user->id,
+            "contentid" => $content->id,
+        ], "*", MUST_EXIST);
+        $this->assertEquals(progress_manager::STATUS_VIEWED, $record->status);
+        $this->assertLessThan(80, (float) $record->progress);
+        $this->assertEquals(1, $record->viewcount);
+    }
+
+    /**
+     * Tests warnings for completion configurations that cannot be satisfied.
+     *
+     * @return void
+     */
+    public function test_completion_configuration_warnings(): void {
+        global $DB;
+
+        $manager = new progress_manager();
+        $this->assertNotNull($manager->get_completion_configuration_warning($this->flexbook->id));
+
+        $content = $this->generator->create_content($this->chapter);
+        $this->assertNull($manager->get_completion_configuration_warning($this->flexbook->id));
+
+        $this->flexbook->completionmode = FLEXBOOK_COMPLETION_REQUIRED;
+        $DB->update_record("flexbook", $this->flexbook);
+        $this->assertNotNull($manager->get_completion_configuration_warning($this->flexbook->id));
+
+        $content->required = 1;
+        content_manager::update($content);
+        $this->assertNull($manager->get_completion_configuration_warning($this->flexbook->id));
+    }
+
+    /**
+     * Executes the first structural progress recalculation batch.
+     *
+     * @return void
+     */
+    private function execute_recalculation_task(): void {
+        $task = new recalculate_progress();
+        $task->set_custom_data([
+            "flexbookid" => $this->flexbook->id,
+            "afteruserid" => 0,
+        ]);
+        $task->execute();
+    }
+
 }

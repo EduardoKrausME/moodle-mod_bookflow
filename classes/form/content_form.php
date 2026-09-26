@@ -81,6 +81,7 @@ class content_form extends moodleform {
         $mform->addElement("advcheckbox", "trackprogress", get_string("trackprogress", "mod_flexbook"));
         $mform->setDefault("trackprogress", 1);
         $mform->addElement("advcheckbox", "required", get_string("contentrequired", "mod_flexbook"));
+        $mform->disabledIf("required", "trackprogress", "notchecked");
         $mform->addElement("text", "weight", get_string("weight", "mod_flexbook"), ["size" => 8]);
         $mform->setType("weight", PARAM_FLOAT);
         $mform->setDefault("weight", 1);
@@ -131,8 +132,19 @@ class content_form extends moodleform {
             $errors["weight"] = get_string("weightnegative", "mod_flexbook");
         }
         if (in_array($data["completiontype"], ["percent", "end"])
-                && ($data["completionvalue"] < 0 || $data["completionvalue"] > 100)) {
+                && ($data["completionvalue"] <= 0 || $data["completionvalue"] > 100)) {
             $errors["completionvalue"] = get_string("percentageerror", "mod_flexbook");
+        }
+        if ($data["completiontype"] == "timed" && $data["completionvalue"] <= 0) {
+            $errors["completionvalue"] = get_string("completiontimepositive", "mod_flexbook");
+        }
+        if (in_array($data["completiontype"], ["allitems", "alltabs", "allcards"])
+                && $data["auxint1"] <= 0) {
+            $errors["auxint1"] = get_string("itemcountpositive", "mod_flexbook");
+        }
+        if (!empty($data["required"])
+                && (empty($data["trackprogress"]) || $data["completiontype"] == "none")) {
+            $errors["required"] = get_string("requiredneedstracking", "mod_flexbook");
         }
         return $errors;
     }

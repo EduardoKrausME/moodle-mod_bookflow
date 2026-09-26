@@ -286,3 +286,17 @@ $string['wssearch_contents'] = 'Search accessible FlexBook content.';
 $string['wssubmit_question_answer'] = 'Submit an answer to a FlexBook question.';
 $string['wsupdate_note'] = 'Update a private note.';
 $string['yellow'] = 'Yellow';
+
+$string["completionconfignotracked"] = "Completion by percentage is enabled, but there are no visible blocks included in progress.";
+$string["completionconfignorequired"] = "Completion requires mandatory blocks, but there are no visible tracked blocks marked as required.";
+$string["completionconfignorequiredchapters"] = "Completion requires mandatory chapters, but no visible chapter is marked as required.";
+$string["completiontimepositive"] = "Time-based completion requires a value greater than zero.";
+$string["itemcountpositive"] = "This completion rule requires an item count greater than zero.";
+$string["requiredneedstracking"] = "A required block must be tracked and must have a completion rule.";
+$string["importsourceoversize"] = "The import source exceeds the maximum allowed size of {$a} MB.";
+$string["importchapterlimit"] = "The import would create more than {$a} chapters.";
+$string["importzipentries"] = "The ZIP contains more than {$a} entries.";
+$string["importzipmarkdownfiles"] = "The ZIP contains more than {$a} Markdown files.";
+$string["importzipentryoversize"] = "A Markdown file inside the ZIP exceeds the maximum allowed size of {$a} MB.";
+$string["importzipexpandedoversize"] = "The total uncompressed Markdown content exceeds {$a} MB.";
+$string["importzipchapterlimit"] = "The ZIP import would create more than {$a} chapters.";

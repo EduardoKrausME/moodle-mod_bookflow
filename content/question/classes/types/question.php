@@ -25,6 +25,7 @@
 namespace flexbookcontent_question\types;
 
 use mod_flexbook\types\template_content;
+use stdClass;
 
 /**
  * FlexBook Question content type.
@@ -70,6 +71,35 @@ class question extends template_content {
         $data["items"] = $items;
         $data["hasitems"] = !empty($items);
         return $data;
+    }
+
+
+    /**
+     * Validates question completion from persisted attempts.
+     *
+     * @param stdClass $progress User progress record.
+     * @return bool
+     */
+    public function completion_evidence_is_valid(stdClass $progress): bool {
+        global $DB;
+
+        if (!in_array($this->record->completiontype, ["answer", "attempt", "correct"])) {
+            return parent::completion_evidence_is_valid($progress);
+        }
+
+        $sql = "SELECT COUNT(a.id)
+                  FROM {flexbook_question_attempts} a
+                  JOIN {flexbook_questions} q ON q.id = a.questionid
+                 WHERE q.contentid = :contentid
+                   AND a.userid = :userid";
+        $params = [
+            "contentid" => $this->record->id,
+            "userid" => $progress->userid,
+        ];
+        if ($this->record->completiontype == "correct") {
+            $sql .= " AND a.iscorrect = 1";
+        }
+        return $DB->count_records_sql($sql, $params) > 0;
     }
 
     /**

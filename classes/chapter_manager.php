@@ -57,10 +57,14 @@ class chapter_manager {
     public static function update(stdClass $data): bool {
         global $DB;
 
+        $current = $DB->get_record("flexbook_chapters", ["id" => $data->id], "*", MUST_EXIST);
         $data->timemodified = time();
         $result = $DB->update_record("flexbook_chapters", $data);
-        $flexbookid = $DB->get_field("flexbook_chapters", "flexbookid", ["id" => $data->id], MUST_EXIST);
-        progress_recalculator::recalculate_all($flexbookid);
+        $updated = $DB->get_record("flexbook_chapters", ["id" => $data->id], "*", MUST_EXIST);
+        if ((string) $current->hidden !== (string) $updated->hidden
+                || (string) $current->required !== (string) $updated->required) {
+            progress_recalculator::recalculate_all($updated->flexbookid);
+        }
         return $result;
     }
 

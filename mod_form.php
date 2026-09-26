@@ -103,11 +103,7 @@ class mod_flexbook_mod_form extends moodleform_mod {
         $mform->disabledIf("completionpercentage", "completionmode", "eq", FLEXBOOK_COMPLETION_REQUIRED);
         $mform->disabledIf("completionpercentage", "completionmode", "eq", FLEXBOOK_COMPLETION_CHAPTERS);
 
-        $mform->addElement("advcheckbox", "requiremandatory", get_string("requiremandatory", "mod_flexbook"));
-        $mform->disabledIf("requiremandatory", "completionmode", "eq", FLEXBOOK_COMPLETION_PERCENTAGE);
-        $mform->setDefault("requiremandatory", 1);
-
-        return ["completionmode", "completionpercentage", "requiremandatory"];
+        return ["completionmode", "completionpercentage"];
     }
 
     /**
