@@ -38,6 +38,25 @@ use stdClass;
  */
 class content_type_manager {
     /**
+     * Content types bundled with the FlexBook activity.
+     */
+    private const BUNDLED_TYPES = [
+        "accordion",
+        "audio",
+        "callout",
+        "code",
+        "disclosure",
+        "download",
+        "flashcards",
+        "html",
+        "image",
+        "markdown",
+        "question",
+        "tabs",
+        "video",
+    ];
+
+    /**
      * Discovers all core and extension content type classes.
      *
      * @return array
@@ -46,12 +65,10 @@ class content_type_manager {
         $hook = new content_types();
         $plugins = core_component::get_plugin_list("flexbookcontent");
 
-        // A Git update can add bundled content subplugins while the component cache still reflects
-        // the previous code tree. Refresh discovery once when the bundled HTML type exists on disk
-        // but Moodle has not discovered any flexbookcontent plugins yet.
-        if (!$plugins && is_dir(dirname(__DIR__) . "/content/html")) {
-            core_component::reset();
-            $plugins = core_component::get_plugin_list("flexbookcontent");
+        // The component cache can still describe the previous code tree immediately after a Git update.
+        // Keep the bundled types usable until Moodle completes plugin discovery during upgrade/cache purge.
+        if (!$plugins) {
+            self::register_bundled_types($hook);
         }
 
         foreach ($plugins as $name => $path) {
@@ -68,6 +85,27 @@ class content_type_manager {
     }
 
     /**
+     * Registers content types shipped inside the activity when the component registry is stale.
+     *
+     * @param content_types $hook Content type registry.
+     * @return void
+     */
+    private static function register_bundled_types(content_types $hook): void {
+        foreach (self::BUNDLED_TYPES as $type) {
+            $file = dirname(__DIR__) . "/content/{$type}/classes/types/{$type}.php";
+            if (!is_readable($file)) {
+                continue;
+            }
+
+            require_once($file);
+            $classname = "\\flexbookcontent_{$type}\\types\\{$type}";
+            if (class_exists($classname, false)) {
+                $hook->register($type, $classname);
+            }
+        }
+    }
+
+    /**
      * Gets localized options for the content type selector.
      *
      * @return array
@@ -75,7 +113,11 @@ class content_type_manager {
     public static function get_type_options(): array {
         $options = [];
         foreach (self::get_classes() as $type => $classname) {
-            $options[$type] = $classname::get_name();
+            if (in_array($type, self::BUNDLED_TYPES, true)) {
+                $options[$type] = get_string("contenttype{$type}", "mod_flexbook");
+            } else {
+                $options[$type] = $classname::get_name();
+            }
         }
         return $options;
     }
