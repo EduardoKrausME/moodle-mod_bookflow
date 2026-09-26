@@ -127,13 +127,14 @@ $PAGE->navbar->add(format_string($flexbook->name), new moodle_url("/mod/flexbook
 
 echo $OUTPUT->header();
 
+$emptycontent = "";
 if (!$haschapters) {
     $emptymessage = $canmanagechapters
         ? get_string("emptyflexbookteacher", "mod_flexbook")
         : get_string("emptyflexbookstudent", "mod_flexbook");
-    echo $OUTPUT->notification($emptymessage, \core\output\notification::NOTIFY_INFO);
+    $emptycontent .= $OUTPUT->notification($emptymessage, \core\output\notification::NOTIFY_INFO);
     if ($canmanagechapters) {
-        echo $OUTPUT->single_button(
+        $emptycontent .= $OUTPUT->single_button(
             new moodle_url("/mod/flexbook/chapters.php", ["id" => $cm->id]),
             get_string("addchapter", "mod_flexbook"),
             "get"
@@ -186,6 +187,7 @@ if (!$chapterid) {
             "total" => count($chapters),
         ]),
         "toc" => $toc,
+        "emptycontent" => $emptycontent,
         "hascontinue" => $lastposition && $lastposition->lastchapterid,
         "continueurl" => $lastposition && $lastposition->lastchapterid
             ? (new moodle_url("/mod/flexbook/view.php", [
