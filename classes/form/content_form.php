@@ -49,6 +49,7 @@ class content_form extends moodleform {
         $editoroptions = $this->_customdata["editoroptions"] ?? [];
         $fileoptions = $this->_customdata["fileoptions"] ?? [];
         $repeatcount = max(2, (int) ($this->_customdata["repeatcount"] ?? 2));
+        $structureddraftid = (int) ($this->_customdata["structureddraftid"] ?? 0);
         $typeoptions = content_type_manager::get_type_options();
 
         $mform->addElement("hidden", "contentid");
@@ -69,7 +70,7 @@ class content_form extends moodleform {
         $mform->addElement("text", "title", get_string("contenttitle", "mod_flexbook"), ["size" => 64]);
         $mform->setType("title", PARAM_TEXT);
 
-        $this->add_type_fields($type, $editoroptions, $fileoptions, $repeatcount);
+        $this->add_type_fields($type, $editoroptions, $fileoptions, $repeatcount, $structureddraftid);
 
         $mform->addElement("header", "progressheading", get_string("progresssettings", "mod_flexbook"));
         $mform->addElement("advcheckbox", "trackprogress", get_string("trackprogress", "mod_flexbook"));
@@ -129,13 +130,15 @@ class content_form extends moodleform {
      * @param array $editoroptions Editor options.
      * @param array $fileoptions Filemanager options.
      * @param int $repeatcount Number of initial repeated rows.
+     * @param int $structureddraftid Shared draft id for repeated editors.
      * @return void
      */
     private function add_type_fields(
         string $type,
         array $editoroptions,
         array $fileoptions,
-        int $repeatcount
+        int $repeatcount,
+        int $structureddraftid
     ): void {
         $mform = $this->_form;
 
@@ -224,7 +227,7 @@ class content_form extends moodleform {
 
             case "accordion":
             case "tabs":
-                $this->add_title_content_repeater($repeatcount, $editoroptions);
+                $this->add_title_content_repeater($repeatcount, $editoroptions, $structureddraftid);
                 break;
 
             case "flashcards":
@@ -288,9 +291,14 @@ class content_form extends moodleform {
      *
      * @param int $repeatcount Initial number of rows.
      * @param array $editoroptions Editor options.
+     * @param int $structureddraftid Shared draft id.
      * @return void
      */
-    private function add_title_content_repeater(int $repeatcount, array $editoroptions): void {
+    private function add_title_content_repeater(
+        int $repeatcount,
+        array $editoroptions,
+        int $structureddraftid
+    ): void {
         $mform = $this->_form;
         $repeat = [
             $mform->createElement("text", "itemtitle", get_string("itemtitle", "mod_flexbook"), ["size" => 56]),
@@ -304,7 +312,14 @@ class content_form extends moodleform {
         ];
         $options = [
             "itemtitle" => ["type" => PARAM_TEXT],
-            "itemcontent" => ["type" => PARAM_RAW],
+            "itemcontent" => [
+                "type" => PARAM_RAW,
+                "default" => [
+                    "text" => "",
+                    "format" => FORMAT_HTML,
+                    "itemid" => $structureddraftid,
+                ],
+            ],
         ];
         $this->repeat_elements(
             $repeat,
