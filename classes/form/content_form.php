@@ -33,7 +33,7 @@ defined('MOODLE_INTERNAL') || die;
 require_once("{$CFG->libdir}/formslib.php");
 
 /**
- * Defines the content form form.
+ * Defines the content form.
  */
 class content_form extends moodleform {
     /**
@@ -45,37 +45,56 @@ class content_form extends moodleform {
     protected function definition(): void {
         $mform = $this->_form;
         $chapters = $this->_customdata["chapters"] ?? [];
+        $type = $this->_customdata["type"] ?? "html";
+        $editoroptions = $this->_customdata["editoroptions"] ?? [];
+        $typeoptions = content_type_manager::get_type_options();
 
         $mform->addElement("hidden", "contentid");
         $mform->setType("contentid", PARAM_INT);
 
+        $mform->addElement("hidden", "type", $type);
+        $mform->setType("type", PARAM_ALPHANUMEXT);
+        $mform->addElement(
+            "static",
+            "typelabel",
+            get_string("contenttype", "mod_flexbook"),
+            $typeoptions[$type] ?? $type
+        );
+
         $mform->addElement("select", "chapterid", get_string("chapter", "mod_flexbook"), $chapters);
         $mform->addRule("chapterid", null, "required", null, "client");
-
-        $mform->addElement("select", "type", get_string("contenttype", "mod_flexbook"),
-            content_type_manager::get_type_options());
-        $mform->addRule("type", null, "required", null, "client");
 
         $mform->addElement("text", "title", get_string("contenttitle", "mod_flexbook"), ["size" => 64]);
         $mform->setType("title", PARAM_TEXT);
 
-        $mform->addElement("textarea", "data1", get_string("contentdata1", "mod_flexbook"), [
-            "rows" => 14,
-            "cols" => 80,
-        ]);
-        $mform->setType("data1", PARAM_RAW);
-        $mform->addHelpButton("data1", "contentdata1", "mod_flexbook");
+        if ($type === "html") {
+            $mform->addElement(
+                "editor",
+                "data1_editor",
+                get_string("contenthtml", "mod_flexbook"),
+                ["rows" => 20],
+                $editoroptions
+            );
+            $mform->setType("data1_editor", PARAM_RAW);
+        } else {
+            $mform->addElement("textarea", "data1", get_string("contentdata1", "mod_flexbook"), [
+                "rows" => 14,
+                "cols" => 80,
+            ]);
+            $mform->setType("data1", PARAM_RAW);
+            $mform->addHelpButton("data1", "contentdata1", "mod_flexbook");
 
-        $mform->addElement("textarea", "data2", get_string("contentdata2", "mod_flexbook"), [
-            "rows" => 4,
-            "cols" => 80,
-        ]);
-        $mform->setType("data2", PARAM_RAW);
-        $mform->addElement("textarea", "data3", get_string("contentdata3", "mod_flexbook"), [
-            "rows" => 4,
-            "cols" => 80,
-        ]);
-        $mform->setType("data3", PARAM_RAW);
+            $mform->addElement("textarea", "data2", get_string("contentdata2", "mod_flexbook"), [
+                "rows" => 4,
+                "cols" => 80,
+            ]);
+            $mform->setType("data2", PARAM_RAW);
+            $mform->addElement("textarea", "data3", get_string("contentdata3", "mod_flexbook"), [
+                "rows" => 4,
+                "cols" => 80,
+            ]);
+            $mform->setType("data3", PARAM_RAW);
+        }
 
         $mform->addElement("header", "progressheading", get_string("progresssettings", "mod_flexbook"));
         $mform->addElement("advcheckbox", "trackprogress", get_string("trackprogress", "mod_flexbook"));
