@@ -43,7 +43,7 @@ $PAGE->set_url("/mod/flexbook/report.php", compact("id", "view", "userid"));
 $PAGE->set_title(get_string("reports", "mod_flexbook"));
 $PAGE->set_heading(format_string($course->fullname));
 
-$enrolled = get_enrolled_users($context, "mod/flexbook:view", 0, "u.id, u.firstname, u.lastname, u.email");
+$enrolled = get_enrolled_users($context, "mod/flexbook:view");
 $states = $DB->get_records("flexbook_user_state", ["flexbookid" => $flexbook->id]);
 $statebyuser = [];
 foreach ($states as $state) {

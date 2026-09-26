@@ -425,7 +425,7 @@ class progress_manager {
         $chaptersmet = $requiredchaptercount > 0
             && !$this->has_pending_required_chapters($flexbookid, $userid);
 
-        return match ($flexbook->completionmode) {
+        return match ((int) $flexbook->completionmode) {
             FLEXBOOK_COMPLETION_REQUIRED => $mandatorymet,
             FLEXBOOK_COMPLETION_COMBINED => $percentagemet && $mandatorymet,
             FLEXBOOK_COMPLETION_CHAPTERS => $chaptersmet,
@@ -761,7 +761,9 @@ class progress_manager {
             return;
         }
 
-        $record ??= $this->get_or_create_chapter_progress($flexbookid, $userid, $chapterid);
+        if (!$record) {
+            $record = $this->get_or_create_chapter_progress($flexbookid, $userid, $chapterid);
+        }
         if ($record->status == self::STATUS_COMPLETED) {
             return;
         }

@@ -10,8 +10,8 @@ Feature: Create and read an interactive FlexBook
       | teacher1 | Teacher | One | teacher1@example.com |
       | student1 | Student | One | student1@example.com |
     And the following "courses" exist:
-      | fullname | shortname | category |
-      | FlexBook course | FLEX101 | 0 |
+      | fullname | shortname | category | enablecompletion |
+      | FlexBook course | FLEX101 | 0 | 1 |
     And the following "course enrolments" exist:
       | user | course | role |
       | teacher1 | FLEX101 | editingteacher |
