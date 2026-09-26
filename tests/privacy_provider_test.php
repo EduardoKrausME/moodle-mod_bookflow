@@ -25,7 +25,6 @@
 namespace mod_flexbook;
 
 use PHPUnit\Framework\Attributes\CoversClass;
-
 use context_module;
 use core_privacy\tests\provider_testcase;
 use mod_flexbook\privacy\provider;
