@@ -25,7 +25,6 @@
 namespace mod_flexbook;
 
 use PHPUnit\Framework\Attributes\CoversClass;
-
 use advanced_testcase;
 use coding_exception;
 use mod_flexbook\hook\content_types;
