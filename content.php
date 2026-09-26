@@ -196,7 +196,8 @@ if ($content) {
         $type,
         $context,
         $editoroptions,
-        $fileoptions
+        $fileoptions,
+        $structureddraftid
     );
     $form->set_data($initialdata);
 }
