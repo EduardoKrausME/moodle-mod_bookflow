@@ -63,7 +63,7 @@ class content_manager {
             question_manager::sync_from_content($id);
         }
         $flexbookid = self::get_flexbookid($data->chapterid);
-        if (empty($data->hidden) && !empty($data->trackprogress)) {
+        if (empty($data->hidden) && !empty($data->trackprogress) && $data->completiontype !== "none") {
             progress_recalculator::recalculate_all($flexbookid);
         }
         return $id;
@@ -137,7 +137,8 @@ class content_manager {
         $DB->delete_records("flexbook_highlights", ["contentid" => $contentid]);
         $DB->delete_records("flexbook_contents", ["id" => $contentid]);
         self::normalize_sortorder($content->chapterid);
-        if ($recalculate && empty($content->hidden) && !empty($content->trackprogress)) {
+        if ($recalculate && empty($content->hidden) && !empty($content->trackprogress)
+                && $content->completiontype !== "none") {
             progress_recalculator::recalculate_all($flexbookid);
         }
     }

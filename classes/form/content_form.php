@@ -142,6 +142,9 @@ class content_form extends moodleform {
                 && $data["auxint1"] <= 0) {
             $errors["auxint1"] = get_string("itemcountpositive", "mod_flexbook");
         }
+        if (!empty($data["trackprogress"]) && $data["completiontype"] == "none") {
+            $errors["completiontype"] = get_string("trackprogressneedscompletion", "mod_flexbook");
+        }
         if (!empty($data["required"])
                 && (empty($data["trackprogress"]) || $data["completiontype"] == "none")) {
             $errors["required"] = get_string("requiredneedstracking", "mod_flexbook");

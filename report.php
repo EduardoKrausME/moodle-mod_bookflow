@@ -226,6 +226,7 @@ if ($view == "chapters") {
             AND ch.hidden = 0
             AND c.hidden = 0
             AND c.trackprogress = 1
+            AND c.completiontype <> 'none'
             AND c.required = 1",
         ["flexbookid" => $flexbook->id]
     );
@@ -238,6 +239,7 @@ if ($view == "chapters") {
             AND ch.hidden = 0
             AND c.hidden = 0
             AND c.trackprogress = 1
+            AND c.completiontype <> 'none'
             AND c.required = 1
             AND p.status = :completed
        GROUP BY p.userid",

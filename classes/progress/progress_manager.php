@@ -238,7 +238,8 @@ class progress_manager {
                  WHERE ch.flexbookid = :flexbookid
                    AND ch.hidden = 0
                    AND c.hidden = 0
-                   AND c.trackprogress = 1";
+                   AND c.trackprogress = 1
+                   AND c.completiontype <> 'none'";
         $stats = $DB->get_record_sql($sql, [
             "completed" => self::STATUS_COMPLETED,
             "userid" => $userid,
@@ -462,7 +463,8 @@ class progress_manager {
               WHERE ch.flexbookid = :flexbookid
                 AND ch.hidden = 0
                 AND c.hidden = 0
-                AND c.trackprogress = 1",
+                AND c.trackprogress = 1
+                   AND c.completiontype <> 'none'",
             ["flexbookid" => $flexbookid]
         );
 
@@ -474,9 +476,13 @@ class progress_manager {
                 && !$this->get_required_content_count($flexbookid)) {
             return get_string("completionconfignorequired", "mod_flexbook");
         }
-        if ($flexbook->completionmode == FLEXBOOK_COMPLETION_CHAPTERS
-                && !$this->get_required_chapter_count($flexbookid)) {
-            return get_string("completionconfignorequiredchapters", "mod_flexbook");
+        if ($flexbook->completionmode == FLEXBOOK_COMPLETION_CHAPTERS) {
+            if (!$this->get_required_chapter_count($flexbookid)) {
+                return get_string("completionconfignorequiredchapters", "mod_flexbook");
+            }
+            if ($this->get_invalid_required_chapter_count($flexbookid)) {
+                return get_string("completionconfigemptyrequiredchapter", "mod_flexbook");
+            }
         }
         return null;
     }
@@ -504,6 +510,7 @@ class progress_manager {
                     ON c.chapterid = ch.id
                    AND c.hidden = 0
                    AND c.trackprogress = 1
+                   AND c.completiontype <> 'none'
              LEFT JOIN {flexbook_user_progress} p
                     ON p.contentid = c.id
                    AND p.userid = :userid
@@ -577,6 +584,7 @@ class progress_manager {
                    AND ch.hidden = 0
                    AND c.hidden = 0
                    AND c.trackprogress = 1
+                   AND c.completiontype <> 'none'
                    AND c.required = 1
                    AND (p.status IS NULL OR p.status < :completed)";
         return $DB->count_records_sql($sql, [
@@ -615,6 +623,7 @@ class progress_manager {
                 AND ch.hidden = 0
                 AND c.hidden = 0
                 AND c.trackprogress = 1
+                   AND c.completiontype <> 'none'
                 AND c.required = 1",
             ["flexbookid" => $flexbookid]
         );
@@ -637,6 +646,32 @@ class progress_manager {
     }
 
 
+
+    /**
+     * Counts required chapters that do not contain any completable tracked block.
+     *
+     * @param int $flexbookid FlexBook ID.
+     * @return int
+     */
+    private function get_invalid_required_chapter_count(int $flexbookid): int {
+        global $DB;
+
+        $sql = "SELECT COUNT(ch.id)
+                  FROM {flexbook_chapters} ch
+                 WHERE ch.flexbookid = :flexbookid
+                   AND ch.required = 1
+                   AND ch.hidden = 0
+                   AND NOT EXISTS (
+                       SELECT 1
+                         FROM {flexbook_contents} c
+                        WHERE c.chapterid = ch.id
+                          AND c.hidden = 0
+                          AND c.trackprogress = 1
+                          AND c.completiontype <> 'none'
+                   )";
+        return $DB->count_records_sql($sql, ["flexbookid" => $flexbookid]);
+    }
+
     /**
      * Checks whether required chapters remain incomplete.
      *
@@ -652,16 +687,27 @@ class progress_manager {
                  WHERE ch.flexbookid = :flexbookid
                    AND ch.required = 1
                    AND ch.hidden = 0
-                   AND EXISTS (
-                       SELECT 1
-                         FROM {flexbook_contents} c
-                    LEFT JOIN {flexbook_user_progress} p
-                           ON p.contentid = c.id
-                          AND p.userid = :userid
-                        WHERE c.chapterid = ch.id
-                          AND c.hidden = 0
-                          AND c.trackprogress = 1
-                          AND (p.status IS NULL OR p.status < :completed)
+                   AND (
+                       NOT EXISTS (
+                           SELECT 1
+                             FROM {flexbook_contents} eligible
+                            WHERE eligible.chapterid = ch.id
+                              AND eligible.hidden = 0
+                              AND eligible.trackprogress = 1
+                              AND eligible.completiontype <> 'none'
+                       )
+                       OR EXISTS (
+                           SELECT 1
+                             FROM {flexbook_contents} c
+                        LEFT JOIN {flexbook_user_progress} p
+                               ON p.contentid = c.id
+                              AND p.userid = :userid
+                            WHERE c.chapterid = ch.id
+                              AND c.hidden = 0
+                              AND c.trackprogress = 1
+                              AND c.completiontype <> 'none'
+                              AND (p.status IS NULL OR p.status < :completed)
+                       )
                    )";
         return $DB->count_records_sql($sql, [
             "flexbookid" => $flexbookid,
@@ -690,7 +736,8 @@ class progress_manager {
                     ON p.contentid = c.id AND p.userid = :userid
                  WHERE c.chapterid = :chapterid
                    AND c.hidden = 0
-                   AND c.trackprogress = 1";
+                   AND c.trackprogress = 1
+                   AND c.completiontype <> 'none'";
         $stats = $DB->get_record_sql($sql, [
             "completed" => self::STATUS_COMPLETED,
             "userid" => $userid,
