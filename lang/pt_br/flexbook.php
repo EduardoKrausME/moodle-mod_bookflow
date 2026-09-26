@@ -197,6 +197,7 @@ $string['importzipexpandedoversize'] = 'O total de conteúdo Markdown descompact
 $string['importzipmarkdownfiles'] = 'O arquivo ZIP contém mais de {$a} arquivos Markdown.';
 $string['inprogress'] = 'Em andamento';
 $string['interactiveitemrequired'] = 'Adicione pelo menos um item.';
+$string['invalidcompletiontypefortype'] = 'Esta regra de conclusão não é compatível com o tipo de conteúdo selecionado.';
 $string['invalidcompletionrule'] = 'Regra de conclusão do FlexBook inválida.';
 $string['invalidhtml'] = 'Não foi possível ler o arquivo HTML.';
 $string['invalidquestionconfiguration'] = 'O JSON de opções ou configuração da pergunta é inválido.';
