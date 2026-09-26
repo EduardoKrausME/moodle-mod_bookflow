@@ -57,6 +57,28 @@ final class content_form_mapper_test extends advanced_testcase {
     }
 
     /**
+     * Tests rich-text structured items read the editor text value.
+     *
+     * @return void
+     */
+    public function test_accordion_accepts_editor_values(): void {
+        $data = (object) [
+            "itemtitle" => ["Rich item"],
+            "itemcontent" => [[
+                "text" => "<p>Rich <strong>content</strong></p>",
+                "format" => FORMAT_HTML,
+                "itemid" => 123,
+            ]],
+        ];
+
+        $result = content_form_mapper::to_record($data, "accordion");
+        $items = json_decode($result->data1, true);
+
+        $this->assertSame("<p>Rich <strong>content</strong></p>", $items[0]["content"]);
+        $this->assertSame(1, $result->auxint1);
+    }
+
+    /**
      * Tests flashcard rows are stored in the format consumed by the renderer.
      *
      * @return void
