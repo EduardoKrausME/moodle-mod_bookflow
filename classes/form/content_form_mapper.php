@@ -151,6 +151,7 @@ class content_form_mapper {
      * @param context_module $context Activity context.
      * @param array $editoroptions Editor options.
      * @param array $fileoptions Filemanager options.
+     * @param int $structureddraftid Shared draft id for repeated HTML editors.
      * @return stdClass
      */
     public static function prepare_form_data(
