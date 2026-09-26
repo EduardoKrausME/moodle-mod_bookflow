@@ -25,7 +25,6 @@
 namespace mod_flexbook;
 
 use PHPUnit\Framework\Attributes\CoversClass;
-
 use advanced_testcase;
 use context_module;
 use mod_flexbook\completion\custom_completion;
