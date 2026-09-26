@@ -24,6 +24,7 @@
 
 namespace mod_flexbook;
 
+use context_module;
 use invalid_parameter_exception;
 use stdClass;
 
@@ -113,9 +114,12 @@ class content_manager {
         global $DB;
 
         $content = $DB->get_record("flexbook_contents", ["id" => $contentid], "*", MUST_EXIST);
+        $sourcecontentid = $content->id;
         unset($content->id);
         $content->title = get_string("copyof", "mod_flexbook", $content->title);
-        return self::create($content);
+        $newcontentid = self::create($content);
+        self::copy_content_files($sourcecontentid, $newcontentid, $content->chapterid);
+        return $newcontentid;
     }
 
     /**
@@ -130,6 +134,7 @@ class content_manager {
 
         $content = $DB->get_record("flexbook_contents", ["id" => $contentid], "*", MUST_EXIST);
         $flexbookid = self::get_flexbookid($content->chapterid);
+        self::delete_content_files($contentid, $content->chapterid);
         question_manager::delete_for_content($contentid);
         $DB->delete_records("flexbook_user_progress", ["contentid" => $contentid]);
         $DB->delete_records("flexbook_bookmarks", ["contentid" => $contentid]);
@@ -217,6 +222,67 @@ class content_manager {
             }
             $sortorder++;
         }
+    }
+
+    /**
+     * Copies stored files owned by a content block.
+     *
+     * @param int $sourcecontentid Source content block ID.
+     * @param int $targetcontentid Target content block ID.
+     * @param int $chapterid Chapter ID.
+     * @return void
+     */
+    private static function copy_content_files(int $sourcecontentid, int $targetcontentid, int $chapterid): void {
+        $context = self::get_context($chapterid);
+        $fs = get_file_storage();
+        foreach (["content", "download"] as $filearea) {
+            $files = $fs->get_area_files(
+                $context->id,
+                "mod_flexbook",
+                $filearea,
+                $sourcecontentid,
+                "id",
+                false
+            );
+            foreach ($files as $file) {
+                $filerecord = [
+                    "contextid" => $context->id,
+                    "component" => "mod_flexbook",
+                    "filearea" => $filearea,
+                    "itemid" => $targetcontentid,
+                    "filepath" => $file->get_filepath(),
+                    "filename" => $file->get_filename(),
+                ];
+                $fs->create_file_from_storedfile($filerecord, $file);
+            }
+        }
+    }
+
+    /**
+     * Deletes stored files owned by a content block.
+     *
+     * @param int $contentid Content block ID.
+     * @param int $chapterid Chapter ID.
+     * @return void
+     */
+    private static function delete_content_files(int $contentid, int $chapterid): void {
+        $context = self::get_context($chapterid);
+        $fs = get_file_storage();
+        foreach (["content", "download"] as $filearea) {
+            $fs->delete_area_files($context->id, "mod_flexbook", $filearea, $contentid);
+        }
+    }
+
+    /**
+     * Gets the activity context that owns a chapter.
+     *
+     * @param int $chapterid Chapter ID.
+     * @return context_module
+     */
+    private static function get_context(int $chapterid): context_module {
+        $flexbookid = self::get_flexbookid($chapterid);
+        $cm = get_coursemodule_from_instance("flexbook", $flexbookid, 0, false, MUST_EXIST);
+        return context_module::instance($cm->id);
     }
 
     /**
