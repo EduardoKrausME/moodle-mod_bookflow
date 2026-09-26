@@ -101,7 +101,17 @@ abstract class template_content extends content {
      */
     protected function export_data(bool $editing): array {
         $format = static::$type == "markdown" ? FORMAT_MARKDOWN : FORMAT_HTML;
-        $items = json_decode($this->record->data1 ?? "[]", true);
+        $primarydata = $this->record->data1 ?? "";
+        $rewrittenprimarydata = file_rewrite_pluginfile_urls(
+            $primarydata,
+            "pluginfile.php",
+            $this->context->id,
+            "mod_flexbook",
+            "content",
+            $this->record->id
+        );
+
+        $items = json_decode($primarydata ?: "[]", true);
         if (!is_array($items)) {
             $items = [];
         }
@@ -125,15 +135,15 @@ abstract class template_content extends content {
         return [
             "id" => $this->record->id,
             "title" => format_string($this->record->title ?? ""),
-            "content" => format_text($this->record->data1 ?? "", $format, [
+            "content" => format_text($rewrittenprimarydata, $format, [
                 "context" => $this->context,
                 "filter" => true,
                 "noclean" => !static::is_safe() && has_capability("mod/flexbook:editunsafecontent", $this->context),
             ]),
             "data2" => s($this->record->data2 ?? ""),
             "data3" => s($this->record->data3 ?? ""),
-            "source" => clean_param($this->record->data1 ?? "", PARAM_URL),
-            "code" => $this->record->data1 ?? "",
+            "source" => clean_param($rewrittenprimarydata, PARAM_URL),
+            "code" => $primarydata,
             "items" => $normalizeditems,
             "hasitems" => !empty($normalizeditems),
             "editing" => $editing,
