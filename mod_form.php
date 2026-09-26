@@ -60,9 +60,13 @@ class mod_flexbook_mod_form extends moodleform_mod {
         ]);
         $mform->setDefault("numbering", FLEXBOOK_NUMBERING_NUMERIC);
 
+        $contenttypes = content_type_manager::get_type_options();
         $mform->addElement("select", "defaultcontenttype", get_string("defaultcontenttype", "mod_flexbook"),
-            content_type_manager::get_type_options());
-        $mform->setDefault("defaultcontenttype", "html");
+            $contenttypes);
+        if ($contenttypes) {
+            $defaultcontenttype = isset($contenttypes["html"]) ? "html" : array_key_first($contenttypes);
+            $mform->setDefault("defaultcontenttype", $defaultcontenttype);
+        }
 
         $mform->addElement("duration", "estimatedtime", get_string("manualestimatedtime", "mod_flexbook"),
             ["optional" => true]);

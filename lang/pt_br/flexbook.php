@@ -302,3 +302,5 @@ $string['wssearch_contents'] = 'Pesquisa conteúdos acessíveis do FlexBook.';
 $string['wssubmit_question_answer'] = 'Envia uma resposta a uma pergunta do FlexBook.';
 $string['wsupdate_note'] = 'Atualiza uma anotação privada.';
 $string['yellow'] = 'Amarelo';
+
+$string["nocontenttypes"] = "Nenhum tipo de conteúdo do FlexBook está disponível. Limpe os caches do Moodle e conclua a atualização do plugin para que os subplugins de conteúdo incluídos sejam descobertos.";

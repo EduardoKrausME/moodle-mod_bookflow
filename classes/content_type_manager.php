@@ -44,7 +44,17 @@ class content_type_manager {
      */
     public static function get_classes(): array {
         $hook = new content_types();
-        foreach (core_component::get_plugin_list("flexbookcontent") as $name => $path) {
+        $plugins = core_component::get_plugin_list("flexbookcontent");
+
+        // A Git update can add bundled content subplugins while the component cache still reflects
+        // the previous code tree. Refresh discovery once when the bundled HTML type exists on disk
+        // but Moodle has not discovered any flexbookcontent plugins yet.
+        if (!$plugins && is_dir(dirname(__DIR__) . "/content/html")) {
+            core_component::reset();
+            $plugins = core_component::get_plugin_list("flexbookcontent");
+        }
+
+        foreach ($plugins as $name => $path) {
             $classname = "\\flexbookcontent_{$name}\\\content_type";
             if (class_exists($classname) && method_exists($classname, "register")) {
                 $classname::register($hook);

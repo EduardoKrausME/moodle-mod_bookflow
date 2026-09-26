@@ -48,6 +48,15 @@ if (!$chapters) {
     redirect(new moodle_url("/mod/flexbook/chapters.php", ["id" => $cm->id]),
         get_string("createchapterfirst", "mod_flexbook"));
 }
+$classes = content_type_manager::get_classes();
+if (!$classes) {
+    throw new moodle_exception("nocontenttypes", "mod_flexbook");
+}
+$defaulttype = $flexbook->defaultcontenttype;
+if (!isset($classes[$defaulttype])) {
+    $defaulttype = array_key_first($classes);
+}
+
 $formurl = new moodle_url("/mod/flexbook/content.php", ["id" => $cm->id]);
 $form = new content_form($formurl->out(false), ["chapters" => $chapters]);
 
@@ -63,7 +72,6 @@ if ($form->is_cancelled()) {
         "id" => $data->chapterid,
         "flexbookid" => $flexbook->id,
     ], "*", MUST_EXIST);
-    $classes = content_type_manager::get_classes();
     if (!isset($classes[$data->type])
             || !$classes[$data->type]::can_create(null, $flexbook, $context)) {
         throw new required_capability_exception($context, "mod/flexbook:managecontent", "nopermissions", "");
@@ -116,7 +124,7 @@ if ($contentid) {
     $form->set_data((object) [
         "contentid" => 0,
         "chapterid" => $chapterid ?: array_key_first($chapters),
-        "type" => $flexbook->defaultcontenttype,
+        "type" => $defaulttype,
     ]);
 }
 
