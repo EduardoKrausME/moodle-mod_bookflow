@@ -36,7 +36,7 @@ final class custom_completion_test extends advanced_testcase {
      *
      * @return void
      */
-    public function test_percentage_mode_exposes_only_the_real_completion_rule(): void {
+    public function test_percentage_mode_exposes_only_the_active_completion_rule(): void {
         $this->resetAfterTest();
 
         $course = $this->getDataGenerator()->create_course(["enablecompletion" => 1]);
@@ -63,7 +63,27 @@ final class custom_completion_test extends advanced_testcase {
 
         $completion = new custom_completion($cm, $user->id);
         $this->assertTrue($completion->is_defined("completionmode"));
-        $this->assertFalse($completion->is_defined("completionpercentage"));
+        $this->assertTrue($completion->is_defined("completionpercentage"));
+        $this->assertSame(["completionmode"], $completion->get_available_custom_rules());
         $this->assertSame(COMPLETION_INCOMPLETE, $completion->get_state("completionmode"));
+    }
+
+    /**
+     * The obsolete completionpercentage rule remains recognised for stale modinfo caches.
+     *
+     * @return void
+     */
+    public function test_legacy_completion_rule_is_kept_in_sort_order(): void {
+        $this->assertContains("completionpercentage", custom_completion::get_defined_custom_rules());
+
+        $reflection = new \ReflectionClass(custom_completion::class);
+        $completion = $reflection->newInstanceWithoutConstructor();
+        $this->assertSame([
+            "completionview",
+            "completionmode",
+            "completionpercentage",
+            "completionusegrade",
+            "completionpassgrade",
+        ], $completion->get_sort_order());
     }
 }
