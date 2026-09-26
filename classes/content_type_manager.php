@@ -38,36 +38,12 @@ use stdClass;
  */
 class content_type_manager {
     /**
-     * Types
-     */
-    private const CORE_TYPES = [
-        "html",
-        "markdown",
-        "callout",
-        "image",
-        "video",
-        "audio",
-        "download",
-        "code",
-        "accordion",
-        "tabs",
-        "disclosure",
-        "flashcards",
-        "question",
-    ];
-
-    /**
      * Discovers all core and extension content type classes.
      *
      * @return array
      */
     public static function get_classes(): array {
         $hook = new content_types();
-        foreach (self::CORE_TYPES as $type) {
-            $classname = "\\mod_flexbook\\types\\{$type}";
-            $hook->register($type, $classname);
-        }
-
         foreach (core_component::get_plugin_list("flexbookcontent") as $name => $path) {
             $classname = "\\flexbookcontent_{$name}\\\content_type";
             if (class_exists($classname) && method_exists($classname, "register")) {
