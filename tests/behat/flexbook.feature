@@ -20,7 +20,8 @@ Feature: Create and read an interactive FlexBook
   Scenario: Teacher creates a FlexBook with automatic percentage completion
     Given I log in as "teacher1"
     And I am on "FlexBook course" course homepage with editing mode on
-    When I add a "FlexBook" to section "1" and I fill the form with:
+    When I add a "flexbook" activity to course "FlexBook course" section "1"
+    And I set the following fields to these values:
       | FlexBook name | Safety handbook |
       | Minimum percentage | 80 |
     And I press "Save and display"
@@ -45,7 +46,7 @@ Feature: Create and read an interactive FlexBook
     And I log in as "student1"
     When I am on the "Safety handbook" "flexbook activity" page
     Then I should see "0%"
-    And I should not see "You completed this FlexBook"
+    And I should not see "You completed this FlexBook" in the ".flexbook-overview" "css_element"
 
   Scenario: Student uses private learning tools
     Given the following "activities" exist:
@@ -65,6 +66,6 @@ Feature: Create and read an interactive FlexBook
       | flexbook | Safety handbook | Introduction | FLEX101 | flexbook1 |
     And I log in as "teacher1"
     And I am on the "Safety handbook" "flexbook activity" page
-    When I follow "Reports"
+    When I click on "Reports" "link" in the ".flexbook-tools" "css_element"
     Then I should see "Enrolled students"
     And I should see "Average progress"
