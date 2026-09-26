@@ -83,21 +83,12 @@ class content_form extends moodleform {
         $mform->setType("weight", PARAM_FLOAT);
         $mform->setDefault("weight", 1);
 
-        $mform->addElement("select", "completiontype", get_string("completiontype", "mod_flexbook"), [
-            "view" => get_string("completeonview", "mod_flexbook"),
-            "timed" => get_string("completeontime", "mod_flexbook"),
-            "manual" => get_string("completemanually", "mod_flexbook"),
-            "percent" => get_string("completeonpercent", "mod_flexbook"),
-            "end" => get_string("completeonend", "mod_flexbook"),
-            "click" => get_string("completeonclick", "mod_flexbook"),
-            "answer" => get_string("completeonanswer", "mod_flexbook"),
-            "attempt" => get_string("completeonattempt", "mod_flexbook"),
-            "correct" => get_string("completeoncorrect", "mod_flexbook"),
-            "allitems" => get_string("completeallitems", "mod_flexbook"),
-            "alltabs" => get_string("completealltabs", "mod_flexbook"),
-            "allcards" => get_string("completeallcards", "mod_flexbook"),
-            "none" => get_string("donottrack", "mod_flexbook"),
-        ]);
+        $mform->addElement(
+            "select",
+            "completiontype",
+            get_string("completiontype", "mod_flexbook"),
+            $this->get_completion_options($type)
+        );
         $mform->setDefault("completiontype", "view");
 
         $mform->addElement(
@@ -121,6 +112,54 @@ class content_form extends moodleform {
         $mform->addElement("advcheckbox", "hidden", get_string("hidden", "mod_flexbook"));
 
         $this->add_action_buttons();
+    }
+
+    /**
+     * Gets completion rules that the selected content type can actually produce.
+     *
+     * @param string $type Content type.
+     * @return array
+     */
+    private function get_completion_options(string $type): array {
+        $options = [
+            "view" => get_string("completeonview", "mod_flexbook"),
+            "timed" => get_string("completeontime", "mod_flexbook"),
+            "manual" => get_string("completemanually", "mod_flexbook"),
+        ];
+
+        switch ($type) {
+            case "video":
+            case "audio":
+                $options["percent"] = get_string("completeonpercent", "mod_flexbook");
+                $options["end"] = get_string("completeonend", "mod_flexbook");
+                break;
+
+            case "download":
+            case "disclosure":
+                $options["click"] = get_string("completeonclick", "mod_flexbook");
+                break;
+
+            case "accordion":
+                $options["allitems"] = get_string("completeallitems", "mod_flexbook");
+                break;
+
+            case "tabs":
+                $options["alltabs"] = get_string("completealltabs", "mod_flexbook");
+                break;
+
+            case "flashcards":
+                $options["allcards"] = get_string("completeallcards", "mod_flexbook");
+                break;
+
+            case "question":
+                $options["answer"] = get_string("completeonanswer", "mod_flexbook");
+                $options["attempt"] = get_string("completeonattempt", "mod_flexbook");
+                $options["correct"] = get_string("completeoncorrect", "mod_flexbook");
+                break;
+        }
+
+        $options["none"] = get_string("donottrack", "mod_flexbook");
+        return $options;
     }
 
     /**
@@ -412,6 +451,10 @@ class content_form extends moodleform {
     public function validation($data, $files): array {
         $errors = parent::validation($data, $files);
         $type = $this->_customdata["type"] ?? "html";
+
+        if (!array_key_exists($data["completiontype"], $this->get_completion_options($type))) {
+            $errors["completiontype"] = get_string("invalidcompletiontypefortype", "mod_flexbook");
+        }
 
         if ($data["weight"] < 0) {
             $errors["weight"] = get_string("weightnegative", "mod_flexbook");
