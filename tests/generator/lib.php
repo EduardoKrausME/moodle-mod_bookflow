@@ -25,6 +25,7 @@
 use mod_flexbook\chapter_manager;
 use mod_flexbook\content_manager;
 
+defined('MOODLE_INTERNAL') || die;
 require_once(__DIR__ . "/../../lib.php");
 
 /**
