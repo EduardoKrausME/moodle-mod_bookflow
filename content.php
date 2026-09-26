@@ -15,16 +15,17 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * content.php
+ * Content block editor.
  *
  * @package   mod_flexbook
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use mod_flexbook\form\content_form;
 use mod_flexbook\content_manager;
 use mod_flexbook\content_type_manager;
+use mod_flexbook\form\content_form;
+use mod_flexbook\form\content_form_mapper;
 
 require_once(__DIR__ . "/../../config.php");
 
@@ -37,13 +38,21 @@ $cm = get_coursemodule_from_id("flexbook", $id, 0, false, MUST_EXIST);
 $course = get_course($cm->course);
 $flexbook = $DB->get_record("flexbook", ["id" => $cm->instance], "*", MUST_EXIST);
 $context = context_module::instance($cm->id);
+
 require_login($course, true, $cm);
 require_capability("mod/flexbook:managecontent", $context);
 
-$chapters = $DB->get_records_menu("flexbook_chapters", ["flexbookid" => $flexbook->id], "sortorder", "id, title");
+$chapters = $DB->get_records_menu(
+    "flexbook_chapters",
+    ["flexbookid" => $flexbook->id],
+    "sortorder",
+    "id, title"
+);
 if (!$chapters) {
-    redirect(new moodle_url("/mod/flexbook/chapters.php", ["id" => $cm->id]),
-        get_string("createchapterfirst", "mod_flexbook"));
+    redirect(
+        new moodle_url("/mod/flexbook/chapters.php", ["id" => $cm->id]),
+        get_string("createchapterfirst", "mod_flexbook")
+    );
 }
 
 if (!$chapterid) {
@@ -65,7 +74,8 @@ if ($contentid) {
     $sql = "SELECT c.*
               FROM {flexbook_contents} c
               JOIN {flexbook_chapters} ch ON ch.id = c.chapterid
-             WHERE c.id = :contentid AND ch.flexbookid = :flexbookid";
+             WHERE c.id = :contentid
+               AND ch.flexbookid = :flexbookid";
     $content = $DB->get_record_sql($sql, [
         "contentid" => $contentid,
         "flexbookid" => $flexbook->id,
@@ -83,6 +93,7 @@ if ($contentid) {
 } else if ($type !== "") {
     $pageparams["type"] = $type;
 }
+
 $PAGE->set_url("/mod/flexbook/content.php", $pageparams);
 $PAGE->set_title(get_string($contentid ? "editcontent" : "addcontent", "mod_flexbook"));
 $PAGE->set_heading(format_string($course->fullname));
@@ -90,14 +101,17 @@ $PAGE->set_heading(format_string($course->fullname));
 if (!$contentid && $type === "") {
     echo $OUTPUT->header();
     echo $OUTPUT->heading(get_string("selectcontenttype", "mod_flexbook"));
-    echo html_writer::tag("p", get_string("selectcontenttypedescription", "mod_flexbook"), [
-        "class" => "text-muted mb-4",
-    ]);
+    echo html_writer::tag(
+        "p",
+        get_string("selectcontenttypedescription", "mod_flexbook"),
+        ["class" => "text-muted mb-4"]
+    );
     echo html_writer::start_div("row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3");
     foreach ($classes as $availabletype => $classname) {
         if (!$classname::can_create(null, $flexbook, $context)) {
             continue;
         }
+
         $url = new moodle_url("/mod/flexbook/content.php", [
             "id" => $cm->id,
             "chapterid" => $chapterid,
@@ -126,7 +140,12 @@ if (!isset($classes[$type])) {
     throw new moodle_exception("unknowncontenttype", "mod_flexbook", "", $type);
 }
 if (!$classes[$type]::can_create(null, $flexbook, $context)) {
-    throw new required_capability_exception($context, "mod/flexbook:managecontent", "nopermissions", "");
+    throw new required_capability_exception(
+        $context,
+        "mod/flexbook:managecontent",
+        "nopermissions",
+        ""
+    );
 }
 
 $editoroptions = [
@@ -136,32 +155,27 @@ $editoroptions = [
     "subdirs" => true,
     "trusttext" => false,
 ];
+$fileoptions = content_form_mapper::get_file_options($type, $editoroptions);
+$repeatcount = content_form_mapper::get_repeat_count($content, $type);
 
 $formurl = new moodle_url("/mod/flexbook/content.php", $pageparams);
 $form = new content_form($formurl->out(false), [
     "chapters" => $chapters,
     "type" => $type,
     "editoroptions" => $editoroptions,
+    "fileoptions" => $fileoptions,
+    "repeatcount" => $repeatcount,
 ]);
 
 if ($content) {
     $content->contentid = $content->id;
-    if ($type === "html") {
-        $draftitemid = file_get_submitted_draft_itemid("data1_editor");
-        $content->data1_editor = [
-            "text" => file_prepare_draft_area(
-                $draftitemid,
-                $context->id,
-                "mod_flexbook",
-                "content",
-                $content->id,
-                $editoroptions,
-                $content->data1 ?? ""
-            ),
-            "format" => FORMAT_HTML,
-            "itemid" => $draftitemid,
-        ];
-    }
+    $content = content_form_mapper::prepare_form_data(
+        $content,
+        $type,
+        $context,
+        $editoroptions,
+        $fileoptions
+    );
     $form->set_data($content);
 } else {
     $initialdata = (object) [
@@ -169,14 +183,13 @@ if ($content) {
         "chapterid" => $chapterid,
         "type" => $type,
     ];
-    if ($type === "html") {
-        $draftitemid = file_get_submitted_draft_itemid("data1_editor");
-        $initialdata->data1_editor = [
-            "text" => "",
-            "format" => FORMAT_HTML,
-            "itemid" => $draftitemid,
-        ];
-    }
+    $initialdata = content_form_mapper::prepare_form_data(
+        $initialdata,
+        $type,
+        $context,
+        $editoroptions,
+        $fileoptions
+    );
     $form->set_data($initialdata);
 }
 
@@ -185,73 +198,68 @@ if ($form->is_cancelled()) {
         "id" => $cm->id,
         "chapterid" => $chapterid,
     ]));
-} else if ($data = $form->get_data()) {
+} else if ($submitted = $form->get_data()) {
     $recordid = $contentid;
+    $formdata = clone $submitted;
+    $data = content_form_mapper::to_record(clone $submitted, $type);
+
     unset($data->contentid);
     $data->type = $type;
+    $data->auxint2 = 0;
+    $data->auxint3 = 0;
 
     $DB->get_record("flexbook_chapters", [
         "id" => $data->chapterid,
         "flexbookid" => $flexbook->id,
     ], "*", MUST_EXIST);
 
-    $editordata = null;
-    if ($type === "html") {
-        $editordata = $data->data1_editor;
-        unset($data->data1_editor);
-        if ($recordid) {
-            $data->data1 = file_save_draft_area_files(
-                (int) $editordata["itemid"],
-                $context->id,
-                "mod_flexbook",
-                "content",
-                $recordid,
-                $editoroptions,
-                $editordata["text"]
-            ) ?? "";
-        } else {
-            $data->data1 = "";
-        }
-    }
-
-    $data->auxint2 = 0;
-    $data->auxint3 = 0;
-    if ($data->completiontype == "none") {
+    if ($data->completiontype === "none") {
         $data->trackprogress = 0;
-    }
-    if (in_array($data->type, ["accordion", "tabs", "flashcards"]) && !$data->auxint1) {
-        $items = json_decode($data->data1 ?? "[]", true);
-        if (is_array($items)) {
-            $data->auxint1 = count($items);
-        }
-    } else if ($data->type == "disclosure" && !$data->auxint1) {
-        $data->auxint1 = 1;
     }
 
     if ($recordid) {
+        $draftdata1 = content_form_mapper::save_draft_data1(
+            $formdata,
+            $type,
+            $recordid,
+            $context,
+            $editoroptions,
+            $fileoptions
+        );
+        if ($draftdata1 !== null) {
+            $data->data1 = $draftdata1;
+        }
+
         $data->id = $recordid;
         content_manager::update($data);
     } else {
         $data->id = content_manager::create($data);
-        if ($type === "html" && $editordata) {
-            $data1 = file_save_draft_area_files(
-                (int) $editordata["itemid"],
-                $context->id,
-                "mod_flexbook",
-                "content",
-                $data->id,
-                $editoroptions,
-                $editordata["text"]
-            ) ?? "";
-            $DB->set_field("flexbook_contents", "data1", $data1, ["id" => $data->id]);
-            $DB->set_field("flexbook_contents", "timemodified", time(), ["id" => $data->id]);
+
+        $draftdata1 = content_form_mapper::save_draft_data1(
+            $formdata,
+            $type,
+            $data->id,
+            $context,
+            $editoroptions,
+            $fileoptions
+        );
+        if ($draftdata1 !== null && $draftdata1 !== $data->data1) {
+            $data->data1 = $draftdata1;
+            content_manager::update($data);
         }
     }
 
-    redirect(new moodle_url("/mod/flexbook/view.php", [
-        "id" => $cm->id,
-        "chapterid" => $data->chapterid,
-    ], "flexbook-content-{$data->id}"), get_string("contentsaved", "mod_flexbook"));
+    redirect(
+        new moodle_url(
+            "/mod/flexbook/view.php",
+            [
+                "id" => $cm->id,
+                "chapterid" => $data->chapterid,
+            ],
+            "flexbook-content-{$data->id}"
+        ),
+        get_string("contentsaved", "mod_flexbook")
+    );
 }
 
 echo $OUTPUT->header();
