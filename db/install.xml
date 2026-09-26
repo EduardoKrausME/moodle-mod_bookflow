@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="mod/flexbook/db" VERSION="20260726" COMMENT="XMLDB file for mod_flexbook">
+<XMLDB PATH="mod/flexbook/db" VERSION="20260926" COMMENT="XMLDB file for mod_flexbook"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
+>
   <TABLES>
     <TABLE NAME="flexbook" COMMENT="FlexBook activities">
       <FIELDS>
@@ -237,11 +240,8 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="contentid" TYPE="foreign" FIELDS="contentid" REFTABLE="flexbook_contents" REFFIELDS="id"/>
+        <KEY NAME="contentid" TYPE="foreign-unique" FIELDS="contentid" REFTABLE="flexbook_contents" REFFIELDS="id"/>
       </KEYS>
-      <INDEXES>
-        <INDEX NAME="contentid" UNIQUE="true" FIELDS="contentid"/>
-      </INDEXES>
     </TABLE>
     <TABLE NAME="flexbook_question_attempts" COMMENT="User question attempts">
       <FIELDS>

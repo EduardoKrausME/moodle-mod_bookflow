@@ -24,6 +24,8 @@
 
 namespace mod_flexbook;
 
+use PHPUnit\Framework\Attributes\CoversClass;
+
 use advanced_testcase;
 use coding_exception;
 use mod_flexbook\hook\content_types;
@@ -34,7 +36,8 @@ use flexbookcontent_html\types\html;
 /**
  * Tests core content type registration and hook validation.
  */
-class content_types_test extends advanced_testcase {
+#[CoversClass(content_type_manager::class)]
+final class content_types_test extends advanced_testcase {
     /**
      * Tests that core types are registered.
      *

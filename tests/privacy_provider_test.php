@@ -24,6 +24,8 @@
 
 namespace mod_flexbook;
 
+use PHPUnit\Framework\Attributes\CoversClass;
+
 use context_module;
 use core_privacy\tests\provider_testcase;
 use mod_flexbook\privacy\provider;
@@ -32,7 +34,8 @@ use mod_flexbook\progress\progress_manager;
 /**
  * Tests Privacy API context discovery and personal data deletion.
  */
-class privacy_provider_test extends provider_testcase {
+#[CoversClass(provider::class)]
+final class privacy_provider_test extends provider_testcase {
     /**
      * Tests that context discovery and deletion.
      *

@@ -79,7 +79,8 @@ class api extends external_api {
             "flexbookid" => $flexbookid,
             "contentids" => $contentids,
         ]);
-        self::require_instance($params["flexbookid"]);
+        $context = self::require_instance($params["flexbookid"])[2];
+        self::validate_context($context);
         $manager = new progress_manager();
         $transaction = $DB->start_delegated_transaction();
         foreach (array_unique($params["contentids"]) as $contentid) {
@@ -135,7 +136,8 @@ class api extends external_api {
             "metric",
             "details"
         ));
-        self::require_instance($params["flexbookid"]);
+        $context = self::require_instance($params["flexbookid"])[2];
+        self::validate_context($context);
         $decoded = json_decode($params["details"], true);
         if (!is_array($decoded)) {
             throw new invalid_parameter_exception("Invalid evidence JSON");
@@ -197,7 +199,8 @@ class api extends external_api {
             "contentid",
             "scrollposition"
         ));
-        self::require_instance($params["flexbookid"]);
+        $context = self::require_instance($params["flexbookid"])[2];
+        self::validate_context($context);
         $manager = new progress_manager();
         $manager->save_last_position(
             $params["flexbookid"],
@@ -241,7 +244,8 @@ class api extends external_api {
         global $USER;
 
         $params = self::validate_parameters(self::get_user_progress_parameters(), compact("flexbookid"));
-        self::require_instance($params["flexbookid"]);
+        $context = self::require_instance($params["flexbookid"])[2];
+        self::validate_context($context);
         return self::progress_result($params["flexbookid"], $USER->id);
     }
 
@@ -280,7 +284,8 @@ class api extends external_api {
             "flexbookid",
             "chapterid"
         ));
-        self::require_instance($params["flexbookid"]);
+        $context = self::require_instance($params["flexbookid"])[2];
+        self::validate_context($context);
         $DB->get_record("flexbook_chapters", [
             "id" => $params["chapterid"],
             "flexbookid" => $params["flexbookid"],
@@ -363,7 +368,8 @@ class api extends external_api {
             "chapterid",
             "contentid"
         ));
-        [$flexbook] = self::require_instance($params["flexbookid"]);
+        [$flexbook, , $context] = self::require_instance($params["flexbookid"]);
+        self::validate_context($context);
         if (!$flexbook->enablebookmarks || !in_array($params["itemtype"], ["book", "chapter", "content"])) {
             throw new invalid_parameter_exception("Bookmarks are unavailable");
         }
@@ -432,7 +438,8 @@ class api extends external_api {
             "flexbookid",
             "bookmarkid"
         ));
-        self::require_instance($params["flexbookid"]);
+        $context = self::require_instance($params["flexbookid"])[2];
+        self::validate_context($context);
         $bookmark = $DB->get_record("flexbook_bookmarks", [
             "id" => $params["bookmarkid"],
             "flexbookid" => $params["flexbookid"],
@@ -498,7 +505,8 @@ class api extends external_api {
             "note",
             "selectiontext"
         ));
-        [$flexbook] = self::require_instance($params["flexbookid"]);
+        [$flexbook, , $context] = self::require_instance($params["flexbookid"]);
+        self::validate_context($context);
         if (!$flexbook->enablenotes) {
             throw new moodle_exception("notesdisabled", "mod_flexbook");
         }
@@ -564,7 +572,8 @@ class api extends external_api {
             "noteid",
             "note"
         ));
-        self::require_instance($params["flexbookid"]);
+        $context = self::require_instance($params["flexbookid"])[2];
+        self::validate_context($context);
         $record = $DB->get_record("flexbook_notes", [
             "id" => $params["noteid"],
             "flexbookid" => $params["flexbookid"],
@@ -614,7 +623,8 @@ class api extends external_api {
         global $DB, $USER;
 
         $params = self::validate_parameters(self::delete_note_parameters(), compact("flexbookid", "noteid"));
-        self::require_instance($params["flexbookid"]);
+        $context = self::require_instance($params["flexbookid"])[2];
+        self::validate_context($context);
         $record = $DB->get_record("flexbook_notes", [
             "id" => $params["noteid"],
             "flexbookid" => $params["flexbookid"],
@@ -684,7 +694,8 @@ class api extends external_api {
             "selector",
             "color"
         ));
-        self::require_instance($params["flexbookid"]);
+        $context = self::require_instance($params["flexbookid"])[2];
+        self::validate_context($context);
         if (!in_array($params["color"], ["yellow", "green", "blue", "pink"])) {
             throw new invalid_parameter_exception("Invalid highlight color");
         }
@@ -740,7 +751,8 @@ class api extends external_api {
             "flexbookid",
             "highlightid"
         ));
-        self::require_instance($params["flexbookid"]);
+        $context = self::require_instance($params["flexbookid"])[2];
+        self::validate_context($context);
         $record = $DB->get_record("flexbook_highlights", [
             "id" => $params["highlightid"],
             "flexbookid" => $params["flexbookid"],
@@ -788,7 +800,8 @@ class api extends external_api {
             "contentid",
             "answer"
         ));
-        self::require_instance($params["flexbookid"]);
+        $context = self::require_instance($params["flexbookid"])[2];
+        self::validate_context($context);
         self::validate_item($params["flexbookid"], 0, $params["contentid"]);
         $question = $DB->get_record("flexbook_questions", ["contentid" => $params["contentid"]], "*", MUST_EXIST);
         $decoded = json_decode($params["answer"], true);
@@ -870,6 +883,7 @@ class api extends external_api {
 
         $params = self::validate_parameters(self::search_contents_parameters(), compact("flexbookid", "query"));
         [$flexbook, $cm, $context] = self::require_instance($params["flexbookid"]);
+        self::validate_context($context);
         if (!$flexbook->enablesearch || core_text::strlen(trim($params["query"])) < 2) {
             return [];
         }
@@ -953,6 +967,7 @@ class api extends external_api {
             "contentids"
         ));
         [$flexbook, $cm, $context] = self::require_instance($params["flexbookid"], "mod/flexbook:managecontent");
+        self::validate_context($context);
         self::validate_item($params["flexbookid"], $params["chapterid"], 0);
         content_manager::reorder($params["chapterid"], $params["contentids"]);
         return ["saved" => true];
@@ -1034,21 +1049,27 @@ class api extends external_api {
 
         $manager = new progress_manager();
         $progress = $manager->calculate_user_progress($flexbookid, $userid);
-        $completed = $DB->count_records("flexbook_user_progress", [
-            "flexbookid" => $flexbookid,
-            "userid" => $userid,
-            "status" => progress_manager::STATUS_COMPLETED,
-        ]);
-        $total = $DB->count_records_sql(
-            "SELECT COUNT(c.id)
+        $stats = $DB->get_record_sql(
+            "SELECT COUNT(c.id) AS total,
+                    COALESCE(SUM(CASE WHEN p.status = :completed THEN 1 ELSE 0 END), 0) AS completed
                FROM {flexbook_contents} c
                JOIN {flexbook_chapters} ch ON ch.id = c.chapterid
+          LEFT JOIN {flexbook_user_progress} p
+                 ON p.contentid = c.id
+                AND p.userid = :userid
               WHERE ch.flexbookid = :flexbookid
                 AND ch.hidden = 0
                 AND c.hidden = 0
-                AND c.trackprogress = 1",
-            ["flexbookid" => $flexbookid]
+                AND c.trackprogress = 1
+                AND c.completiontype <> 'none'",
+            [
+                "completed" => progress_manager::STATUS_COMPLETED,
+                "userid" => $userid,
+                "flexbookid" => $flexbookid,
+            ]
         );
+        $completed = (int) ($stats->completed ?? 0);
+        $total = (int) ($stats->total ?? 0);
         return [
             "percentage" => $progress,
             "completed" => $completed,

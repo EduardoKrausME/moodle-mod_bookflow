@@ -26,10 +26,12 @@ namespace mod_flexbook;
 
 use advanced_testcase;
 use mod_flexbook\completion\custom_completion;
+use PHPUnit\Framework\Attributes\CoversClass;
 
 /**
  * Tests the FlexBook custom completion integration with Moodle core.
  */
+#[CoversClass(custom_completion::class)]
 final class custom_completion_test extends advanced_testcase {
     /**
      * Percentage mode must remain enabled even though its configured value is zero.

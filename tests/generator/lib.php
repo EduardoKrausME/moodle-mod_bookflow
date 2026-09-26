@@ -83,9 +83,11 @@ class mod_flexbook_generator extends testing_module_generator {
      * @param array $data Record data.
      * @return stdClass
      */
-    public function create_content(stdClass $chapter, array $data = []): stdClass {
+    public function create_content($instance, $record = []) {
         global $DB;
 
+        $chapter = $instance;
+        $data = (array) $record;
         $record = (object) array_merge([
             "chapterid" => $chapter->id,
             "type" => "html",

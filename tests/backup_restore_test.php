@@ -25,11 +25,13 @@
 namespace mod_flexbook;
 
 use advanced_testcase;
+use PHPUnit\Framework\Attributes\CoversNothing;
 
 /**
  * Tests backup support and complete activity data deletion.
  */
-class backup_restore_test extends advanced_testcase {
+#[CoversNothing]
+final class backup_restore_test extends advanced_testcase {
     /**
      * Tests that backup support and instance deletion cover all data.
      *

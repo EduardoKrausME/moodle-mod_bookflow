@@ -24,6 +24,8 @@
 
 namespace mod_flexbook;
 
+use PHPUnit\Framework\Attributes\CoversClass;
+
 use advanced_testcase;
 use context_module;
 use mod_flexbook\completion\custom_completion;
@@ -38,7 +40,8 @@ use stdClass;
 /**
  * Tests weighted progress, completion, permissions, ordering, and reading position.
  */
-class progress_manager_test extends advanced_testcase {
+#[CoversClass(progress_manager::class)]
+final class progress_manager_test extends advanced_testcase {
     /** @var stdClass */
     private stdClass $course;
     /** @var stdClass */

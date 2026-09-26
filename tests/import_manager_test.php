@@ -24,13 +24,16 @@
 
 namespace mod_flexbook;
 
+use PHPUnit\Framework\Attributes\CoversClass;
+
 use advanced_testcase;
 use moodle_exception;
 
 /**
  * Tests import resource limits before database changes are made.
  */
-class import_manager_test extends advanced_testcase {
+#[CoversClass(import_manager::class)]
+final class import_manager_test extends advanced_testcase {
     /**
      * Oversized direct sources are rejected before parsing.
      *
