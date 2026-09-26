@@ -197,6 +197,7 @@ $string['importzipexpandedoversize'] = 'The total uncompressed Markdown content 
 $string['importzipmarkdownfiles'] = 'The ZIP contains more than {$a} Markdown files.';
 $string['inprogress'] = 'In progress';
 $string['interactiveitemrequired'] = 'Add at least one item.';
+$string['invalidcompletiontypefortype'] = 'This completion rule is not supported by the selected content type.';
 $string['invalidcompletionrule'] = 'Invalid FlexBook completion rule.';
 $string['invalidhtml'] = 'The HTML file could not be read.';
 $string['invalidquestionconfiguration'] = 'The question options or configuration JSON is invalid.';
