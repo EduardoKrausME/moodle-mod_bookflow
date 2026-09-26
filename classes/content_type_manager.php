@@ -62,6 +62,8 @@ class content_type_manager {
      * @return array
      */
     public static function get_classes(): array {
+        global $CFG;
+
         $hook = new content_types();
         $plugins = core_component::get_plugin_list("flexbookcontent");
 
@@ -72,8 +74,9 @@ class content_type_manager {
         }
 
         foreach ($plugins as $name => $path) {
-            $classname = "\\flexbookcontent_{$name}\\\content_type";
-            if (class_exists($classname) && method_exists($classname, "register")) {
+            if (file_exists("{$CFG->dirroot}/mod/flexbook/content/{$name}/classes/content_type.php")) {
+                require_once("{$CFG->dirroot}/mod/flexbook/content/{$name}/classes/content_type.php");
+                $classname = "\\flexbookcontent_{$name}\\content_type";
                 $classname::register($hook);
             }
         }
