@@ -46,7 +46,21 @@ final class content_types_test extends advanced_testcase {
         $this->resetAfterTest();
         $classes = content_type_manager::get_classes();
 
-        $types = ["html", "markdown", "image", "video", "audio", "accordion", "tabs", "flashcards", "question"];
+        $types = [
+            "accordion",
+            "audio",
+            "callout",
+            "code",
+            "disclosure",
+            "download",
+            "flashcards",
+            "html",
+            "image",
+            "markdown",
+            "question",
+            "tabs",
+            "video",
+        ];
         foreach ($types as $type) {
             $this->assertArrayHasKey($type, $classes);
             $this->assertTrue(is_subclass_of($classes[$type], content::class));
