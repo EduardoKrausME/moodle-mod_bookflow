@@ -340,6 +340,24 @@ if (!$chapterid) {
         $progressmanager->mark_chapter_viewed($flexbook->id, $USER->id, $chapter->id);
     }
 
+    $addcontenttypes = [];
+    if ($editing) {
+        $typeoptions = content_type_manager::get_type_options();
+        foreach (content_type_manager::get_classes() as $addtype => $classname) {
+            if (!$classname::can_create(null, $flexbook, $context)) {
+                continue;
+            }
+            $addcontenttypes[] = [
+                "name" => $typeoptions[$addtype] ?? $classname::get_name(),
+                "url" => (new moodle_url("/mod/flexbook/content.php", [
+                    "id" => $cm->id,
+                    "chapterid" => $chapter->id,
+                    "type" => $addtype,
+                ]))->out(false),
+            ];
+        }
+    }
+
     echo $OUTPUT->render_from_template("mod_flexbook/chapter", [
         "cmid" => $cm->id,
         "flexbookid" => $flexbook->id,
@@ -349,6 +367,8 @@ if (!$chapterid) {
         "contents" => $renderedcontents,
         "hascontents" => !empty($renderedcontents),
         "editing" => $editing,
+        "addcontenttypes" => $addcontenttypes,
+        "hasaddcontenttypes" => !empty($addcontenttypes),
         "toc" => $toc,
         "progress" => $progress,
         "progressrounded" => round($progress),
