@@ -65,8 +65,17 @@ class question extends template_content {
                 $items[] = ["title" => s($option), "value" => s($index)];
             }
         }
-        $data["content"] = format_text($question->questiontext, FORMAT_HTML, [
+        $questiontext = file_rewrite_pluginfile_urls(
+            $question->questiontext,
+            "pluginfile.php",
+            $this->context->id,
+            "mod_flexbook",
+            "content",
+            $this->record->id
+        );
+        $data["content"] = format_text($questiontext, FORMAT_HTML, [
             "context" => $this->context,
+            "filter" => true,
         ]);
         $data["items"] = $items;
         $data["hasitems"] = !empty($items);
