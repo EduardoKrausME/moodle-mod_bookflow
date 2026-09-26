@@ -24,11 +24,16 @@
 }}
 
 <form class="flexbook-question" data-flexbook-question="{{id}}">
-    <h3>{{title}}</h3>
-    <div>{{{content}}}</div>
-    {{#items}}
-        <label><input type="radio" name="answer" value="{{value}}"> {{title}}</label>
-    {{/items}}
+    {{#title}}<h3>{{title}}</h3>{{/title}}
+    <div class="mb-3">{{{content}}}</div>
+    <div class="d-flex flex-column gap-2 mb-3">
+        {{#items}}
+            <label class="d-flex align-items-start gap-2">
+                <input type="radio" name="answer" value="{{value}}" required>
+                <span>{{title}}</span>
+            </label>
+        {{/items}}
+    </div>
     <button class="btn btn-primary" type="submit">{{#str}}submitanswer, mod_flexbook{{/str}}</button>
     <div data-region="question-feedback" aria-live="polite"></div>
 </form>
