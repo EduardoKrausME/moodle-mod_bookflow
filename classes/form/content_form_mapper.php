@@ -113,17 +113,15 @@ class content_form_mapper {
             $draftitemid = file_get_submitted_draft_itemid("data1_editor");
             $text = $record->data1 ?? "";
 
-            if ($itemid) {
-                $text = file_prepare_draft_area(
-                    $draftitemid,
-                    $context->id,
-                    "mod_flexbook",
-                    "content",
-                    $itemid,
-                    $editoroptions,
-                    $text
-                );
-            }
+            $text = file_prepare_draft_area(
+                $draftitemid,
+                $context->id,
+                "mod_flexbook",
+                "content",
+                $itemid ?: null,
+                $editoroptions,
+                $text
+            );
 
             $record->data1_editor = [
                 "text" => $text,
@@ -136,16 +134,14 @@ class content_form_mapper {
             $filearea = self::get_filearea($type);
             $draftitemid = file_get_submitted_draft_itemid("sourcefile");
 
-            if ($itemid) {
-                file_prepare_draft_area(
-                    $draftitemid,
-                    $context->id,
-                    "mod_flexbook",
-                    $filearea,
-                    $itemid,
-                    $fileoptions
-                );
-            }
+            file_prepare_draft_area(
+                $draftitemid,
+                $context->id,
+                "mod_flexbook",
+                $filearea,
+                $itemid ?: null,
+                $fileoptions
+            );
 
             $record->sourcefile = $draftitemid;
             $source = trim((string) ($record->data1 ?? ""));
