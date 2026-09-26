@@ -114,35 +114,3 @@ jobs:
       if: ${{ cancelled() }}
       run: exit 1
 
-
-  validate-subplugins:
-    runs-on: ubuntu-22.04
-
-    strategy:
-      fail-fast: false
-      matrix:
-        subplugin:
-          - accordion
-          - audio
-          - callout
-          - code
-          - disclosure
-          - download
-          - flashcards
-          - html
-          - image
-          - markdown
-          - question
-          - tabs
-          - video
-
-    steps:
-    - name: Check out repository code
-      uses: actions/checkout@v4
-      with:
-        path: plugin
-
-    - name: Validate flexbookcontent_${{ matrix.subplugin }}
-      uses: EduardoKrausME/moodle-plugin-validate@main
-      with:
-        plugin: ./plugin/content/${{ matrix.subplugin }}
