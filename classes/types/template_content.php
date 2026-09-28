@@ -35,8 +35,8 @@ abstract class template_content extends content {
     /** @var string Unique content type identifier. */
     protected static string $type = "";
 
-    /** @var int Text format used for the primary stored content. */
-    protected static int $contentformat = FORMAT_HTML;
+    /** @var string Text format used for the primary stored content. */
+    protected static string $contentformat = FORMAT_HTML;
 
     /** @var string File area used when rewriting primary content URLs. */
     protected static string $filearea = "content";
