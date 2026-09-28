@@ -67,12 +67,13 @@
 
         {{#editing}}
             {{#hasaddcontenttypes}}
-                <button class="btn btn-primary"
-                        type="button"
-                        data-toggle="modal"
-                        data-target="#flexbook-add-content-modal-{{chapterid}}">
+                <a class="btn btn-primary"
+                   href="{{{addcontenturl}}}"
+                   data-action="flexbook-add-content"
+                   data-modal-id="flexbook-add-content-modal-{{chapterid}}"
+                   aria-haspopup="dialog">
                     {{#str}}addcontent, mod_flexbook{{/str}}
-                </button>
+                </a>
 
                 <div class="modal fade"
                      id="flexbook-add-content-modal-{{chapterid}}"
@@ -88,7 +89,7 @@
                                 </h5>
                                 <button type="button"
                                         class="close"
-                                        data-dismiss="modal"
+                                        data-action="flexbook-close-add-content"
                                         aria-label="{{#str}}closebuttontitle{{/str}}">
                                     <span aria-hidden="true">&times;</span>
                                 </button>
