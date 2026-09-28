@@ -22,16 +22,15 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['pluginname'] = 'Question';
-
 $string['answer'] = 'Answer';
+$string['eventquestion_answered'] = 'Question answered';
+$string['pluginname'] = 'Question';
+$string['privacy:metadata:answer'] = 'The answer submitted by the user.';
+$string['privacy:metadata:attemptnumber'] = 'The sequential attempt number.';
+$string['privacy:metadata:iscorrect'] = 'Whether the submitted answer was correct.';
+$string['privacy:metadata:questionattempts'] = 'Question attempts store answers submitted by users.';
+$string['privacy:metadata:timecreated'] = 'The time the attempt was created.';
+$string['privacy:metadata:userid'] = 'The user who submitted the answer.';
+$string['privacy:question_attempts'] = 'Question attempts';
 $string['questionsanswered'] = 'Questions answered';
 $string['wssubmitanswer'] = 'Submit a FlexBook question answer';
-$string['eventquestion_answered'] = 'Question answered';
-$string['privacy:metadata:userid'] = 'The user who submitted the answer.';
-$string['privacy:metadata:answer'] = 'The answer submitted by the user.';
-$string['privacy:metadata:iscorrect'] = 'Whether the submitted answer was correct.';
-$string['privacy:metadata:attemptnumber'] = 'The sequential attempt number.';
-$string['privacy:metadata:timecreated'] = 'The time the attempt was created.';
-$string['privacy:metadata:questionattempts'] = 'Question attempts store answers submitted by users.';
-$string['privacy:question_attempts'] = 'Question attempts';

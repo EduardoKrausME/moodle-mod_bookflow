@@ -22,16 +22,15 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['pluginname'] = 'Pergunta';
-
 $string['answer'] = 'Resposta';
+$string['eventquestion_answered'] = 'Pergunta respondida';
+$string['pluginname'] = 'Pergunta';
+$string['privacy:metadata:answer'] = 'A resposta enviada pelo usuário.';
+$string['privacy:metadata:attemptnumber'] = 'O número sequencial da tentativa.';
+$string['privacy:metadata:iscorrect'] = 'Se a resposta enviada estava correta.';
+$string['privacy:metadata:questionattempts'] = 'As tentativas de perguntas armazenam respostas enviadas pelos usuários.';
+$string['privacy:metadata:timecreated'] = 'O momento em que a tentativa foi criada.';
+$string['privacy:metadata:userid'] = 'O usuário que enviou a resposta.';
+$string['privacy:question_attempts'] = 'Tentativas de perguntas';
 $string['questionsanswered'] = 'Perguntas respondidas';
 $string['wssubmitanswer'] = 'Enviar resposta de uma pergunta do FlexBook';
-$string['eventquestion_answered'] = 'Pergunta respondida';
-$string['privacy:metadata:userid'] = 'O usuário que enviou a resposta.';
-$string['privacy:metadata:answer'] = 'A resposta enviada pelo usuário.';
-$string['privacy:metadata:iscorrect'] = 'Se a resposta enviada estava correta.';
-$string['privacy:metadata:attemptnumber'] = 'O número sequencial da tentativa.';
-$string['privacy:metadata:timecreated'] = 'O momento em que a tentativa foi criada.';
-$string['privacy:metadata:questionattempts'] = 'As tentativas de perguntas armazenam respostas enviadas pelos usuários.';
-$string['privacy:question_attempts'] = 'Tentativas de perguntas';
