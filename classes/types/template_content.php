@@ -29,11 +29,17 @@ use renderer_base;
 use stdClass;
 
 /**
- * Provides template-based rendering for built-in content types.
+ * Provides shared template rendering without knowing concrete content types.
  */
 abstract class template_content extends content {
-    /** @var string */
+    /** @var string Unique content type identifier. */
     protected static string $type = "";
+
+    /** @var int Text format used for the primary stored content. */
+    protected static int $contentformat = FORMAT_HTML;
+
+    /** @var string File area used when rewriting primary content URLs. */
+    protected static string $filearea = "content";
 
     /**
      * Gets the unique content type identifier.
@@ -50,7 +56,7 @@ abstract class template_content extends content {
      * @return string
      */
     public static function get_name(): string {
-        return get_string("contenttype" . static::$type, "mod_flexbook");
+        return get_string("pluginname", "flexbookcontent_" . static::$type);
     }
 
     /**
@@ -59,7 +65,7 @@ abstract class template_content extends content {
      * @return bool
      */
     public static function is_safe(): bool {
-        return static::$type != "code";
+        return true;
     }
 
     /**
@@ -82,46 +88,41 @@ abstract class template_content extends content {
     }
 
     /**
-     * Renders the content block with its Mustache template.
+     * Renders the content block with the template owned by the subplugin.
      *
-     * @param renderer_base $output Moodle renderer used to render the Mustache template.
+     * @param renderer_base $output Moodle renderer.
      * @param bool $editing Whether editing controls are enabled.
      * @return string
      */
     public function render(renderer_base $output, bool $editing): string {
-        $data = $this->export_data($editing);
         return $output->render_from_template(
             "flexbookcontent_" . static::$type . "/" . static::$type,
-            $data
+            $this->export_data($editing)
         );
     }
 
     /**
-     * Builds the data passed to the content Mustache template.
+     * Builds data passed to the subplugin Mustache template.
      *
      * @param bool $editing Whether editing controls are enabled.
      * @return array
      */
     protected function export_data(bool $editing): array {
-        $format = static::$type == "markdown" ? FORMAT_MARKDOWN : FORMAT_HTML;
         $primarydata = $this->record->data1 ?? "";
-        $filearea = static::$type === "download" ? "download" : "content";
         $rewrittenprimarydata = file_rewrite_pluginfile_urls(
             $primarydata,
             "pluginfile.php",
             $this->context->id,
             "mod_flexbook",
-            $filearea,
+            static::$filearea,
             $this->record->id
         );
 
-        $itemsdata = static::$type === "question"
-            ? ($this->record->data2 ?? "[]")
-            : $rewrittenprimarydata;
-        $items = json_decode($itemsdata ?: "[]", true);
+        $items = json_decode($rewrittenprimarydata ?: "[]", true);
         if (!is_array($items)) {
             $items = [];
         }
+
         $normalizeditems = [];
         foreach ($items as $index => $item) {
             if (!is_array($item)) {
@@ -139,13 +140,17 @@ abstract class template_content extends content {
                 "first" => $index == 0,
             ];
         }
+
         return [
             "id" => $this->record->id,
             "title" => format_string($this->record->title ?? ""),
-            "content" => format_text($rewrittenprimarydata, $format, [
+            "content" => format_text($rewrittenprimarydata, static::$contentformat, [
                 "context" => $this->context,
                 "filter" => true,
-                "noclean" => !static::is_safe() && has_capability("mod/flexbook:editunsafecontent", $this->context),
+                "noclean" => !static::is_safe() && has_capability(
+                    "mod/flexbook:editunsafecontent",
+                    $this->context
+                ),
             ]),
             "data2" => s($this->record->data2 ?? ""),
             "data3" => s($this->record->data3 ?? ""),

@@ -25,6 +25,7 @@
 namespace mod_flexbook\types;
 
 use context_module;
+use mod_flexbook\form\content_form;
 use renderer_base;
 use stdClass;
 
@@ -84,12 +85,200 @@ abstract class content {
         context_module $context
     ): bool;
 
+    /**
+     * Gets completion rules supported by this content type.
+     *
+     * @return array
+     */
+    public static function get_completion_options(): array {
+        return [
+            "view" => get_string("completeonview", "mod_flexbook"),
+            "timed" => get_string("completeontime", "mod_flexbook"),
+            "manual" => get_string("completemanually", "mod_flexbook"),
+            "none" => get_string("donottrack", "mod_flexbook"),
+        ];
+    }
+
+    /**
+     * Adds type-specific fields to the content form.
+     *
+     * @param content_form $form Content form.
+     * @param array $editoroptions Editor options.
+     * @param array $fileoptions File manager options.
+     * @param int $repeatcount Initial repeated field count.
+     * @param int $structureddraftid Shared structured editor draft id.
+     * @return void
+     */
+    public static function add_form_fields(
+        content_form $form,
+        array $editoroptions,
+        array $fileoptions,
+        int $repeatcount,
+        int $structureddraftid
+    ): void {
+    }
+
+    /**
+     * Validates type-specific submitted fields.
+     *
+     * @param array $data Submitted form data.
+     * @param array $files Submitted files.
+     * @return array
+     */
+    public static function validate_form(array $data, array $files): array {
+        return [];
+    }
+
+    /**
+     * Gets file manager options for this content type.
+     *
+     * @param array $baseoptions Base file options.
+     * @return array
+     */
+    public static function get_file_options(array $baseoptions): array {
+        return [
+            "subdirs" => false,
+            "maxbytes" => $baseoptions["maxbytes"] ?? 0,
+            "maxfiles" => 1,
+            "accepted_types" => ["*"],
+            "return_types" => FILE_INTERNAL,
+        ];
+    }
+
+    /**
+     * Prepares a shared draft area used by structured content.
+     *
+     * @param stdClass|null $content Existing content record.
+     * @param context_module $context Module context.
+     * @param array $editoroptions Editor options.
+     * @return int
+     */
+    public static function prepare_structured_draft(
+        ?stdClass $content,
+        context_module $context,
+        array $editoroptions
+    ): int {
+        return 0;
+    }
+
+    /**
+     * Gets the initial repeated-field count.
+     *
+     * @param stdClass|null $content Existing content record.
+     * @return int
+     */
+    public static function get_repeat_count(?stdClass $content): int {
+        return 0;
+    }
+
+    /**
+     * Prepares stored data for the type-specific form.
+     *
+     * @param stdClass $record Content record.
+     * @param context_module $context Module context.
+     * @param array $editoroptions Editor options.
+     * @param array $fileoptions File manager options.
+     * @param int $structureddraftid Shared structured editor draft id.
+     * @return stdClass
+     */
+    public static function prepare_form_data(
+        stdClass $record,
+        context_module $context,
+        array $editoroptions,
+        array $fileoptions,
+        int $structureddraftid = 0
+    ): stdClass {
+        return $record;
+    }
+
+    /**
+     * Converts submitted type-specific fields to storage fields.
+     *
+     * @param stdClass $data Submitted form data.
+     * @return stdClass
+     */
+    public static function to_record(stdClass $data): stdClass {
+        return $data;
+    }
+
+    /**
+     * Finalizes draft-backed data after a content id exists.
+     *
+     * @param stdClass $submitted Submitted form data.
+     * @param int $itemid Content block id.
+     * @param context_module $context Module context.
+     * @param array $editoroptions Editor options.
+     * @param array $fileoptions File manager options.
+     * @return string|null Final data1 value, or null when no draft-backed value exists.
+     */
+    public static function save_draft_data1(
+        stdClass $submitted,
+        int $itemid,
+        context_module $context,
+        array $editoroptions,
+        array $fileoptions
+    ): ?string {
+        return null;
+    }
+
+    /**
+     * Gets file areas owned by this content type.
+     *
+     * @return array
+     */
+    public static function get_fileareas(): array {
+        return [];
+    }
+
+    /**
+     * Runs after a content record has been created.
+     *
+     * @param int $contentid Content id.
+     * @return void
+     */
+    public static function after_create(int $contentid): void {
+    }
+
+    /**
+     * Runs before a content record is updated.
+     *
+     * @param stdClass $current Current record.
+     * @param stdClass $data New record data.
+     * @return void
+     */
+    public static function before_update(stdClass $current, stdClass $data): void {
+    }
+
+    /**
+     * Runs after a content record has been updated.
+     *
+     * @param int $contentid Content id.
+     * @return void
+     */
+    public static function after_update(int $contentid): void {
+    }
+
+    /**
+     * Runs before a content record is deleted or changes type.
+     *
+     * @param int $contentid Content id.
+     * @return void
+     */
+    public static function before_delete(int $contentid): void {
+    }
+
+    /**
+     * Requires browser assets needed by this content type.
+     *
+     * @param stdClass $flexbook FlexBook record.
+     * @param bool $editing Whether editing mode is enabled.
+     * @return void
+     */
+    public static function require_page_assets(stdClass $flexbook, bool $editing): void {
+    }
 
     /**
      * Normalizes client evidence before it is stored as progress.
-     *
-     * Content types may override this when their completion evidence can be
-     * validated more precisely by the server.
      *
      * @param stdClass $progress Existing user progress record.
      * @param float $metric Progress metric reported by the client.
