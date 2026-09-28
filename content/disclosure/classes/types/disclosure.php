@@ -47,6 +47,26 @@ class disclosure extends editor_content {
     }
 
     /**
+     * Stores disclosure click completion evidence.
+     */
+    public function update_completion_evidence(stdClass $progress, float $metric, array $details): stdClass {
+        if ($this->record->completiontype === "click") {
+            return $this->update_click_completion_evidence($progress, $details);
+        }
+        return parent::update_completion_evidence($progress, $metric, $details);
+    }
+
+    /**
+     * Validates disclosure click completion evidence.
+     */
+    public function completion_evidence_is_valid(stdClass $progress): bool {
+        if ($this->record->completiontype === "click") {
+            return $this->click_completion_evidence_is_valid($progress);
+        }
+        return parent::completion_evidence_is_valid($progress);
+    }
+
+    /**
      * Stores disclosure-specific derived fields.
      */
     public static function to_record(stdClass $data): stdClass {

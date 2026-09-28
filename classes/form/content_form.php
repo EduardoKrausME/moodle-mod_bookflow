@@ -209,10 +209,6 @@ class content_form extends moodleform {
         if ($data["weight"] < 0) {
             $errors["weight"] = get_string("weightnegative", "mod_flexbook");
         }
-        if (in_array($data["completiontype"], ["percent", "end"], true)
-                && ($data["completionvalue"] <= 0 || $data["completionvalue"] > 100)) {
-            $errors["completionvalue"] = get_string("percentageerror", "mod_flexbook");
-        }
         if ($data["completiontype"] === "timed" && $data["completionvalue"] <= 0) {
             $errors["completionvalue"] = get_string("completiontimepositive", "mod_flexbook");
         }
