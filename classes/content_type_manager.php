@@ -116,11 +116,7 @@ class content_type_manager {
     public static function get_type_options(): array {
         $options = [];
         foreach (self::get_classes() as $type => $classname) {
-            if (in_array($type, self::BUNDLED_TYPES, true)) {
-                $options[$type] = get_string("contenttype{$type}", "mod_flexbook");
-            } else {
-                $options[$type] = $classname::get_name();
-            }
+            $options[$type] = $classname::get_name();
         }
         return $options;
     }

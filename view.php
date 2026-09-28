@@ -248,8 +248,10 @@ if (!$chapterid) {
         $contents = array_filter($contents, fn($content) => !$content->hidden);
     }
     $renderedcontents = [];
+    $contentclasses = [];
     foreach ($contents as $content) {
         $type = content_type_manager::create_content($content, $flexbook, $context);
+        $contentclasses[$content->type] = get_class($type);
         $highlights = [];
         foreach ($DB->get_records("flexbook_highlights", [
             "flexbookid" => $flexbook->id,
@@ -341,6 +343,10 @@ if (!$chapterid) {
     }
 
     $addcontenttypes = [];
+    foreach ($contentclasses as $classname) {
+        $classname::require_page_assets($flexbook, $editing);
+    }
+
     if ($editing) {
         $typeoptions = content_type_manager::get_type_options();
         foreach (content_type_manager::get_classes() as $addtype => $classname) {
@@ -411,12 +417,7 @@ if (!$chapterid) {
             $flexbook->id,
             $chapter->id,
         ]);
-        $PAGE->requires->js_call_amd("mod_flexbook/video_progress", "init", [$flexbook->id]);
-        $PAGE->requires->js_call_amd("mod_flexbook/audio_progress", "init", [$flexbook->id]);
-        $PAGE->requires->js_call_amd("mod_flexbook/accordion", "init", [$flexbook->id]);
-        $PAGE->requires->js_call_amd("mod_flexbook/tabs", "init", [$flexbook->id]);
-        $PAGE->requires->js_call_amd("mod_flexbook/disclosure", "init", [$flexbook->id]);
-        $PAGE->requires->js_call_amd("mod_flexbook/flashcards", "init", [$flexbook->id]);
+
     }
     if ($editing) {
         $PAGE->requires->js_call_amd("mod_flexbook/add_content", "init");

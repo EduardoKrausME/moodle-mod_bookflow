@@ -60,9 +60,8 @@ class content_manager {
         $data->timecreated = time();
         $data->timemodified = $data->timecreated;
         $id = $DB->insert_record("flexbook_contents", $data);
-        if ($data->type == "question") {
-            question_manager::sync_from_content($id);
-        }
+        $classname = self::get_content_class($data->type);
+        $classname::after_create($id);
         $flexbookid = self::get_flexbookid($data->chapterid);
         if (empty($data->hidden) && !empty($data->trackprogress) && $data->completiontype !== "none") {
             progress_recalculator::recalculate_all($flexbookid);
@@ -80,14 +79,16 @@ class content_manager {
         global $DB;
 
         $current = $DB->get_record("flexbook_contents", ["id" => $data->id], "*", MUST_EXIST);
+        $currentclass = self::get_content_class($current->type);
+        $newclass = self::get_content_class($data->type);
         $data->timemodified = time();
-        if ($current->type == "question" && $data->type != "question") {
-            question_manager::delete_for_content($data->id);
+
+        if ($current->type !== $data->type) {
+            $currentclass::before_delete($data->id);
         }
+        $newclass::before_update($current, $data);
         $result = $DB->update_record("flexbook_contents", $data);
-        if ($data->type == "question") {
-            question_manager::sync_from_content($data->id);
-        }
+        $newclass::after_update($data->id);
         $updated = $DB->get_record("flexbook_contents", ["id" => $data->id], "*", MUST_EXIST);
         $oldflexbookid = self::get_flexbookid($current->chapterid);
         $newflexbookid = self::get_flexbookid($updated->chapterid);
@@ -115,10 +116,12 @@ class content_manager {
 
         $content = $DB->get_record("flexbook_contents", ["id" => $contentid], "*", MUST_EXIST);
         $sourcecontentid = $content->id;
+        $classname = self::get_content_class($content->type);
+        $fileareas = $classname::get_fileareas();
         unset($content->id);
         $content->title = get_string("copyof", "mod_flexbook", $content->title);
         $newcontentid = self::create($content);
-        self::copy_content_files($sourcecontentid, $newcontentid, $content->chapterid);
+        self::copy_content_files($sourcecontentid, $newcontentid, $content->chapterid, $fileareas);
         return $newcontentid;
     }
 
@@ -134,8 +137,9 @@ class content_manager {
 
         $content = $DB->get_record("flexbook_contents", ["id" => $contentid], "*", MUST_EXIST);
         $flexbookid = self::get_flexbookid($content->chapterid);
-        self::delete_content_files($contentid, $content->chapterid);
-        question_manager::delete_for_content($contentid);
+        $classname = self::get_content_class($content->type);
+        $classname::before_delete($contentid);
+        self::delete_content_files($contentid, $content->chapterid, $classname::get_fileareas());
         $DB->delete_records("flexbook_user_progress", ["contentid" => $contentid]);
         $DB->delete_records("flexbook_bookmarks", ["contentid" => $contentid]);
         $DB->delete_records("flexbook_notes", ["contentid" => $contentid]);
@@ -232,10 +236,15 @@ class content_manager {
      * @param int $chapterid Chapter ID.
      * @return void
      */
-    private static function copy_content_files(int $sourcecontentid, int $targetcontentid, int $chapterid): void {
+    private static function copy_content_files(
+        int $sourcecontentid,
+        int $targetcontentid,
+        int $chapterid,
+        array $fileareas
+    ): void {
         $context = self::get_context($chapterid);
         $fs = get_file_storage();
-        foreach (["content", "download"] as $filearea) {
+        foreach ($fileareas as $filearea) {
             $files = $fs->get_area_files(
                 $context->id,
                 "mod_flexbook",
@@ -265,12 +274,26 @@ class content_manager {
      * @param int $chapterid Chapter ID.
      * @return void
      */
-    private static function delete_content_files(int $contentid, int $chapterid): void {
+    private static function delete_content_files(int $contentid, int $chapterid, array $fileareas): void {
         $context = self::get_context($chapterid);
         $fs = get_file_storage();
-        foreach (["content", "download"] as $filearea) {
+        foreach ($fileareas as $filearea) {
             $fs->delete_area_files($context->id, "mod_flexbook", $filearea, $contentid);
         }
+    }
+
+    /**
+     * Resolves a registered content class.
+     *
+     * @param string $type Content type.
+     * @return string
+     */
+    private static function get_content_class(string $type): string {
+        $classes = content_type_manager::get_classes();
+        if (!isset($classes[$type])) {
+            throw new invalid_parameter_exception("Unknown FlexBook content type: {$type}");
+        }
+        return $classes[$type];
     }
 
     /**
