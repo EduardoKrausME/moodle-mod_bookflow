@@ -104,6 +104,15 @@ abstract class source_content extends template_content {
     }
 
     /**
+     * Adds the normalized source URL to the template context.
+     */
+    protected function export_data(bool $editing): array {
+        $data = parent::export_data($editing);
+        $data["source"] = clean_param($this->get_rewritten_primary_data(), PARAM_URL);
+        return $data;
+    }
+
+    /**
      * Gets file areas owned by source content.
      */
     public static function get_fileareas(): array {

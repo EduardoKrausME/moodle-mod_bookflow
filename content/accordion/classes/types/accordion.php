@@ -27,6 +27,9 @@ class accordion extends structured_content {
     /** @var string */
     protected static string $type = "accordion";
 
+    /** @var string */
+    protected static string $collectioncompletiontype = "allitems";
+
     /**
      * Gets accordion completion rules.
      */

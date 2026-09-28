@@ -30,6 +30,9 @@ class flashcards extends template_content {
     /** @var string */
     protected static string $type = "flashcards";
 
+    /** @var string */
+    protected static string $collectioncompletiontype = "allcards";
+
     /**
      * Adds flashcard fields.
      */
@@ -149,6 +152,45 @@ class flashcards extends template_content {
             "card_add_fields",
         ]);
         return $data;
+    }
+
+    /**
+     * Adds flashcard items to the template context.
+     */
+    protected function export_data(bool $editing): array {
+        $data = parent::export_data($editing);
+        $items = content_form_mapper::decode_items($this->record->data1 ?? "[]");
+        $normalizeditems = [];
+        foreach ($items as $index => $item) {
+            $normalizeditems[] = [
+                "index" => $index,
+                "front" => s($item["front"] ?? ""),
+                "back" => s($item["back"] ?? ""),
+            ];
+        }
+        $data["items"] = $normalizeditems;
+        $data["hasitems"] = !empty($normalizeditems);
+        return $data;
+    }
+
+    /**
+     * Updates flashcard completion evidence.
+     */
+    public function update_completion_evidence(stdClass $progress, float $metric, array $details): stdClass {
+        if ($this->record->completiontype === static::$collectioncompletiontype) {
+            return $this->update_collection_completion_evidence($progress, $details);
+        }
+        return parent::update_completion_evidence($progress, $metric, $details);
+    }
+
+    /**
+     * Validates flashcard completion evidence.
+     */
+    public function completion_evidence_is_valid(stdClass $progress): bool {
+        if ($this->record->completiontype === static::$collectioncompletiontype) {
+            return $this->collection_completion_evidence_is_valid($progress);
+        }
+        return parent::completion_evidence_is_valid($progress);
     }
 
     /**

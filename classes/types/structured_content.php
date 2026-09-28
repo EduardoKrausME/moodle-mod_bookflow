@@ -23,6 +23,9 @@ use stdClass;
  * Generic structured item behaviour.
  */
 abstract class structured_content extends template_content {
+    /** @var string Completion rule associated with visiting all items. */
+    protected static string $collectioncompletiontype = "";
+
     /**
      * Adds repeated title/editor item fields.
      */
@@ -171,6 +174,52 @@ abstract class structured_content extends template_content {
             $context,
             $editoroptions
         );
+    }
+
+    /**
+     * Adds normalized structured items to the template context.
+     */
+    protected function export_data(bool $editing): array {
+        $data = parent::export_data($editing);
+        $items = content_form_mapper::decode_items($this->get_rewritten_primary_data());
+        $normalizeditems = [];
+
+        foreach ($items as $index => $item) {
+            $normalizeditems[] = [
+                "index" => $index,
+                "title" => s($item["title"] ?? ""),
+                "content" => format_text($item["content"] ?? "", FORMAT_HTML, [
+                    "context" => $this->context,
+                ]),
+                "first" => $index === 0,
+            ];
+        }
+
+        $data["items"] = $normalizeditems;
+        $data["hasitems"] = !empty($normalizeditems);
+        return $data;
+    }
+
+    /**
+     * Updates visited-item completion evidence.
+     */
+    public function update_completion_evidence(stdClass $progress, float $metric, array $details): stdClass {
+        if (static::$collectioncompletiontype !== ""
+                && $this->record->completiontype === static::$collectioncompletiontype) {
+            return $this->update_collection_completion_evidence($progress, $details);
+        }
+        return parent::update_completion_evidence($progress, $metric, $details);
+    }
+
+    /**
+     * Validates visited-item completion evidence.
+     */
+    public function completion_evidence_is_valid(stdClass $progress): bool {
+        if (static::$collectioncompletiontype !== ""
+                && $this->record->completiontype === static::$collectioncompletiontype) {
+            return $this->collection_completion_evidence_is_valid($progress);
+        }
+        return parent::completion_evidence_is_valid($progress);
     }
 
     /**

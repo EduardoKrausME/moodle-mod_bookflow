@@ -27,6 +27,9 @@ class tabs extends structured_content {
     /** @var string */
     protected static string $type = "tabs";
 
+    /** @var string */
+    protected static string $collectioncompletiontype = "alltabs";
+
     /**
      * Gets tabs completion rules.
      */

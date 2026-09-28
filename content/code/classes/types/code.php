@@ -41,6 +41,15 @@ class code extends raw_content {
     }
 
     /**
+     * Adds raw code to the template context without HTML formatting.
+     */
+    protected function export_data(bool $editing): array {
+        $data = parent::export_data($editing);
+        $data["code"] = (string) ($this->record->data1 ?? "");
+        return $data;
+    }
+
+    /**
      * Code content can contain unsafe markup and requires the dedicated capability.
      */
     public static function is_safe(): bool {

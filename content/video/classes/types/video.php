@@ -18,14 +18,14 @@ namespace flexbookcontent_video\types;
 
 use mod_flexbook\form\content_form;
 use mod_flexbook\form\content_form_mapper;
-use mod_flexbook\types\source_content;
+use mod_flexbook\types\media_content;
 use renderer_base;
 use stdClass;
 
 /**
  * FlexBook Video content type.
  */
-class video extends source_content {
+class video extends media_content {
     /** @var string */
     protected static string $type = "video";
 

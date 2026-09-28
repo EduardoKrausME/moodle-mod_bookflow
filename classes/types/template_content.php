@@ -108,38 +108,7 @@ abstract class template_content extends content {
      * @return array
      */
     protected function export_data(bool $editing): array {
-        $primarydata = $this->record->data1 ?? "";
-        $rewrittenprimarydata = file_rewrite_pluginfile_urls(
-            $primarydata,
-            "pluginfile.php",
-            $this->context->id,
-            "mod_flexbook",
-            static::$filearea,
-            $this->record->id
-        );
-
-        $items = json_decode($rewrittenprimarydata ?: "[]", true);
-        if (!is_array($items)) {
-            $items = [];
-        }
-
-        $normalizeditems = [];
-        foreach ($items as $index => $item) {
-            if (!is_array($item)) {
-                continue;
-            }
-            $normalizeditems[] = [
-                "index" => $index,
-                "title" => s($item["title"] ?? ""),
-                "content" => format_text($item["content"] ?? "", FORMAT_HTML, [
-                    "context" => $this->context,
-                ]),
-                "front" => s($item["front"] ?? ""),
-                "back" => s($item["back"] ?? ""),
-                "value" => s($item["value"] ?? $index),
-                "first" => $index == 0,
-            ];
-        }
+        $rewrittenprimarydata = $this->get_rewritten_primary_data();
 
         return [
             "id" => $this->record->id,
@@ -154,10 +123,6 @@ abstract class template_content extends content {
             ]),
             "data2" => s($this->record->data2 ?? ""),
             "data3" => s($this->record->data3 ?? ""),
-            "source" => clean_param($rewrittenprimarydata, PARAM_URL),
-            "code" => $primarydata,
-            "items" => $normalizeditems,
-            "hasitems" => !empty($normalizeditems),
             "editing" => $editing,
             "tracked" => $this->record->trackprogress,
             "required" => $this->record->required,
@@ -166,5 +131,21 @@ abstract class template_content extends content {
             "weight" => $this->record->weight,
             "auxint1" => $this->record->auxint1,
         ];
+    }
+
+    /**
+     * Rewrites @@PLUGINFILE@@ URLs from the primary storage field.
+     *
+     * @return string
+     */
+    protected function get_rewritten_primary_data(): string {
+        return file_rewrite_pluginfile_urls(
+            $this->record->data1 ?? "",
+            "pluginfile.php",
+            $this->context->id,
+            "mod_flexbook",
+            static::$filearea,
+            $this->record->id
+        );
     }
 }

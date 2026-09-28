@@ -18,14 +18,14 @@ namespace flexbookcontent_audio\types;
 
 use mod_flexbook\form\content_form;
 use mod_flexbook\form\content_form_mapper;
-use mod_flexbook\types\source_content;
+use mod_flexbook\types\media_content;
 use renderer_base;
 use stdClass;
 
 /**
  * FlexBook Audio content type.
  */
-class audio extends source_content {
+class audio extends media_content {
     /** @var string */
     protected static string $type = "audio";
 
