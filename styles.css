@@ -191,9 +191,6 @@
   opacity: 0.5;
   border-color: #0b5ed7;
 }
-.mod-flexbook .flexbook-content-callout {
-  padding: 0;
-}
 .mod-flexbook .flexbook-content-actions {
   display: flex;
   flex-wrap: wrap;
@@ -202,37 +199,6 @@
   margin-top: 1rem;
   border-top: 1px solid #dce3ee;
   font-size: 0.9rem;
-}
-.mod-flexbook .flexbook-code {
-  max-width: 100%;
-  padding: 1rem;
-  overflow: auto;
-  color: #f8fafc;
-  background: #152238;
-  border-radius: 0.75rem;
-}
-.mod-flexbook .flexbook-flashcards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 1rem;
-}
-.mod-flexbook .flexbook-flashcard {
-  min-height: 150px;
-  padding: 1rem;
-  color: #172033;
-  background: #fff;
-  border: 1px solid #dce3ee;
-  border-radius: 1rem;
-  box-shadow: 0 8px 20px rgba(23, 32, 51, 0.07);
-}
-.mod-flexbook .flexbook-flashcard .back {
-  display: none;
-}
-.mod-flexbook .flexbook-flashcard.is-flipped .front {
-  display: none;
-}
-.mod-flexbook .flexbook-flashcard.is-flipped .back {
-  display: inline;
 }
 .mod-flexbook .flexbook-chapter-navigation {
   display: flex;

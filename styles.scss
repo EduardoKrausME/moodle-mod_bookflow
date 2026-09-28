@@ -230,10 +230,6 @@ $flexbook-surface: #f7f9fc;
         border-color: $flexbook-primary;
     }
 
-    .flexbook-content-callout {
-        padding: 0;
-    }
-
     .flexbook-content-actions {
         display: flex;
         flex-wrap: wrap;
@@ -242,43 +238,6 @@ $flexbook-surface: #f7f9fc;
         margin-top: 1rem;
         border-top: 1px solid $flexbook-border;
         font-size: .9rem;
-    }
-
-    .flexbook-code {
-        max-width: 100%;
-        padding: 1rem;
-        overflow: auto;
-        color: #f8fafc;
-        background: #152238;
-        border-radius: .75rem;
-    }
-
-    .flexbook-flashcards {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-        gap: 1rem;
-    }
-
-    .flexbook-flashcard {
-        min-height: 150px;
-        padding: 1rem;
-        color: $flexbook-ink;
-        background: #fff;
-        border: 1px solid $flexbook-border;
-        border-radius: 1rem;
-        box-shadow: 0 8px 20px rgba(23, 32, 51, .07);
-    }
-
-    .flexbook-flashcard .back {
-        display: none;
-    }
-
-    .flexbook-flashcard.is-flipped .front {
-        display: none;
-    }
-
-    .flexbook-flashcard.is-flipped .back {
-        display: inline;
     }
 
     .flexbook-chapter-navigation {
