@@ -64,8 +64,7 @@ class mod_flexbook_mod_form extends moodleform_mod {
         $mform->addElement("select", "defaultcontenttype", get_string("defaultcontenttype", "mod_flexbook"),
             $contenttypes);
         if ($contenttypes) {
-            $defaultcontenttype = isset($contenttypes["html"]) ? "html" : array_key_first($contenttypes);
-            $mform->setDefault("defaultcontenttype", $defaultcontenttype);
+            $mform->setDefault("defaultcontenttype", array_key_first($contenttypes));
         }
 
         $mform->addElement("duration", "estimatedtime", get_string("manualestimatedtime", "mod_flexbook"),
