@@ -42,4 +42,18 @@ class video extends template_content {
     public static function get_name(): string {
         return get_string("pluginname", "flexbookcontent_video");
     }
+
+    /**
+     * Renders the video block using the template owned by this subplugin.
+     *
+     * @param renderer_base $output Moodle renderer used to render the Mustache template.
+     * @param bool $editing Whether editing controls are enabled.
+     * @return string
+     */
+    public function render(renderer_base $output, bool $editing): string {
+        return $output->render_from_template(
+            "flexbookcontent_video/video",
+            $this->export_data($editing)
+        );
+    }
 }

@@ -218,9 +218,13 @@ function flexbook_pluginfile(
         send_file_not_found();
     }
 
-    $itemid = array_shift($args);
+    if (count($args) < 2) {
+        send_file_not_found();
+    }
+
+    $itemid = (int) array_shift($args);
     $filename = array_pop($args);
-    $filepath = "/" . implode("/", $args) . "/";
+    $filepath = $args ? "/" . implode("/", $args) . "/" : "/";
     $fs = get_file_storage();
     $file = $fs->get_file($context->id, "mod_flexbook", $filearea, $itemid, $filepath, $filename);
     if (!$file || $file->is_directory()) {
