@@ -103,13 +103,6 @@ class provider implements
             "color" => "privacy:metadata:color",
             "timecreated" => "privacy:metadata:timecreated",
         ], "privacy:metadata:highlights");
-        $collection->add_database_table("flexbook_question_attempts", [
-            "userid" => "privacy:metadata:userid",
-            "answerjson" => "privacy:metadata:answer",
-            "iscorrect" => "privacy:metadata:iscorrect",
-            "attemptnumber" => "privacy:metadata:attemptnumber",
-            "timecreated" => "privacy:metadata:timecreated",
-        ], "privacy:metadata:questionattempts");
         return $collection;
     }
 
@@ -141,14 +134,7 @@ class provider implements
                                  WHERE n.flexbookid = f.id AND n.userid = :u4)
                      OR EXISTS (SELECT 1 FROM {flexbook_highlights} h
                                  WHERE h.flexbookid = f.id AND h.userid = :u5)
-                     OR EXISTS (
-                        SELECT 1
-                          FROM {flexbook_question_attempts} a
-                          JOIN {flexbook_questions} q ON q.id = a.questionid
-                          JOIN {flexbook_contents} c ON c.id = q.contentid
-                          JOIN {flexbook_chapters} ch ON ch.id = c.chapterid
-                         WHERE ch.flexbookid = f.id AND a.userid = :u6
-                     )
+
                    )";
         $contextlist->add_from_sql($sql, [
             "modname" => "flexbook",
@@ -158,7 +144,6 @@ class provider implements
             "u3" => $userid,
             "u4" => $userid,
             "u5" => $userid,
-            "u6" => $userid,
             "u7" => $userid,
         ]);
         return $contextlist;
@@ -193,16 +178,6 @@ class provider implements
                      WHERE cm.id = :cmid";
             $userlist->add_from_sql("userid", $sql, $params);
         }
-        $sql = "SELECT a.userid
-                  FROM {flexbook_question_attempts} a
-                  JOIN {flexbook_questions} q ON q.id = a.questionid
-                  JOIN {flexbook_contents} c ON c.id = q.contentid
-                  JOIN {flexbook_chapters} ch ON ch.id = c.chapterid
-                  JOIN {flexbook} f ON f.id = ch.flexbookid
-                  JOIN {course_modules} cm ON cm.instance = f.id
-                  JOIN {modules} m ON m.id = cm.module AND m.name = :modname
-                 WHERE cm.id = :cmid";
-        $userlist->add_from_sql("userid", $sql, $params);
     }
 
     /**
@@ -251,17 +226,6 @@ class provider implements
                     "userid" => $userid,
                 ]),
             ];
-            $attemptsql = "SELECT a.*
-                            FROM {flexbook_question_attempts} a
-                            JOIN {flexbook_questions} q ON q.id = a.questionid
-                            JOIN {flexbook_contents} c ON c.id = q.contentid
-                            JOIN {flexbook_chapters} ch ON ch.id = c.chapterid
-                           WHERE ch.flexbookid = :flexbookid AND a.userid = :userid";
-            $datasets["question_attempts"] = $DB->get_records_sql($attemptsql, [
-                "flexbookid" => $flexbook->id,
-                "userid" => $userid,
-            ]);
-
             foreach ($datasets as $name => $records) {
                 $export = [];
                 foreach ($records as $record) {
@@ -355,18 +319,6 @@ class provider implements
         ] as $table) {
             $DB->delete_records($table, ["flexbookid" => $flexbookid]);
         }
-        $questionids = $DB->get_fieldset_sql(
-            "SELECT q.id
-               FROM {flexbook_questions} q
-               JOIN {flexbook_contents} c ON c.id = q.contentid
-               JOIN {flexbook_chapters} ch ON ch.id = c.chapterid
-              WHERE ch.flexbookid = ?",
-            [$flexbookid]
-        );
-        if ($questionids) {
-            [$insql, $params] = $DB->get_in_or_equal($questionids);
-            $DB->delete_records_select("flexbook_question_attempts", "questionid {$insql}", $params);
-        }
     }
 
     /**
@@ -394,15 +346,5 @@ class provider implements
             $DB->delete_records_select($table, "flexbookid = :flexbookid AND userid {$usersql}",
                 ["flexbookid" => $flexbookid] + $userparams);
         }
-        $sql = "userid {$usersql}
-                 AND questionid IN (
-                    SELECT q.id
-                      FROM {flexbook_questions} q
-                      JOIN {flexbook_contents} c ON c.id = q.contentid
-                      JOIN {flexbook_chapters} ch ON ch.id = c.chapterid
-                     WHERE ch.flexbookid = :flexbookid
-                 )";
-        $DB->delete_records_select("flexbook_question_attempts", $sql,
-            ["flexbookid" => $flexbookid] + $userparams);
     }
 }
