@@ -5,14 +5,6 @@
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-//
-// Moodle is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * tabs.php
@@ -24,23 +16,45 @@
 
 namespace flexbookcontent_tabs\types;
 
-use mod_flexbook\types\template_content;
+use mod_flexbook\types\structured_content;
 use renderer_base;
+use stdClass;
 
 /**
  * FlexBook Tabs content type.
  */
-class tabs extends template_content {
-
+class tabs extends structured_content {
     /** @var string */
     protected static string $type = "tabs";
 
     /**
-     * Renders the content block using the template owned by this subplugin.
-     *
-     * @param renderer_base $output Moodle renderer used to render the Mustache template.
-     * @param bool $editing Whether editing controls are enabled.
-     * @return string
+     * Gets tabs completion rules.
+     */
+    public static function get_completion_options(): array {
+        $options = parent::get_completion_options();
+        $none = $options["none"];
+        unset($options["none"]);
+        $options["alltabs"] = get_string("completealltabs", "mod_flexbook");
+        $options["none"] = $none;
+        return $options;
+    }
+
+    /**
+     * Loads tabs behaviour from this subplugin.
+     */
+    public static function require_page_assets(stdClass $flexbook, bool $editing): void {
+        global $PAGE;
+        if (!$editing) {
+            $PAGE->requires->js_call_amd(
+                "flexbookcontent_tabs/tabs",
+                "init",
+                [$flexbook->id, !empty($flexbook->enabletracking)]
+            );
+        }
+    }
+
+    /**
+     * Renders this content block.
      */
     public function render(renderer_base $output, bool $editing): string {
         return $output->render_from_template(
@@ -51,10 +65,9 @@ class tabs extends template_content {
 
     /**
      * Gets the localized content type name.
-     *
-     * @return string
      */
     public static function get_name(): string {
         return get_string("pluginname", "flexbookcontent_tabs");
     }
+
 }
