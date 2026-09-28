@@ -26,23 +26,23 @@ namespace mod_flexbook\privacy;
 
 use context;
 use context_module;
-use core_privacy\metadata\collection;
-use core_privacy\request\approved_contextlist;
-use core_privacy\request\approved_userlist;
-use core_privacy\request\contextlist;
-use core_privacy\request\core_userlist_provider;
-use core_privacy\request\helper;
-use core_privacy\request\transform;
-use core_privacy\request\userlist;
-use core_privacy\request\writer;
+use core_privacy\local\metadata\collection;
+use core_privacy\local\request\approved_contextlist;
+use core_privacy\local\request\approved_userlist;
+use core_privacy\local\request\contextlist;
+use core_privacy\local\request\core_userlist_provider;
+use core_privacy\local\request\helper;
+use core_privacy\local\request\transform;
+use core_privacy\local\request\userlist;
+use core_privacy\local\request\writer;
 use Override;
 
 /**
  * Implements the Moodle Privacy API for FlexBook user data.
  */
 class provider implements
-    \core_privacy\metadata\provider,
-    \core_privacy\request\plugin\provider,
+    \core_privacy\local\metadata\provider,
+    \core_privacy\local\request\plugin\provider,
     core_userlist_provider {
 
     /**
