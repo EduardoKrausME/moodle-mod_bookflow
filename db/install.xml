@@ -11,7 +11,7 @@
         <FIELD NAME="intro" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="introformat" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="numbering" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="1" SEQUENCE="false"/>
-        <FIELD NAME="defaultcontenttype" TYPE="char" LENGTH="50" NOTNULL="true" DEFAULT="html" SEQUENCE="false"/>
+        <FIELD NAME="defaultcontenttype" TYPE="char" LENGTH="50" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="completionmode" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="completionpercentage" TYPE="int" LENGTH="3" NOTNULL="true" DEFAULT="80" SEQUENCE="false"/>
         <FIELD NAME="requiremandatory" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
