@@ -419,6 +419,7 @@ if (!$chapterid) {
         $PAGE->requires->js_call_amd("mod_flexbook/flashcards", "init", [$flexbook->id]);
     }
     if ($editing) {
+        $PAGE->requires->js_call_amd("mod_flexbook/add_content", "init");
         $PAGE->requires->js_call_amd("mod_flexbook/content_sorting", "init", [
             $flexbook->id,
             $chapter->id,
