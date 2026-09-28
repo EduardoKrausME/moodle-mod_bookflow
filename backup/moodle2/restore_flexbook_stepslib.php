@@ -37,12 +37,11 @@ class restore_flexbook_activity_structure_step extends restore_activity_structur
             new restore_path_element("flexbook", "/activity/flexbook"),
             new restore_path_element("flexbook_chapter", "/activity/flexbook/chapters/chapter"),
             new restore_path_element("flexbook_content", "/activity/flexbook/chapters/chapter/contents/content"),
-            new restore_path_element("flexbook_question",
-                "/activity/flexbook/chapters/chapter/contents/content/questions/question"),
         ];
+        $contentpath = $paths[2];
+        $this->add_subplugin_structure("flexbookcontent", $contentpath);
+
         if ($this->get_setting_value("userinfo")) {
-            $paths[] = new restore_path_element("flexbook_attempt",
-                "/activity/flexbook/chapters/chapter/contents/content/questions/question/attempts/attempt");
             $paths[] = new restore_path_element("flexbook_progress", "/activity/flexbook/progressrecords/progress");
             $paths[] = new restore_path_element(
                 "flexbook_chapterprogress",
@@ -110,40 +109,6 @@ class restore_flexbook_activity_structure_step extends restore_activity_structur
         $data->timemodified = $this->apply_date_offset($data->timemodified);
         $newid = $DB->insert_record("flexbook_contents", $data);
         $this->set_mapping("flexbook_content", $oldid, $newid, true);
-    }
-
-    /**
-     * Restores FlexBook question.
-     *
-     * @param array $data Record data.
-     * @return void
-     */
-    protected function process_flexbook_question(array $data): void {
-        global $DB;
-
-        $data = (object) $data;
-        $oldid = $data->id;
-        $data->contentid = $this->get_new_parentid("flexbook_content");
-        $newid = $DB->insert_record("flexbook_questions", $data);
-        $this->set_mapping("flexbook_question", $oldid, $newid);
-    }
-
-    /**
-     * Restores FlexBook attempt.
-     *
-     * @param array $data Record data.
-     * @return void
-     */
-    protected function process_flexbook_attempt(array $data): void {
-        global $DB;
-
-        $data = (object) $data;
-        $data->questionid = $this->get_new_parentid("flexbook_question");
-        $data->userid = $this->get_mappingid("user", $data->userid);
-        $data->timecreated = $this->apply_date_offset($data->timecreated);
-        if ($data->userid) {
-            $DB->insert_record("flexbook_question_attempts", $data);
-        }
     }
 
     /**
@@ -261,7 +226,10 @@ class restore_flexbook_activity_structure_step extends restore_activity_structur
     protected function after_execute(): void {
         $this->add_related_files("mod_flexbook", "intro", null);
         $this->add_related_files("mod_flexbook", "cover", null);
-        $this->add_related_files("mod_flexbook", "content", "flexbook_content");
-        $this->add_related_files("mod_flexbook", "download", "flexbook_content");
+        foreach (\mod_flexbook\content_type_manager::get_classes() as $classname) {
+            foreach ($classname::get_fileareas() as $filearea) {
+                $this->add_related_files("mod_flexbook", $filearea, "flexbook_content");
+            }
+        }
     }
 }

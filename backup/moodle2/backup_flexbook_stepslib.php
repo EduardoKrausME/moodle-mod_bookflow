@@ -53,14 +53,6 @@ class backup_flexbook_activity_structure_step extends backup_activity_structure_
             "completiontype", "completionvalue", "hidden", "estimatedtime",
             "timecreated", "timemodified",
         ]);
-        $questions = new backup_nested_element("questions");
-        $question = new backup_nested_element("question", ["id"], [
-            "questiontext", "optionsjson", "answerjson", "feedback", "timecreated", "timemodified",
-        ]);
-        $attempts = new backup_nested_element("attempts");
-        $attempt = new backup_nested_element("attempt", ["id"], [
-            "userid", "answerjson", "iscorrect", "attemptnumber", "timecreated",
-        ]);
         $progressrecords = new backup_nested_element("progressrecords");
         $progress = new backup_nested_element("progress", ["id"], [
             "chapterid", "contentid", "userid", "status", "progress", "details",
@@ -93,10 +85,7 @@ class backup_flexbook_activity_structure_step extends backup_activity_structure_
         $chapters->add_child($chapter);
         $chapter->add_child($contents);
         $contents->add_child($content);
-        $content->add_child($questions);
-        $questions->add_child($question);
-        $question->add_child($attempts);
-        $attempts->add_child($attempt);
+        $this->add_subplugin_structure("flexbookcontent", $content, true);
         $flexbook->add_child($progressrecords);
         $progressrecords->add_child($progress);
         $flexbook->add_child($states);
@@ -113,9 +102,7 @@ class backup_flexbook_activity_structure_step extends backup_activity_structure_
         $flexbook->set_source_table("flexbook", ["id" => backup::VAR_ACTIVITYID]);
         $chapter->set_source_table("flexbook_chapters", ["flexbookid" => backup::VAR_PARENTID], "sortorder, id");
         $content->set_source_table("flexbook_contents", ["chapterid" => backup::VAR_PARENTID], "sortorder, id");
-        $question->set_source_table("flexbook_questions", ["contentid" => backup::VAR_PARENTID]);
         if ($userinfo) {
-            $attempt->set_source_table("flexbook_question_attempts", ["questionid" => backup::VAR_PARENTID]);
             $progress->set_source_table("flexbook_user_progress", ["flexbookid" => backup::VAR_PARENTID]);
             $chapterprogress->set_source_table(
                 "flexbook_chapter_progress",
@@ -127,13 +114,16 @@ class backup_flexbook_activity_structure_step extends backup_activity_structure_
             $highlight->set_source_table("flexbook_highlights", ["flexbookid" => backup::VAR_PARENTID]);
         }
 
-        foreach ([$attempt, $progress, $chapterprogress, $state, $bookmark, $note, $highlight] as $userelement) {
+        foreach ([$progress, $chapterprogress, $state, $bookmark, $note, $highlight] as $userelement) {
             $userelement->annotate_ids("user", "userid");
         }
         $flexbook->annotate_files("mod_flexbook", "intro", null);
         $flexbook->annotate_files("mod_flexbook", "cover", null);
-        $content->annotate_files("mod_flexbook", "content", "id");
-        $content->annotate_files("mod_flexbook", "download", "id");
+        foreach (\mod_flexbook\content_type_manager::get_classes() as $classname) {
+            foreach ($classname::get_fileareas() as $filearea) {
+                $content->annotate_files("mod_flexbook", $filearea, "id");
+            }
+        }
 
         return $this->prepare_activity_structure($flexbook);
     }
