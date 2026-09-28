@@ -5,14 +5,6 @@
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-//
-// Moodle is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * image.php
@@ -24,23 +16,77 @@
 
 namespace flexbookcontent_image\types;
 
-use mod_flexbook\types\template_content;
+use mod_flexbook\form\content_form;
+use mod_flexbook\form\content_form_mapper;
+use mod_flexbook\types\source_content;
 use renderer_base;
+use stdClass;
 
 /**
  * FlexBook Image content type.
  */
-class image extends template_content {
-
+class image extends source_content {
     /** @var string */
     protected static string $type = "image";
 
+    /** @var array */
+    protected static array $acceptedtypes = ["image"];
+
     /**
-     * Renders the content block using the template owned by this subplugin.
-     *
-     * @param renderer_base $output Moodle renderer used to render the Mustache template.
-     * @param bool $editing Whether editing controls are enabled.
-     * @return string
+     * Adds image-specific fields.
+     */
+    public static function add_form_fields(
+        content_form $form,
+        array $editoroptions,
+        array $fileoptions,
+        int $repeatcount,
+        int $structureddraftid
+    ): void {
+        parent::add_form_fields($form, $editoroptions, $fileoptions, $repeatcount, $structureddraftid);
+        $mform = $form->get_mform();
+        $mform->addElement("text", "imagealt", get_string("imagealt", "mod_flexbook"), ["size" => 64]);
+        $mform->setType("imagealt", PARAM_TEXT);
+        $mform->addElement("text", "caption", get_string("caption", "mod_flexbook"), ["size" => 64]);
+        $mform->setType("caption", PARAM_TEXT);
+    }
+
+    /**
+     * Prepares image-specific form data.
+     */
+    public static function prepare_form_data(
+        stdClass $record,
+        \context_module $context,
+        array $editoroptions,
+        array $fileoptions,
+        int $structureddraftid = 0
+    ): stdClass {
+        $record = parent::prepare_form_data(
+            $record,
+            $context,
+            $editoroptions,
+            $fileoptions,
+            $structureddraftid
+        );
+        $record->imagealt = (string) ($record->data2 ?? "");
+        $record->caption = (string) ($record->data3 ?? "");
+        return $record;
+    }
+
+    /**
+     * Stores image-specific fields.
+     */
+    public static function to_record(stdClass $data): stdClass {
+        $imagealt = trim((string) ($data->imagealt ?? ""));
+        $caption = trim((string) ($data->caption ?? ""));
+        $data = parent::to_record($data);
+        $data->data2 = $imagealt;
+        $data->data3 = $caption;
+        content_form_mapper::unset_fields($data, ["imagealt", "caption"]);
+        return $data;
+    }
+
+    /**
+     * Renders this content block.
      */
     public function render(renderer_base $output, bool $editing): string {
         return $output->render_from_template(
@@ -51,10 +97,9 @@ class image extends template_content {
 
     /**
      * Gets the localized content type name.
-     *
-     * @return string
      */
     public static function get_name(): string {
         return get_string("pluginname", "flexbookcontent_image");
     }
+
 }

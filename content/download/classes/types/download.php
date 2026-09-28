@@ -5,14 +5,6 @@
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-//
-// Moodle is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * download.php
@@ -24,23 +16,89 @@
 
 namespace flexbookcontent_download\types;
 
-use mod_flexbook\types\template_content;
+use mod_flexbook\form\content_form;
+use mod_flexbook\form\content_form_mapper;
+use mod_flexbook\types\source_content;
 use renderer_base;
+use stdClass;
 
 /**
  * FlexBook Download content type.
  */
-class download extends template_content {
-
+class download extends source_content {
     /** @var string */
     protected static string $type = "download";
 
+    /** @var string */
+    protected static string $filearea = "download";
+
     /**
-     * Renders the content block using the template owned by this subplugin.
-     *
-     * @param renderer_base $output Moodle renderer used to render the Mustache template.
-     * @param bool $editing Whether editing controls are enabled.
-     * @return string
+     * Adds download-specific fields.
+     */
+    public static function add_form_fields(
+        content_form $form,
+        array $editoroptions,
+        array $fileoptions,
+        int $repeatcount,
+        int $structureddraftid
+    ): void {
+        parent::add_form_fields($form, $editoroptions, $fileoptions, $repeatcount, $structureddraftid);
+        $mform = $form->get_mform();
+        $mform->addElement(
+            "textarea",
+            "filedescription",
+            get_string("filedescription", "mod_flexbook"),
+            ["rows" => 5, "cols" => 90]
+        );
+        $mform->setType("filedescription", PARAM_TEXT);
+    }
+
+    /**
+     * Gets download completion rules.
+     */
+    public static function get_completion_options(): array {
+        $options = parent::get_completion_options();
+        $none = $options["none"];
+        unset($options["none"]);
+        $options["click"] = get_string("completeonclick", "mod_flexbook");
+        $options["none"] = $none;
+        return $options;
+    }
+
+    /**
+     * Prepares download-specific form data.
+     */
+    public static function prepare_form_data(
+        stdClass $record,
+        \context_module $context,
+        array $editoroptions,
+        array $fileoptions,
+        int $structureddraftid = 0
+    ): stdClass {
+        $record = parent::prepare_form_data(
+            $record,
+            $context,
+            $editoroptions,
+            $fileoptions,
+            $structureddraftid
+        );
+        $record->filedescription = (string) ($record->data2 ?? "");
+        return $record;
+    }
+
+    /**
+     * Stores download-specific fields.
+     */
+    public static function to_record(stdClass $data): stdClass {
+        $description = trim((string) ($data->filedescription ?? ""));
+        $data = parent::to_record($data);
+        $data->data2 = $description;
+        content_form_mapper::unset_fields($data, ["filedescription"]);
+        return $data;
+    }
+
+    /**
+     * Renders this content block.
      */
     public function render(renderer_base $output, bool $editing): string {
         return $output->render_from_template(
@@ -51,10 +109,9 @@ class download extends template_content {
 
     /**
      * Gets the localized content type name.
-     *
-     * @return string
      */
     public static function get_name(): string {
         return get_string("pluginname", "flexbookcontent_download");
     }
+
 }
