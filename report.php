@@ -249,16 +249,20 @@ if ($view == "chapters") {
         ]
     );
 
-    $questionsbyuser = $DB->get_records_sql(
-        "SELECT a.userid, COUNT(a.id) AS questions
-           FROM {flexbook_question_attempts} a
-           JOIN {flexbook_questions} q ON q.id = a.questionid
-           JOIN {flexbook_contents} c ON c.id = q.contentid
-           JOIN {flexbook_chapters} ch ON ch.id = c.chapterid
-          WHERE ch.flexbookid = :flexbookid
-       GROUP BY a.userid",
-        ["flexbookid" => $flexbook->id]
-    );
+    $extracolumns = [];
+    $extradata = [];
+    foreach (content_type_manager::get_classes() as $classname) {
+        foreach ($classname::get_user_report_columns() as $key => $label) {
+            $extracolumns[$key] = $label;
+        }
+        foreach ($classname::get_user_report_data($flexbook->id) as $reportuserid => $values) {
+            $extradata[$reportuserid] = array_merge(
+                $extradata[$reportuserid] ?? [],
+                $values
+            );
+        }
+    }
+
     $chaptertitles = $DB->get_records_menu(
         "flexbook_chapters",
         ["flexbookid" => $flexbook->id],
@@ -269,7 +273,8 @@ if ($view == "chapters") {
     $table = new flexible_table("flexbook-user-report-{$flexbook->id}");
     $table->define_columns([
         "fullname", "progress", "chapters", "completedblocks", "pendingrequired",
-        "firstaccess", "lastaccess", "position", "questions",
+        "firstaccess", "lastaccess", "position",
+        ...array_keys($extracolumns),
     ]);
     $table->define_headers([
         get_string("fullname"),
@@ -280,7 +285,7 @@ if ($view == "chapters") {
         get_string("firstaccess", "mod_flexbook"),
         get_string("lastaccess", "mod_flexbook"),
         get_string("currentposition", "mod_flexbook"),
-        get_string("questionsanswered", "mod_flexbook"),
+        ...array_values($extracolumns),
     ]);
     $table->define_baseurl($PAGE->url);
     $table->setup();
@@ -294,9 +299,7 @@ if ($view == "chapters") {
         $position = $state && $state->lastchapterid
             ? ($chaptertitles[$state->lastchapterid] ?? get_string("notstarted", "mod_flexbook"))
             : get_string("notstarted", "mod_flexbook");
-        $questions = (int) ($questionsbyuser[$user->id]->questions ?? 0);
-
-        $table->add_data([
+        $row = [
             fullname($user),
             format_float($state->progress ?? 0, 1) . "%",
             $accessedchapters,
@@ -305,8 +308,11 @@ if ($view == "chapters") {
             $state ? userdate($state->firstaccess) : "-",
             $state ? userdate($state->lastaccess) : "-",
             format_string($position),
-            $questions,
-        ]);
+        ];
+        foreach (array_keys($extracolumns) as $key) {
+            $row[] = $extradata[$user->id][$key] ?? 0;
+        }
+        $table->add_data($row);
     }
     $table->finish_output();
 }

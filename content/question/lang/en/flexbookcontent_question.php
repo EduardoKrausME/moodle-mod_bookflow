@@ -25,3 +25,4 @@
 $string['pluginname'] = 'Question';
 
 $string['answer'] = 'Answer';
+$string['questionsanswered'] = 'Questions answered';

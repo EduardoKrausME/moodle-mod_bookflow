@@ -353,6 +353,41 @@ class question extends editor_content {
     }
 
     /**
+     * Contributes question attempt counts to the user report.
+     */
+    public static function get_user_report_columns(): array {
+        return [
+            "questionsanswered" => get_string("questionsanswered", "flexbookcontent_question"),
+        ];
+    }
+
+    /**
+     * Gets question attempt counts keyed by user id.
+     */
+    public static function get_user_report_data(int $flexbookid): array {
+        global $DB;
+
+        $records = $DB->get_records_sql(
+            "SELECT a.userid, COUNT(a.id) AS questionsanswered
+               FROM {flexbook_question_attempts} a
+               JOIN {flexbook_questions} q ON q.id = a.questionid
+               JOIN {flexbook_contents} c ON c.id = q.contentid
+               JOIN {flexbook_chapters} ch ON ch.id = c.chapterid
+              WHERE ch.flexbookid = :flexbookid
+           GROUP BY a.userid",
+            ["flexbookid" => $flexbookid]
+        );
+
+        $result = [];
+        foreach ($records as $record) {
+            $result[(int) $record->userid] = [
+                "questionsanswered" => (int) $record->questionsanswered,
+            ];
+        }
+        return $result;
+    }
+
+    /**
      * Loads question submission behaviour from this subplugin.
      */
     public static function require_page_assets(stdClass $flexbook, bool $editing): void {
