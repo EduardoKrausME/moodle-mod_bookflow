@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mod_flexbook/content/audio
+    @template flexbookcontent_code/code
 
     Example context (json):
     {
@@ -24,7 +24,4 @@
 }}
 
 {{#title}}<h3>{{title}}</h3>{{/title}}
-<audio class="w-100" controls preload="metadata" src="{{{source}}}" data-flexbook-media="{{id}}">
-    {{#str}}audionotsupported, mod_flexbook{{/str}}
-</audio>
-{{#data3}}<details><summary>{{#str}}transcript, mod_flexbook{{/str}}</summary><p>{{data3}}</p></details>{{/data3}}
+<pre class="flexbook-code"><code>{{code}}</code></pre>

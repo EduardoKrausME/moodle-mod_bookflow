@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mod_flexbook/content/callout
+    @template flexbookcontent_accordion/accordion
 
     Example context (json):
     {
@@ -23,7 +23,14 @@
     }
 }}
 
-<aside class="alert alert-primary" role="note">
-    {{#title}}<h3>{{title}}</h3>{{/title}}
-    {{{content}}}
-</aside>
+{{#title}}<h3>{{title}}</h3>{{/title}}
+<div class="accordion" data-flexbook-interactive="{{id}}">
+    {{#items}}
+        <div class="accordion-item">
+            <h4 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" aria-expanded="false" data-item-index="{{index}}">{{title}}</button>
+            </h4>
+            <div class="accordion-collapse collapse"><div class="accordion-body">{{{content}}}</div></div>
+        </div>
+    {{/items}}
+</div>
