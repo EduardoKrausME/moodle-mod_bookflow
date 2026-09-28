@@ -96,13 +96,6 @@ class provider implements
             "timecreated" => "privacy:metadata:timecreated",
             "timemodified" => "privacy:metadata:timemodified",
         ], "privacy:metadata:notes");
-        $collection->add_database_table("flexbook_highlights", [
-            "userid" => "privacy:metadata:userid",
-            "selectiontext" => "privacy:metadata:selectiontext",
-            "selector" => "privacy:metadata:selector",
-            "color" => "privacy:metadata:color",
-            "timecreated" => "privacy:metadata:timecreated",
-        ], "privacy:metadata:highlights");
         return $collection;
     }
 
@@ -132,9 +125,6 @@ class provider implements
                                  WHERE b.flexbookid = f.id AND b.userid = :u3)
                      OR EXISTS (SELECT 1 FROM {flexbook_notes} n
                                  WHERE n.flexbookid = f.id AND n.userid = :u4)
-                     OR EXISTS (SELECT 1 FROM {flexbook_highlights} h
-                                 WHERE h.flexbookid = f.id AND h.userid = :u5)
-
                    )";
         $contextlist->add_from_sql($sql, [
             "modname" => "flexbook",
@@ -143,7 +133,6 @@ class provider implements
             "u2" => $userid,
             "u3" => $userid,
             "u4" => $userid,
-            "u5" => $userid,
             "u7" => $userid,
         ]);
         return $contextlist;
@@ -168,7 +157,6 @@ class provider implements
             "flexbook_chapter_progress",
             "flexbook_bookmarks",
             "flexbook_notes",
-            "flexbook_highlights",
         ] as $table) {
             $sql = "SELECT d.userid
                       FROM {{$table}} d
@@ -218,10 +206,6 @@ class provider implements
                     "userid" => $userid,
                 ]),
                 "notes" => $DB->get_records("flexbook_notes", [
-                    "flexbookid" => $flexbook->id,
-                    "userid" => $userid,
-                ]),
-                "highlights" => $DB->get_records("flexbook_highlights", [
                     "flexbookid" => $flexbook->id,
                     "userid" => $userid,
                 ]),
@@ -315,7 +299,6 @@ class provider implements
             "flexbook_chapter_progress",
             "flexbook_bookmarks",
             "flexbook_notes",
-            "flexbook_highlights",
         ] as $table) {
             $DB->delete_records($table, ["flexbookid" => $flexbookid]);
         }
@@ -341,7 +324,6 @@ class provider implements
             "flexbook_chapter_progress",
             "flexbook_bookmarks",
             "flexbook_notes",
-            "flexbook_highlights",
         ] as $table) {
             $DB->delete_records_select($table, "flexbookid = :flexbookid AND userid {$usersql}",
                 ["flexbookid" => $flexbookid] + $userparams);

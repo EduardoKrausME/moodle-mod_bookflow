@@ -14,7 +14,7 @@ weighted progress and updates Moodle activity completion through
 - weighted progress, ignored blocks, required blocks and required chapters;
 - percentage, required, combined and required-chapter completion modes;
 - resume from the last chapter and block;
-- private bookmarks, notes and highlights;
+- private bookmarks and notes;
 - internal search;
 - student, chapter and content reports using `flexible_table`;
 - Standard Book, HTML, Markdown and Markdown ZIP import;

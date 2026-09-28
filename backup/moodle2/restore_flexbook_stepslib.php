@@ -50,7 +50,6 @@ class restore_flexbook_activity_structure_step extends restore_activity_structur
             $paths[] = new restore_path_element("flexbook_state", "/activity/flexbook/states/state");
             $paths[] = new restore_path_element("flexbook_bookmark", "/activity/flexbook/bookmarks/bookmark");
             $paths[] = new restore_path_element("flexbook_note", "/activity/flexbook/notes/note");
-            $paths[] = new restore_path_element("flexbook_highlight", "/activity/flexbook/highlights/highlight");
         }
         return $this->prepare_activity_structure($paths);
     }
@@ -185,16 +184,6 @@ class restore_flexbook_activity_structure_step extends restore_activity_structur
      */
     protected function process_flexbook_note(array $data): void {
         $this->insert_user_item("flexbook_notes", $data);
-    }
-
-    /**
-     * Restores FlexBook highlight.
-     *
-     * @param array $data Record data.
-     * @return void
-     */
-    protected function process_flexbook_highlight(array $data): void {
-        $this->insert_user_item("flexbook_highlights", $data);
     }
 
     /**

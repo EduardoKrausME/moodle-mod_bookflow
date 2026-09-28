@@ -102,7 +102,6 @@ class instance_manager {
             "flexbook_user_state",
             "flexbook_bookmarks",
             "flexbook_notes",
-            "flexbook_highlights",
         ] as $table) {
             $DB->delete_records($table, ["flexbookid" => $id]);
         }

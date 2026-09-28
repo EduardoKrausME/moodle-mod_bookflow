@@ -76,11 +76,6 @@ class backup_flexbook_activity_structure_step extends backup_activity_structure_
         $note = new backup_nested_element("note", ["id"], [
             "userid", "chapterid", "contentid", "note", "selectiontext", "timecreated", "timemodified",
         ]);
-        $highlights = new backup_nested_element("highlights");
-        $highlight = new backup_nested_element("highlight", ["id"], [
-            "userid", "chapterid", "contentid", "selectiontext", "selector", "color", "timecreated",
-        ]);
-
         $flexbook->add_child($chapters);
         $chapters->add_child($chapter);
         $chapter->add_child($contents);
@@ -96,8 +91,6 @@ class backup_flexbook_activity_structure_step extends backup_activity_structure_
         $bookmarks->add_child($bookmark);
         $flexbook->add_child($notes);
         $notes->add_child($note);
-        $flexbook->add_child($highlights);
-        $highlights->add_child($highlight);
 
         $flexbook->set_source_table("flexbook", ["id" => backup::VAR_ACTIVITYID]);
         $chapter->set_source_table("flexbook_chapters", ["flexbookid" => backup::VAR_PARENTID], "sortorder, id");
@@ -111,10 +104,9 @@ class backup_flexbook_activity_structure_step extends backup_activity_structure_
             $state->set_source_table("flexbook_user_state", ["flexbookid" => backup::VAR_PARENTID]);
             $bookmark->set_source_table("flexbook_bookmarks", ["flexbookid" => backup::VAR_PARENTID]);
             $note->set_source_table("flexbook_notes", ["flexbookid" => backup::VAR_PARENTID]);
-            $highlight->set_source_table("flexbook_highlights", ["flexbookid" => backup::VAR_PARENTID]);
         }
 
-        foreach ([$progress, $chapterprogress, $state, $bookmark, $note, $highlight] as $userelement) {
+        foreach ([$progress, $chapterprogress, $state, $bookmark, $note] as $userelement) {
             $userelement->annotate_ids("user", "userid");
         }
         $flexbook->annotate_files("mod_flexbook", "intro", null);

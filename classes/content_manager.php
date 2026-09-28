@@ -143,7 +143,6 @@ class content_manager {
         $DB->delete_records("flexbook_user_progress", ["contentid" => $contentid]);
         $DB->delete_records("flexbook_bookmarks", ["contentid" => $contentid]);
         $DB->delete_records("flexbook_notes", ["contentid" => $contentid]);
-        $DB->delete_records("flexbook_highlights", ["contentid" => $contentid]);
         $DB->delete_records("flexbook_contents", ["id" => $contentid]);
         self::normalize_sortorder($content->chapterid);
         if ($recalculate && empty($content->hidden) && !empty($content->trackprogress)
