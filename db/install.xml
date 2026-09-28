@@ -205,26 +205,5 @@
         <INDEX NAME="contentid" UNIQUE="false" FIELDS="contentid"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="flexbook_highlights" COMMENT="Private user text highlights">
-      <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="flexbookid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
-        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
-        <FIELD NAME="chapterid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
-        <FIELD NAME="contentid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
-        <FIELD NAME="selectiontext" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
-        <FIELD NAME="selector" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
-        <FIELD NAME="color" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="yellow" SEQUENCE="false"/>
-        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
-      </FIELDS>
-      <KEYS>
-        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="flexbookid" TYPE="foreign" FIELDS="flexbookid" REFTABLE="flexbook" REFFIELDS="id"/>
-        <KEY NAME="userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
-      </KEYS>
-      <INDEXES>
-        <INDEX NAME="usercontent" UNIQUE="false" FIELDS="userid, contentid"/>
-      </INDEXES>
-    </TABLE>
   </TABLES>
 </XMLDB>

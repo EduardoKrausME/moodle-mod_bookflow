@@ -40,21 +40,5 @@
             <summary>{{#str}}addnote, mod_flexbook{{/str}}</summary>
             {{> mod_flexbook/note_form}}
         </details>
-        {{#contentid}}
-            {{#hashighlights}}
-                <div class="d-none" data-region="stored-highlights">
-                    {{#highlights}}
-                        <span data-highlight-id="{{id}}" data-quote="{{quote}}" data-color="{{color}}"></span>
-                    {{/highlights}}
-                </div>
-            {{/hashighlights}}
-            <div class="flexbook-highlight-tools" aria-label="{{#str}}highlightcolors, mod_flexbook{{/str}}">
-                <span>{{#str}}highlightselection, mod_flexbook{{/str}}</span>
-                <button type="button" data-action="flexbook-highlight" data-color="yellow">{{#str}}yellow, mod_flexbook{{/str}}</button>
-                <button type="button" data-action="flexbook-highlight" data-color="green">{{#str}}green, mod_flexbook{{/str}}</button>
-                <button type="button" data-action="flexbook-highlight" data-color="blue">{{#str}}blue, mod_flexbook{{/str}}</button>
-                <button type="button" data-action="flexbook-highlight" data-color="pink">{{#str}}pink, mod_flexbook{{/str}}</button>
-            </div>
-        {{/contentid}}
     {{/enablenotes}}
 </div>

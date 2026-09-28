@@ -252,18 +252,6 @@ if (!$chapterid) {
     foreach ($contents as $content) {
         $type = content_type_manager::create_content($content, $flexbook, $context);
         $contentclasses[$content->type] = get_class($type);
-        $highlights = [];
-        foreach ($DB->get_records("flexbook_highlights", [
-            "flexbookid" => $flexbook->id,
-            "userid" => $USER->id,
-            "contentid" => $content->id,
-        ]) as $highlight) {
-            $highlights[] = [
-                "id" => $highlight->id,
-                "quote" => $highlight->selectiontext,
-                "color" => $highlight->color,
-            ];
-        }
         $toolshtml = $OUTPUT->render_from_template("mod_flexbook/content_tools", [
             "enablebookmarks" => $flexbook->enablebookmarks,
             "enablenotes" => $flexbook->enablenotes,
@@ -283,8 +271,6 @@ if (!$chapterid) {
                 "contentid" => $content->id,
             ]),
             "manual" => $content->completiontype == "manual",
-            "highlights" => $highlights,
-            "hashighlights" => !empty($highlights),
         ]);
         $renderedcontents[] = [
             "id" => $content->id,
@@ -432,7 +418,6 @@ if (!$chapterid) {
     }
     if ($flexbook->enablenotes) {
         $PAGE->requires->js_call_amd("mod_flexbook/notes", "init", [$flexbook->id]);
-        $PAGE->requires->js_call_amd("mod_flexbook/highlights", "init", [$flexbook->id]);
     }
 }
 

@@ -26,7 +26,6 @@ require_once(__DIR__ . "/../../config.php");
 
 $id = required_param("id", PARAM_INT);
 $delete = optional_param("delete", 0, PARAM_INT);
-$deletehighlight = optional_param("deletehighlight", 0, PARAM_INT);
 
 $cm = get_coursemodule_from_id("flexbook", $id, 0, false, MUST_EXIST);
 $course = get_course($cm->course);
@@ -48,17 +47,6 @@ if ($delete) {
     $DB->delete_records("flexbook_notes", ["id" => $note->id]);
     redirect(new moodle_url("/mod/flexbook/notes.php", ["id" => $cm->id]));
 }
-if ($deletehighlight) {
-    require_sesskey();
-    $highlight = $DB->get_record("flexbook_highlights", [
-        "id" => $deletehighlight,
-        "flexbookid" => $flexbook->id,
-        "userid" => $USER->id,
-    ], "*", MUST_EXIST);
-    $DB->delete_records("flexbook_highlights", ["id" => $highlight->id]);
-    redirect(new moodle_url("/mod/flexbook/notes.php", ["id" => $cm->id]));
-}
-
 $PAGE->set_url("/mod/flexbook/notes.php", ["id" => $cm->id]);
 $PAGE->set_title(get_string("mynotes", "mod_flexbook"));
 $PAGE->set_heading(format_string($course->fullname));
@@ -71,16 +59,6 @@ $sql = "SELECT n.*, ch.title AS chaptertitle, c.title AS contenttitle
            AND n.userid = :userid
       ORDER BY n.timemodified DESC";
 $records = $DB->get_records_sql($sql, ["flexbookid" => $flexbook->id, "userid" => $USER->id]);
-$highlights = $DB->get_records_sql(
-    "SELECT h.*, ch.title AS chaptertitle, c.title AS contenttitle
-       FROM {flexbook_highlights} h
-       JOIN {flexbook_chapters} ch ON ch.id = h.chapterid
-       JOIN {flexbook_contents} c ON c.id = h.contentid
-      WHERE h.flexbookid = :flexbookid AND h.userid = :userid
-   ORDER BY h.timecreated DESC",
-    ["flexbookid" => $flexbook->id, "userid" => $USER->id]
-);
-
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string("mynotes", "mod_flexbook"));
 if (!$records) {
@@ -103,32 +81,6 @@ foreach ($records as $record) {
     echo html_writer::link(new moodle_url("/mod/flexbook/notes.php", [
         "id" => $cm->id,
         "delete" => $record->id,
-        "sesskey" => sesskey(),
-    ]), get_string("delete"), ["class" => "btn btn-sm btn-link"]);
-    echo html_writer::end_div();
-    echo html_writer::end_div();
-}
-echo $OUTPUT->heading(get_string("myhighlights", "mod_flexbook"), 3);
-if (!$highlights) {
-    echo $OUTPUT->notification(get_string("nohighlights", "mod_flexbook"), "info");
-}
-foreach ($highlights as $highlight) {
-    $url = new moodle_url("/mod/flexbook/view.php", [
-        "id" => $cm->id,
-        "chapterid" => $highlight->chapterid,
-    ], "flexbook-content-{$highlight->contentid}");
-    echo html_writer::start_div("card mb-2");
-    echo html_writer::start_div("card-body");
-    echo html_writer::tag("h4", html_writer::link(
-        $url,
-        format_string($highlight->contenttitle ?: $highlight->chaptertitle)
-    ), ["class" => "h6"]);
-    echo html_writer::tag("mark", s($highlight->selectiontext), [
-        "class" => "flexbook-highlight-{$highlight->color}",
-    ]);
-    echo html_writer::link(new moodle_url("/mod/flexbook/notes.php", [
-        "id" => $cm->id,
-        "deletehighlight" => $highlight->id,
         "sesskey" => sesskey(),
     ]), get_string("delete"), ["class" => "btn btn-sm btn-link"]);
     echo html_writer::end_div();

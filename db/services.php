@@ -105,23 +105,6 @@ $functions = [
         "ajax" => true,
         "capabilities" => "mod/flexbook:view",
     ],
-    "mod_flexbook_save_highlight" => [
-        "classname" => "\\mod_flexbook\\external\\api",
-        "methodname" => "save_highlight",
-        "description" => get_string("wssave_highlight", "mod_flexbook"),
-        "type" => "write",
-        "ajax" => true,
-        "capabilities" => "mod/flexbook:view",
-    ],
-    "mod_flexbook_delete_highlight" => [
-        "classname" => "\\mod_flexbook\\external\\api",
-        "methodname" => "delete_highlight",
-        "description" => get_string("wsdelete_highlight", "mod_flexbook"),
-        "type" => "write",
-        "ajax" => true,
-        "capabilities" => "mod/flexbook:view",
-    ],
-
     "mod_flexbook_search_contents" => [
         "classname" => "\\mod_flexbook\\external\\api",
         "methodname" => "search_contents",

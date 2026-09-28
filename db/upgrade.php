@@ -51,5 +51,14 @@ function xmldb_flexbook_upgrade(int $oldversion): bool {
         upgrade_mod_savepoint(true, 2026092801, "flexbook");
     }
 
+    if ($oldversion < 2026092802) {
+        $table = new xmldb_table("flexbook_highlights");
+        if ($dbman->table_exists($table)) {
+            $dbman->drop_table($table);
+        }
+
+        upgrade_mod_savepoint(true, 2026092802, "flexbook");
+    }
+
     return true;
 }
