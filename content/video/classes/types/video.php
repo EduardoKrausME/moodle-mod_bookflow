@@ -25,6 +25,7 @@
 namespace flexbookcontent_video\types;
 
 use mod_flexbook\types\template_content;
+use renderer_base;
 
 /**
  * FlexBook Video content type.
