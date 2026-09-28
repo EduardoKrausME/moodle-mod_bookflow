@@ -73,6 +73,49 @@ final class content_types_test extends advanced_testcase {
     }
 
     /**
+     * Tests that bundled content subplugins own their rendering and Mustache template.
+     *
+     * @return void
+     */
+    public function test_core_types_own_their_rendering(): void {
+        global $CFG;
+
+        $classes = content_type_manager::get_classes();
+        foreach ([
+            "accordion",
+            "audio",
+            "callout",
+            "code",
+            "disclosure",
+            "download",
+            "flashcards",
+            "html",
+            "image",
+            "markdown",
+            "question",
+            "tabs",
+            "video",
+        ] as $type) {
+            $classname = $classes[$type];
+
+            $render = new \ReflectionMethod($classname, "render");
+            $this->assertSame(
+                $classname,
+                $render->getDeclaringClass()->getName(),
+                "Content type {$type} must own its render() method."
+            );
+            $this->assertFileExists(
+                "{$CFG->dirroot}/mod/flexbook/content/{$type}/templates/{$type}.mustache",
+                "Content type {$type} must own its Mustache template."
+            );
+            $this->assertFileDoesNotExist(
+                "{$CFG->dirroot}/mod/flexbook/templates/content/{$type}.mustache",
+                "Content type {$type} must not render from the parent plugin template directory."
+            );
+        }
+    }
+
+    /**
      * Tests that hook rejects invalid and duplicate types.
      *
      * @return void

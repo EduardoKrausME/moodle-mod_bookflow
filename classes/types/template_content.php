@@ -90,7 +90,10 @@ abstract class template_content extends content {
      */
     public function render(renderer_base $output, bool $editing): string {
         $data = $this->export_data($editing);
-        return $output->render_from_template("mod_flexbook/content/" . static::$type, $data);
+        return $output->render_from_template(
+            "flexbookcontent_" . static::$type . "/" . static::$type,
+            $data
+        );
     }
 
     /**

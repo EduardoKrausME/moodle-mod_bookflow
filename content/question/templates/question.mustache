@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mod_flexbook/content/tabs
+    @template flexbookcontent_question/question
 
     Example context (json):
     {
@@ -23,10 +23,17 @@
     }
 }}
 
-{{#title}}<h3>{{title}}</h3>{{/title}}
-<div class="flexbook-tabs" data-flexbook-interactive="{{id}}">
-    <div role="tablist">
-        {{#items}}<button class="btn btn-outline-primary {{#first}}active{{/first}}" role="tab" data-item-index="{{index}}" aria-selected="{{#first}}true{{/first}}{{^first}}false{{/first}}">{{title}}</button>{{/items}}
+<form class="flexbook-question" data-flexbook-question="{{id}}">
+    {{#title}}<h3>{{title}}</h3>{{/title}}
+    <div class="mb-3">{{{content}}}</div>
+    <div class="d-flex flex-column gap-2 mb-3">
+        {{#items}}
+            <label class="d-flex align-items-start gap-2">
+                <input type="radio" name="answer" value="{{value}}" required>
+                <span>{{title}}</span>
+            </label>
+        {{/items}}
     </div>
-    {{#items}}<div role="tabpanel" class="{{^first}}d-none{{/first}}" data-panel-index="{{index}}">{{{content}}}</div>{{/items}}
-</div>
+    <button class="btn btn-primary" type="submit">{{#str}}submitanswer, mod_flexbook{{/str}}</button>
+    <div data-region="question-feedback" aria-live="polite"></div>
+</form>

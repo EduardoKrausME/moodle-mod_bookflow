@@ -25,6 +25,7 @@
 namespace flexbookcontent_question\types;
 
 use mod_flexbook\types\template_content;
+use renderer_base;
 use stdClass;
 
 /**
@@ -109,6 +110,20 @@ class question extends template_content {
             $sql .= " AND a.iscorrect = 1";
         }
         return $DB->count_records_sql($sql, $params) > 0;
+    }
+
+    /**
+     * Renders the content block using the template owned by this subplugin.
+     *
+     * @param renderer_base $output Moodle renderer used to render the Mustache template.
+     * @param bool $editing Whether editing controls are enabled.
+     * @return string
+     */
+    public function render(renderer_base $output, bool $editing): string {
+        return $output->render_from_template(
+            "flexbookcontent_question/question",
+            $this->export_data($editing)
+        );
     }
 
     /**
