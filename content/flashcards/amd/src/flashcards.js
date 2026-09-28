@@ -16,13 +16,13 @@
 /**
  * flashcards.js
  *
- * @package   mod_flexbook
+ * @package   flexbookcontent_flashcards
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 define(["core/ajax"], function(Ajax) {
-    const init = function(flexbookId) {
+    const init = function(flexbookId, trackProgress) {
         document.querySelectorAll(".flexbook-content-flashcards").forEach(function(block) {
             const visited = new Set();
             block.querySelectorAll(".flexbook-flashcard").forEach(function(card) {
@@ -32,6 +32,9 @@ define(["core/ajax"], function(Ajax) {
                     card.classList.toggle("is-flipped", flipped);
                     if (flipped) {
                         visited.add(Number(card.dataset.itemIndex));
+                        if (!trackProgress) {
+                            return;
+                        }
                         Ajax.call([{
                             methodname: "mod_flexbook_mark_content_completed",
                             args: {

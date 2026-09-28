@@ -14,16 +14,16 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * video_progress.js
+ * audio_progress.js
  *
- * @package   mod_flexbook
+ * @package   flexbookcontent_audio
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 define(["core/ajax", "core/notification"], function(Ajax, Notification) {
     const init = function(flexbookId) {
-        document.querySelectorAll(".flexbook-content video").forEach(function(media) {
+        document.querySelectorAll(".flexbook-content audio").forEach(function(media) {
             const block = media.closest(".flexbook-content");
             let lastSent = -1;
             const send = function(force) {
@@ -43,7 +43,7 @@ define(["core/ajax", "core/notification"], function(Ajax, Notification) {
                         contentid: Number(block.dataset.contentId),
                         metric: percentage,
                         details: JSON.stringify({
-                            watchedSeconds: Math.floor(media.currentTime),
+                            playedSeconds: Math.floor(media.currentTime),
                             duration: Math.floor(media.duration)
                         })
                     }
