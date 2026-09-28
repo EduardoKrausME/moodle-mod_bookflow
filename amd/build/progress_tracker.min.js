@@ -162,6 +162,7 @@ define(["core/ajax", "core/notification", "core/str"], function(Ajax, Notificati
                 complete(flexbookId, Number(manual.dataset.contentId), 100, {manual: true});
             }
         });
+    };
 
     return {
         init: init,
