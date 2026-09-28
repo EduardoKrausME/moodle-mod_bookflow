@@ -19,13 +19,44 @@
 
     Example context (json):
     {
-        Aqui tem que criar o context em inglês
+        "id": 42,
+        "title": "Introduction",
+        "source": "https://example.com/video.mp4",
+        "nativevideo": true,
+        "embeddedvideo": false,
+        "embedhtml": "",
+        "captionsurl": "",
+        "data3": "Video transcript"
     }
 }}
 
-{{#title}}<h3>{{title}}</h3>{{/title}}
-<video class="w-100" controls preload="metadata" src="{{{source}}}" data-flexbook-media="{{id}}">
-    {{#data2}}<track kind="captions" src="{{{data2}}}">{{/data2}}
-    {{#str}}videonotsupported, mod_flexbook{{/str}}
-</video>
-{{#data3}}<details><summary>{{#str}}transcript, mod_flexbook{{/str}}</summary><p>{{data3}}</p></details>{{/data3}}
+<div class="flexbook-video">
+    {{#title}}<h3>{{title}}</h3>{{/title}}
+
+    {{#nativevideo}}
+        <video class="flexbook-video-player"
+               controls
+               playsinline
+               preload="metadata"
+               data-flexbook-media="{{id}}">
+            <source src="{{{source}}}">
+            {{#captionsurl}}
+                <track kind="captions" src="{{{captionsurl}}}">
+            {{/captionsurl}}
+            {{#str}}videonotsupported, mod_flexbook{{/str}}
+        </video>
+    {{/nativevideo}}
+
+    {{#embeddedvideo}}
+        <div class="flexbook-video-embed" data-flexbook-media-embed="{{id}}">
+            {{{embedhtml}}}
+        </div>
+    {{/embeddedvideo}}
+
+    {{#data3}}
+        <details class="flexbook-video-transcript">
+            <summary>{{#str}}transcript, mod_flexbook{{/str}}</summary>
+            <p>{{data3}}</p>
+        </details>
+    {{/data3}}
+</div>

@@ -126,6 +126,77 @@ class video extends media_content {
     }
 
     /**
+     * Builds the video template context.
+     *
+     * Direct video files keep the native HTML5 player so playback progress can
+     * still be tracked. Provider/page URLs are delegated to Moodle's media
+     * manager, which supports enabled media players such as YouTube and Vimeo.
+     *
+     * @param bool $editing Whether editing controls are enabled.
+     * @return array
+     */
+    protected function export_data(bool $editing): array {
+        $data = parent::export_data($editing);
+        $source = (string) ($data["source"] ?? "");
+
+        $data["nativevideo"] = true;
+        $data["embeddedvideo"] = false;
+        $data["embedhtml"] = "";
+        $data["captionsurl"] = clean_param((string) ($this->record->data2 ?? ""), PARAM_URL);
+
+        if ($source === "" || self::is_direct_video_source($source)) {
+            return $data;
+        }
+
+        try {
+            $url = new \moodle_url($source);
+            $manager = \core_media_manager::instance();
+            $options = [
+                \core_media_manager::OPTION_BLOCK => true,
+            ];
+
+            if ($manager->can_embed_url($url, $options)) {
+                $embedhtml = $manager->embed_url(
+                    $url,
+                    format_string($this->record->title ?? ""),
+                    1280,
+                    720,
+                    $options
+                );
+                if (trim($embedhtml) !== "") {
+                    $data["nativevideo"] = false;
+                    $data["embeddedvideo"] = true;
+                    $data["embedhtml"] = $embedhtml;
+                }
+            }
+        } catch (\Throwable $exception) {
+            // Keep the native player as a safe fallback for unusual external URLs.
+        }
+
+        return $data;
+    }
+
+    /**
+     * Checks whether the URL points directly to a browser-playable video file.
+     *
+     * @param string $source Media URL.
+     * @return bool
+     */
+    private static function is_direct_video_source(string $source): bool {
+        $path = (string) parse_url(html_entity_decode($source), PHP_URL_PATH);
+        $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+
+        return in_array($extension, [
+            "mp4",
+            "m4v",
+            "webm",
+            "ogv",
+            "ogg",
+            "mov",
+        ], true);
+    }
+
+    /**
      * Renders this content block.
      */
     public function render(renderer_base $output, bool $editing): string {

@@ -270,6 +270,50 @@ $flexbook-surface: #f7f9fc;
         font-size: 1.8rem;
     }
 
+
+    .flexbook-video {
+        width: 100%;
+    }
+
+    .flexbook-video-player {
+        display: block;
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+        max-height: 80vh;
+        background: #000;
+        border-radius: .75rem;
+    }
+
+    .flexbook-video-embed {
+        width: 100%;
+        max-width: 100%;
+        overflow: hidden;
+        background: #000;
+        border-radius: .75rem;
+    }
+
+    .flexbook-video-embed .mediaplugin,
+    .flexbook-video-embed .mediaplugin > div,
+    .flexbook-video-embed iframe,
+    .flexbook-video-embed video,
+    .flexbook-video-embed object,
+    .flexbook-video-embed embed {
+        max-width: 100%;
+    }
+
+    .flexbook-video-embed iframe {
+        display: block;
+        width: 100% !important;
+        height: auto !important;
+        aspect-ratio: 16 / 9;
+        border: 0;
+    }
+
+    .flexbook-video-transcript {
+        margin-top: 1rem;
+    }
+
 }
 
 @media (max-width: 768px) {

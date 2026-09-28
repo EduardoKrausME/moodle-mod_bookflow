@@ -239,6 +239,50 @@
   background: #ffd7ea;
 }
 
+
+.mod-flexbook .flexbook-video {
+    width: 100%;
+}
+
+.mod-flexbook .flexbook-video-player {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    max-height: 80vh;
+    background: #000;
+    border-radius: .75rem;
+}
+
+.mod-flexbook .flexbook-video-embed {
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+    background: #000;
+    border-radius: .75rem;
+}
+
+.mod-flexbook .flexbook-video-embed .mediaplugin,
+.mod-flexbook .flexbook-video-embed .mediaplugin > div,
+.mod-flexbook .flexbook-video-embed iframe,
+.mod-flexbook .flexbook-video-embed video,
+.mod-flexbook .flexbook-video-embed object,
+.mod-flexbook .flexbook-video-embed embed {
+    max-width: 100%;
+}
+
+.mod-flexbook .flexbook-video-embed iframe {
+    display: block;
+    width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 16 / 9;
+    border: 0;
+}
+
+.mod-flexbook .flexbook-video-transcript {
+    margin-top: 1rem;
+}
+
 @media (max-width: 768px) {
   .mod-flexbook .flexbook-hero,
   .mod-flexbook .flexbook-reader {
