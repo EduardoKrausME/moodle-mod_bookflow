@@ -44,6 +44,12 @@ class provider implements
     \core_privacy\local\request\plugin\provider,
     core_userlist_provider {
 
+    /**
+     * Describes the personal data stored by the question subplugin.
+     *
+     * @param collection $collection Metadata collection.
+     * @return collection
+     */
     #[Override]
     public static function get_metadata(collection $collection): collection {
         $collection->add_database_table("flexbook_question_attempts", [
@@ -56,6 +62,12 @@ class provider implements
         return $collection;
     }
 
+    /**
+     * Gets module contexts containing question-attempt data for a user.
+     *
+     * @param int $userid User id.
+     * @return contextlist
+     */
     #[Override]
     public static function get_contexts_for_userid(int $userid): contextlist {
         $contextlist = new contextlist();
@@ -82,6 +94,12 @@ class provider implements
         return $contextlist;
     }
 
+    /**
+     * Adds users with question-attempt data in the supplied context.
+     *
+     * @param userlist $userlist User list for the context.
+     * @return void
+     */
     #[Override]
     public static function get_users_in_context(userlist $userlist): void {
         $context = $userlist->get_context();
@@ -104,6 +122,12 @@ class provider implements
         ]);
     }
 
+    /**
+     * Exports question-attempt data for an approved user context list.
+     *
+     * @param approved_contextlist $contextlist Approved contexts for the user.
+     * @return void
+     */
     #[Override]
     public static function export_user_data(approved_contextlist $contextlist): void {
         global $DB;
@@ -153,6 +177,12 @@ class provider implements
         }
     }
 
+    /**
+     * Deletes all question-attempt data in a module context.
+     *
+     * @param context $context Context whose data must be deleted.
+     * @return void
+     */
     #[Override]
     public static function delete_data_for_all_users_in_context(context $context): void {
         if (!$context instanceof context_module) {
@@ -170,6 +200,12 @@ class provider implements
         }
     }
 
+    /**
+     * Deletes question-attempt data for one user in approved contexts.
+     *
+     * @param approved_contextlist $contextlist Approved contexts for the user.
+     * @return void
+     */
     #[Override]
     public static function delete_data_for_user(approved_contextlist $contextlist): void {
         $userid = $contextlist->get_user()->id;
@@ -190,6 +226,12 @@ class provider implements
         }
     }
 
+    /**
+     * Deletes question-attempt data for approved users in a context.
+     *
+     * @param approved_userlist $userlist Approved users for the context.
+     * @return void
+     */
     #[Override]
     public static function delete_data_for_users(approved_userlist $userlist): void {
         $context = $userlist->get_context();
