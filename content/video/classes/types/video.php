@@ -169,7 +169,7 @@ class video extends media_content {
                     $data["embedhtml"] = $embedhtml;
                 }
             }
-        } catch (\Throwable $exception) {
+        } catch (\Throwable) {
             // Keep the native player as a safe fallback for unusual external URLs.
         }
 
