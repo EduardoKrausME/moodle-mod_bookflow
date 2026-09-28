@@ -5,14 +5,6 @@
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-//
-// Moodle is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * code.php
@@ -24,23 +16,39 @@
 
 namespace flexbookcontent_code\types;
 
-use mod_flexbook\types\template_content;
+use mod_flexbook\types\raw_content;
 use renderer_base;
 
 /**
  * FlexBook Code content type.
  */
-class code extends template_content {
-
+class code extends raw_content {
     /** @var string */
     protected static string $type = "code";
 
     /**
-     * Renders the content block using the template owned by this subplugin.
-     *
-     * @param renderer_base $output Moodle renderer used to render the Mustache template.
-     * @param bool $editing Whether editing controls are enabled.
-     * @return string
+     * Gets the raw textarea label.
+     */
+    protected static function get_raw_label(): string {
+        return get_string("codecontent", "mod_flexbook");
+    }
+
+    /**
+     * Gets raw textarea attributes.
+     */
+    protected static function get_raw_attributes(): array {
+        return ["rows" => 18, "cols" => 90, "class" => "font-monospace"];
+    }
+
+    /**
+     * Code content can contain unsafe markup and requires the dedicated capability.
+     */
+    public static function is_safe(): bool {
+        return false;
+    }
+
+    /**
+     * Renders this content block.
      */
     public function render(renderer_base $output, bool $editing): string {
         return $output->render_from_template(
@@ -51,10 +59,9 @@ class code extends template_content {
 
     /**
      * Gets the localized content type name.
-     *
-     * @return string
      */
     public static function get_name(): string {
         return get_string("pluginname", "flexbookcontent_code");
     }
+
 }

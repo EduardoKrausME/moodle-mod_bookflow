@@ -5,14 +5,6 @@
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-//
-// Moodle is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * disclosure.php
@@ -24,23 +16,61 @@
 
 namespace flexbookcontent_disclosure\types;
 
-use mod_flexbook\types\template_content;
+use mod_flexbook\types\editor_content;
 use renderer_base;
+use stdClass;
 
 /**
  * FlexBook Disclosure content type.
  */
-class disclosure extends template_content {
-
+class disclosure extends editor_content {
     /** @var string */
     protected static string $type = "disclosure";
 
     /**
-     * Renders the content block using the template owned by this subplugin.
-     *
-     * @param renderer_base $output Moodle renderer used to render the Mustache template.
-     * @param bool $editing Whether editing controls are enabled.
-     * @return string
+     * Gets the editor label.
+     */
+    protected static function get_editor_label(): string {
+        return get_string("disclosurecontent", "mod_flexbook");
+    }
+
+    /**
+     * Gets completion rules supported by disclosure content.
+     */
+    public static function get_completion_options(): array {
+        $options = parent::get_completion_options();
+        $none = $options["none"];
+        unset($options["none"]);
+        $options["click"] = get_string("completeonclick", "mod_flexbook");
+        $options["none"] = $none;
+        return $options;
+    }
+
+    /**
+     * Stores disclosure-specific derived fields.
+     */
+    public static function to_record(stdClass $data): stdClass {
+        $data = parent::to_record($data);
+        $data->auxint1 = 1;
+        return $data;
+    }
+
+    /**
+     * Loads disclosure interaction owned by this subplugin.
+     */
+    public static function require_page_assets(stdClass $flexbook, bool $editing): void {
+        global $PAGE;
+        if (!$editing) {
+            $PAGE->requires->js_call_amd(
+                "flexbookcontent_disclosure/disclosure",
+                "init",
+                [$flexbook->id, !empty($flexbook->enabletracking)]
+            );
+        }
+    }
+
+    /**
+     * Renders this content block.
      */
     public function render(renderer_base $output, bool $editing): string {
         return $output->render_from_template(
@@ -51,10 +81,9 @@ class disclosure extends template_content {
 
     /**
      * Gets the localized content type name.
-     *
-     * @return string
      */
     public static function get_name(): string {
         return get_string("pluginname", "flexbookcontent_disclosure");
     }
+
 }
