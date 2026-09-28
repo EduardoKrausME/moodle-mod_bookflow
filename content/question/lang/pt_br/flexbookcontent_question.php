@@ -23,3 +23,5 @@
  */
 
 $string['pluginname'] = 'Pergunta';
+
+$string['answer'] = 'Resposta';

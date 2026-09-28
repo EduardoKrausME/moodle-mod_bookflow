@@ -21,6 +21,19 @@ use stdClass;
  */
 abstract class media_content extends source_content {
     /**
+     * Uses stored media duration when available.
+     */
+    public function estimate_time(): int {
+        if (!empty($this->record->estimatedtime)) {
+            return (int) $this->record->estimatedtime;
+        }
+        if (!empty($this->record->auxint2)) {
+            return (int) $this->record->auxint2;
+        }
+        return parent::estimate_time();
+    }
+
+    /**
      * Validates media completion settings.
      */
     public static function validate_form(array $data, array $files): array {

@@ -92,14 +92,8 @@ class instance_manager {
             $contentids = $DB->get_fieldset_select("flexbook_contents", "id", "chapterid {$insql}", $params);
         }
 
-        if ($contentids) {
-            [$insql, $params] = $DB->get_in_or_equal($contentids);
-            $questionids = $DB->get_fieldset_select("flexbook_questions", "id", "contentid {$insql}", $params);
-            if ($questionids) {
-                [$qsql, $qparams] = $DB->get_in_or_equal($questionids);
-                $DB->delete_records_select("flexbook_question_attempts", "questionid {$qsql}", $qparams);
-            }
-            $DB->delete_records_select("flexbook_questions", "contentid {$insql}", $params);
+        foreach ($contentids as $contentid) {
+            content_manager::delete((int) $contentid, false);
         }
 
         foreach ([
@@ -111,10 +105,6 @@ class instance_manager {
             "flexbook_highlights",
         ] as $table) {
             $DB->delete_records($table, ["flexbookid" => $id]);
-        }
-        if ($contentids) {
-            [$insql, $params] = $DB->get_in_or_equal($contentids);
-            $DB->delete_records_select("flexbook_contents", "id {$insql}", $params);
         }
         $DB->delete_records("flexbook_chapters", ["flexbookid" => $id]);
         $DB->delete_records("flexbook", ["id" => $id]);

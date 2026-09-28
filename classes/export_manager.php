@@ -53,16 +53,8 @@ class export_manager {
                 if ($content->title) {
                     $markdown .= "### " . format_string($content->title) . "\n\n";
                 }
-                if ($content->type == "markdown") {
-                    $markdown .= $content->data1 . "\n\n";
-                } else if (in_array($content->type, ["video", "audio", "image", "download"])) {
-                    $markdown .= "[{$content->type}](" . clean_param($content->data1, PARAM_URL) . ")\n\n";
-                    if ($content->data2) {
-                        $markdown .= $content->data2 . "\n\n";
-                    }
-                } else {
-                    $markdown .= trim(html_to_text($content->data1 ?? "", 0, false)) . "\n\n";
-                }
+                $type = content_type_manager::create_content($content, $flexbook, $context);
+                $markdown .= $type->export_markdown();
             }
         }
         return $markdown;
@@ -107,18 +99,7 @@ class export_manager {
                 $body .= "<div class=\"content content-{$content->type}\">"
                     . $type->render($output, false)
                     . "</div>";
-                if ($showanswers && $content->type == "question") {
-                    $answer = $DB->get_field("flexbook_questions", "answerjson", ["contentid" => $content->id]);
-                    if ($answer !== false && $answer !== null) {
-                        $decodedanswer = json_decode($answer, true);
-                        $answertext = is_array($decodedanswer) ? json_encode($decodedanswer) : $decodedanswer;
-                        $body .= "<div class=\"answer\"><strong>"
-                            . get_string("answer", "mod_flexbook")
-                            . ":</strong> "
-                            . s($answertext)
-                            . "</div>";
-                    }
-                }
+                $body .= $type->render_export_extra($showanswers);
             }
             $body .= "</section>";
         }

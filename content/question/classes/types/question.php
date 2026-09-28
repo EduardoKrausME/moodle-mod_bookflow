@@ -19,7 +19,7 @@ namespace flexbookcontent_question\types;
 use context_module;
 use mod_flexbook\form\content_form;
 use mod_flexbook\form\content_form_mapper;
-use mod_flexbook\question_manager;
+use flexbookcontent_question\question_manager;
 use mod_flexbook\types\editor_content;
 use renderer_base;
 use stdClass;
@@ -315,6 +315,41 @@ class question extends editor_content {
             $sql .= " AND a.iscorrect = 1";
         }
         return $DB->count_records_sql($sql, $params) > 0;
+    }
+
+    /**
+     * Uses a stable default estimate for one question.
+     */
+    public function estimate_time(): int {
+        if (!empty($this->record->estimatedtime)) {
+            return (int) $this->record->estimatedtime;
+        }
+        return 60;
+    }
+
+    /**
+     * Renders the answer only when exports explicitly request it.
+     */
+    public function render_export_extra(bool $showanswers): string {
+        global $DB;
+
+        if (!$showanswers) {
+            return "";
+        }
+        $answer = $DB->get_field("flexbook_questions", "answerjson", [
+            "contentid" => $this->record->id,
+        ]);
+        if ($answer === false || $answer === null) {
+            return "";
+        }
+
+        $decoded = json_decode($answer, true);
+        $answertext = is_array($decoded) ? json_encode($decoded) : $decoded;
+        return "<div class=\"answer\"><strong>"
+            . get_string("answer", "flexbookcontent_question")
+            . ":</strong> "
+            . s($answertext)
+            . "</div>";
     }
 
     /**

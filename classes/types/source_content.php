@@ -104,6 +104,19 @@ abstract class source_content extends template_content {
     }
 
     /**
+     * Exports source-backed content as a Markdown link.
+     */
+    public function export_markdown(): string {
+        $source = clean_param($this->get_rewritten_primary_data(), PARAM_URL);
+        $label = static::get_name();
+        $markdown = "[{$label}]({$source})\n\n";
+        if (!empty($this->record->data2)) {
+            $markdown .= trim((string) $this->record->data2) . "\n\n";
+        }
+        return $markdown;
+    }
+
+    /**
      * Adds the normalized source URL to the template context.
      */
     protected function export_data(bool $editing): array {

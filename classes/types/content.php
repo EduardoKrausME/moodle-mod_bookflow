@@ -503,6 +503,59 @@ abstract class content {
     }
 
     /**
+     * Exports this content as Markdown.
+     *
+     * @return string
+     */
+    public function export_markdown(): string {
+        return trim(html_to_text($this->record->data1 ?? "", 0, false)) . "\n\n";
+    }
+
+    /**
+     * Renders extra HTML used only by exports.
+     *
+     * @param bool $showanswers Whether protected answers may be shown.
+     * @return string
+     */
+    public function render_export_extra(bool $showanswers): string {
+        return "";
+    }
+
+    /**
+     * Estimates study time for this content block in seconds.
+     *
+     * @return int
+     */
+    public function estimate_time(): int {
+        if (!empty($this->record->estimatedtime)) {
+            return (int) $this->record->estimatedtime;
+        }
+        $words = count(
+            preg_split("/\\s+/u", trim(html_to_text($this->record->data1 ?? "", 0, false))) ?: []
+        );
+        return (int) ceil($words / 200 * 60);
+    }
+
+    /**
+     * Gets optional user-report columns contributed by this content type.
+     *
+     * @return array
+     */
+    public static function get_user_report_columns(): array {
+        return [];
+    }
+
+    /**
+     * Gets optional user-report values keyed by user id.
+     *
+     * @param int $flexbookid FlexBook id.
+     * @return array
+     */
+    public static function get_user_report_data(int $flexbookid): array {
+        return [];
+    }
+
+    /**
      * Renders the content block with its Mustache template.
      *
      * @param renderer_base $output Moodle renderer used to render the Mustache template.

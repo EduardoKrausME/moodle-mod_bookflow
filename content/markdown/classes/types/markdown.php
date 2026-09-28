@@ -37,6 +37,13 @@ class markdown extends raw_content {
     }
 
     /**
+     * Preserves native Markdown during export.
+     */
+    public function export_markdown(): string {
+        return (string) ($this->record->data1 ?? "") . "\n\n";
+    }
+
+    /**
      * Renders this content block.
      */
     public function render(renderer_base $output, bool $editing): string {
