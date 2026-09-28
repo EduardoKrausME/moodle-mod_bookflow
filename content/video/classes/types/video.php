@@ -169,7 +169,7 @@ class video extends media_content {
                     $data["embedhtml"] = $embedhtml;
                 }
             }
-        } catch (\Throwable) {
+        } catch (\Throwable) { // phpcs:disable Generic.CodeAnalysis.EmptyStatement.DetectedCatch
             // Keep the native player as a safe fallback for unusual external URLs.
         }
 
