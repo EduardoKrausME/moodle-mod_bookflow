@@ -17,13 +17,15 @@
 /**
  * question_manager.php
  *
- * @package   mod_flexbook
+ * @package   flexbookcontent_question
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_flexbook;
+namespace flexbookcontent_question;
 
+use flexbookcontent_question\event\question_answered;
+use mod_flexbook\progress\progress_manager;
 use moodle_exception;
 
 /**
@@ -86,4 +88,87 @@ class question_manager {
         }
         $DB->delete_records("flexbook_questions", ["contentid" => $contentid]);
     }
+    /**
+     * Submits and evaluates one answer.
+     *
+     * @param int $flexbookid FlexBook id.
+     * @param int $contentid Content id.
+     * @param int $userid User id.
+     * @param string $answer JSON-encoded answer.
+     * @return array
+     */
+    public static function submit_answer(
+        int $flexbookid,
+        int $contentid,
+        int $userid,
+        string $answer
+    ): array {
+        global $DB;
+
+        $content = $DB->get_record_sql(
+            "SELECT c.*
+               FROM {flexbook_contents} c
+               JOIN {flexbook_chapters} ch ON ch.id = c.chapterid
+              WHERE c.id = :contentid
+                AND c.type = :type
+                AND ch.flexbookid = :flexbookid",
+            [
+                "contentid" => $contentid,
+                "type" => "question",
+                "flexbookid" => $flexbookid,
+            ],
+            MUST_EXIST
+        );
+        $question = $DB->get_record(
+            "flexbook_questions",
+            ["contentid" => $contentid],
+            "*",
+            MUST_EXIST
+        );
+
+        $decoded = json_decode($answer, true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new \invalid_parameter_exception("Invalid answer JSON");
+        }
+
+        $expected = json_decode($question->answerjson ?? "null", true);
+        $iscorrect = $expected !== null && $decoded == $expected;
+        $attemptnumber = $DB->count_records("flexbook_question_attempts", [
+            "questionid" => $question->id,
+            "userid" => $userid,
+        ]) + 1;
+
+        $transaction = $DB->start_delegated_transaction();
+        $DB->insert_record("flexbook_question_attempts", (object) [
+            "questionid" => $question->id,
+            "userid" => $userid,
+            "answerjson" => json_encode($decoded),
+            "iscorrect" => $iscorrect,
+            "attemptnumber" => $attemptnumber,
+            "timecreated" => time(),
+        ]);
+
+        $progress = new progress_manager();
+        $progress->mark_content_viewed($flexbookid, $userid, $contentid);
+        $shouldcomplete = in_array($content->completiontype, ["answer", "attempt"], true)
+            || ($content->completiontype === "correct" && $iscorrect);
+        if ($shouldcomplete) {
+            $progress->mark_content_completed($flexbookid, $userid, $contentid);
+        }
+        $transaction->allow_commit();
+
+        question_answered::create_from_ids(
+            $flexbookid,
+            $content->chapterid,
+            $content->id,
+            $userid
+        )->trigger();
+
+        return [
+            "iscorrect" => $iscorrect,
+            "attemptnumber" => $attemptnumber,
+            "feedback" => $question->feedback ?? "",
+        ];
+    }
+
 }

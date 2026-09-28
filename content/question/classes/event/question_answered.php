@@ -17,18 +17,27 @@
 /**
  * question_answered.php
  *
- * @package   mod_flexbook
+ * @package   flexbookcontent_question
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_flexbook\event;
+namespace flexbookcontent_question\event;
+
+use mod_flexbook\event\base_event;
 use Override;
 
 /**
  * Represents the question answered event.
  */
 class question_answered extends base_event {
+    /**
+     * Gets the localized event name.
+     */
+    public static function get_name(): string {
+        return get_string("eventquestion_answered", "flexbookcontent_question");
+    }
+
     /**
      * Initializes the event metadata.
      *

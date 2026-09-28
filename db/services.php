@@ -121,14 +121,7 @@ $functions = [
         "ajax" => true,
         "capabilities" => "mod/flexbook:view",
     ],
-    "mod_flexbook_submit_question_answer" => [
-        "classname" => "\\mod_flexbook\\external\\api",
-        "methodname" => "submit_question_answer",
-        "description" => get_string("wssubmit_question_answer", "mod_flexbook"),
-        "type" => "write",
-        "ajax" => true,
-        "capabilities" => "mod/flexbook:view",
-    ],
+
     "mod_flexbook_search_contents" => [
         "classname" => "\\mod_flexbook\\external\\api",
         "methodname" => "search_contents",

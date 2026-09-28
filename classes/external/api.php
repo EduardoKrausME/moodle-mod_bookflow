@@ -37,7 +37,6 @@ use mod_flexbook\event\bookmark_deleted;
 use mod_flexbook\event\note_created;
 use mod_flexbook\event\note_deleted;
 use mod_flexbook\event\note_updated;
-use mod_flexbook\event\question_answered;
 use mod_flexbook\content_manager;
 use mod_flexbook\progress\progress_manager;
 use moodle_exception;
@@ -769,94 +768,6 @@ class api extends external_api {
      */
     public static function delete_highlight_returns(): external_single_structure {
         return new external_single_structure(["deleted" => new external_value(PARAM_BOOL, "Deleted")]);
-    }
-
-    /**
-     * Defines parameters for the submit question answer external function.
-     *
-     * @return external_function_parameters
-     */
-    public static function submit_question_answer_parameters(): external_function_parameters {
-        return new external_function_parameters([
-            "flexbookid" => new external_value(PARAM_INT, "FlexBook id"),
-            "contentid" => new external_value(PARAM_INT, "Content id"),
-            "answer" => new external_value(PARAM_RAW, "JSON answer"),
-        ]);
-    }
-
-    /**
-     * Submits and evaluates an answer to a question content block.
-     *
-     * @param int $flexbookid FlexBook ID.
-     * @param int $contentid Content block ID.
-     * @param string $answer Submitted answer.
-     * @return array
-     */
-    public static function submit_question_answer(int $flexbookid, int $contentid, string $answer): array {
-        global $DB, $USER;
-
-        $params = self::validate_parameters(self::submit_question_answer_parameters(), compact(
-            "flexbookid",
-            "contentid",
-            "answer"
-        ));
-        $context = self::require_instance($params["flexbookid"])[2];
-        self::validate_context($context);
-        self::validate_item($params["flexbookid"], 0, $params["contentid"]);
-        $question = $DB->get_record("flexbook_questions", ["contentid" => $params["contentid"]], "*", MUST_EXIST);
-        $decoded = json_decode($params["answer"], true);
-        if (json_last_error() != JSON_ERROR_NONE) {
-            throw new invalid_parameter_exception("Invalid answer JSON");
-        }
-        $expected = json_decode($question->answerjson ?? "null", true);
-        $iscorrect = $expected !== null && $decoded == $expected;
-        $attemptnumber = $DB->count_records("flexbook_question_attempts", [
-            "questionid" => $question->id,
-            "userid" => $USER->id,
-        ]) + 1;
-        $transaction = $DB->start_delegated_transaction();
-        $DB->insert_record("flexbook_question_attempts", (object) [
-            "questionid" => $question->id,
-            "userid" => $USER->id,
-            "answerjson" => json_encode($decoded),
-            "iscorrect" => $iscorrect,
-            "attemptnumber" => $attemptnumber,
-            "timecreated" => time(),
-        ]);
-
-        $content = $DB->get_record("flexbook_contents", ["id" => $params["contentid"]], "*", MUST_EXIST);
-        $shouldcomplete = in_array($content->completiontype, ["answer", "attempt"])
-            || ($content->completiontype == "correct" && $iscorrect);
-        $manager = new progress_manager();
-        $manager->mark_content_viewed($params["flexbookid"], $USER->id, $params["contentid"]);
-        if ($shouldcomplete) {
-            $manager->mark_content_completed($params["flexbookid"], $USER->id, $params["contentid"]);
-        }
-        $transaction->allow_commit();
-        question_answered::create_from_ids(
-            $params["flexbookid"],
-            $content->chapterid,
-            $content->id,
-            $USER->id
-        )->trigger();
-        return [
-            "iscorrect" => $iscorrect,
-            "attemptnumber" => $attemptnumber,
-            "feedback" => $question->feedback ?? "",
-        ];
-    }
-
-    /**
-     * Defines the return structure for the submit question answer external function.
-     *
-     * @return external_single_structure
-     */
-    public static function submit_question_answer_returns(): external_single_structure {
-        return new external_single_structure([
-            "iscorrect" => new external_value(PARAM_BOOL, "Answer correctness"),
-            "attemptnumber" => new external_value(PARAM_INT, "Attempt number"),
-            "feedback" => new external_value(PARAM_RAW, "Feedback"),
-        ]);
     }
 
     /**

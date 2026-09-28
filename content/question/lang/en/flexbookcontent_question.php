@@ -26,3 +26,5 @@ $string['pluginname'] = 'Question';
 
 $string['answer'] = 'Answer';
 $string['questionsanswered'] = 'Questions answered';
+$string['wssubmitanswer'] = 'Submit a FlexBook question answer';
+$string['eventquestion_answered'] = 'Question answered';

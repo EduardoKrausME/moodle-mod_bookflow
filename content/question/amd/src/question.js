@@ -22,7 +22,7 @@ define(
                 }
 
                 Ajax.call([{
-                    methodname: "mod_flexbook_submit_question_answer",
+                    methodname: "flexbookcontent_question_submit_answer",
                     args: {
                         flexbookid: flexbookId,
                         contentid: Number(form.dataset.flexbookQuestion),
