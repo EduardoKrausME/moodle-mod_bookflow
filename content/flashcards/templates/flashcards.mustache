@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mod_flexbook/content/html
+    @template flexbookcontent_flashcards/flashcards
 
     Example context (json):
     {
@@ -24,4 +24,10 @@
 }}
 
 {{#title}}<h3>{{title}}</h3>{{/title}}
-<div class="flexbook-richtext">{{{content}}}</div>
+<div class="flexbook-flashcards" data-flexbook-interactive="{{id}}">
+    {{#items}}
+        <button class="flexbook-flashcard" type="button" data-item-index="{{index}}" aria-pressed="false">
+            <span class="front">{{front}}</span><span class="back">{{back}}</span>
+        </button>
+    {{/items}}
+</div>

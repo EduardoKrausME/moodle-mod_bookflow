@@ -25,6 +25,7 @@
 namespace flexbookcontent_markdown\types;
 
 use mod_flexbook\types\template_content;
+use renderer_base;
 
 /**
  * FlexBook Markdown content type.
@@ -33,6 +34,20 @@ class markdown extends template_content {
 
     /** @var string */
     protected static string $type = "markdown";
+
+    /**
+     * Renders the content block using the template owned by this subplugin.
+     *
+     * @param renderer_base $output Moodle renderer used to render the Mustache template.
+     * @param bool $editing Whether editing controls are enabled.
+     * @return string
+     */
+    public function render(renderer_base $output, bool $editing): string {
+        return $output->render_from_template(
+            "flexbookcontent_markdown/markdown",
+            $this->export_data($editing)
+        );
+    }
 
     /**
      * Gets the localized content type name.

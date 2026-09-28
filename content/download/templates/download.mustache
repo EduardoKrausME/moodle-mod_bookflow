@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mod_flexbook/content/flashcards
+    @template flexbookcontent_download/download
 
     Example context (json):
     {
@@ -23,11 +23,8 @@
     }
 }}
 
-{{#title}}<h3>{{title}}</h3>{{/title}}
-<div class="flexbook-flashcards" data-flexbook-interactive="{{id}}">
-    {{#items}}
-        <button class="flexbook-flashcard" type="button" data-item-index="{{index}}" aria-pressed="false">
-            <span class="front">{{front}}</span><span class="back">{{back}}</span>
-        </button>
-    {{/items}}
+<div class="flexbook-download">
+    {{#title}}<h3>{{title}}</h3>{{/title}}
+    {{#data2}}<p>{{data2}}</p>{{/data2}}
+    <a class="btn btn-outline-primary" href="{{{source}}}" download data-flexbook-download="{{id}}">{{#str}}download{{/str}}</a>
 </div>

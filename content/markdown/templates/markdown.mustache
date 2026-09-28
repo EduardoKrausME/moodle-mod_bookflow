@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mod_flexbook/content/image
+    @template flexbookcontent_markdown/markdown
 
     Example context (json):
     {
@@ -24,7 +24,4 @@
 }}
 
 {{#title}}<h3>{{title}}</h3>{{/title}}
-<figure>
-    <img class="img-fluid" src="{{{source}}}" alt="{{data2}}" loading="lazy">
-    {{#data3}}<figcaption>{{data3}}</figcaption>{{/data3}}
-</figure>
+<div class="flexbook-markdown">{{{content}}}</div>
