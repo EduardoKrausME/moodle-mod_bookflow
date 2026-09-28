@@ -161,41 +161,11 @@ define(["core/ajax", "core/notification", "core/str"], function(Ajax, Notificati
             if (manual) {
                 complete(flexbookId, Number(manual.dataset.contentId), 100, {manual: true});
             }
-            const download = event.target.closest("[data-flexbook-download]");
-            if (download) {
-                complete(flexbookId, Number(download.dataset.flexbookDownload), 100, {download: true});
-            }
         });
 
-        document.addEventListener("submit", function(event) {
-            const form = event.target.closest("[data-flexbook-question]");
-            if (!form) {
-                return;
-            }
-            event.preventDefault();
-            const selected = form.querySelector("input[name='answer']:checked");
-            if (!selected) {
-                return;
-            }
-            Ajax.call([{
-                methodname: "mod_flexbook_submit_question_answer",
-                args: {
-                    flexbookid: flexbookId,
-                    contentid: Number(form.dataset.flexbookQuestion),
-                    answer: JSON.stringify(selected.value)
-                }
-            }])[0].then(function(result) {
-                const feedback = form.querySelector("[data-region='question-feedback']");
-                if (feedback) {
-                    feedback.textContent = result.feedback;
-                }
-                return Ajax.call([{
-                    methodname: "mod_flexbook_get_user_progress",
-                    args: {flexbookid: flexbookId}
-                }])[0];
-            }).then(updateProgress).catch(Notification.exception);
-        });
+    return {
+        init: init,
+        complete: complete,
+        updateProgress: updateProgress
     };
-
-    return {init: init};
 });

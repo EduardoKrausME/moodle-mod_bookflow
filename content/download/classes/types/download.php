@@ -118,6 +118,27 @@ class download extends source_content {
     }
 
     /**
+     * Forces the download file area to be served as an attachment.
+     */
+    public static function get_forcedownload_fileareas(): array {
+        return [static::$filearea];
+    }
+
+    /**
+     * Loads download tracking from this subplugin.
+     */
+    public static function require_page_assets(stdClass $flexbook, bool $editing): void {
+        global $PAGE;
+        if (!$editing && !empty($flexbook->enabletracking)) {
+            $PAGE->requires->js_call_amd(
+                "flexbookcontent_download/download",
+                "init",
+                [$flexbook->id]
+            );
+        }
+    }
+
+    /**
      * Renders this content block.
      */
     public function render(renderer_base $output, bool $editing): string {

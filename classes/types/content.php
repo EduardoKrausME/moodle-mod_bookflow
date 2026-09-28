@@ -231,6 +231,15 @@ abstract class content {
     }
 
     /**
+     * Gets file areas that must always be served as downloads.
+     *
+     * @return array
+     */
+    public static function get_forcedownload_fileareas(): array {
+        return [];
+    }
+
+    /**
      * Runs after a content record has been created.
      *
      * @param int $contentid Content id.

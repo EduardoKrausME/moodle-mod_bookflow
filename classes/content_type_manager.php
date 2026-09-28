@@ -38,25 +38,6 @@ use stdClass;
  */
 class content_type_manager {
     /**
-     * Content types bundled with the FlexBook activity.
-     */
-    private const BUNDLED_TYPES = [
-        "accordion",
-        "audio",
-        "callout",
-        "code",
-        "disclosure",
-        "download",
-        "flashcards",
-        "html",
-        "image",
-        "markdown",
-        "question",
-        "tabs",
-        "video",
-    ];
-
-    /**
      * Discovers all core and extension content type classes.
      *
      * @return array
@@ -94,16 +75,13 @@ class content_type_manager {
      * @return void
      */
     private static function register_bundled_types(content_types $hook): void {
-        foreach (self::BUNDLED_TYPES as $type) {
-            $file = dirname(__DIR__) . "/content/{$type}/classes/types/{$type}.php";
-            if (!is_readable($file)) {
-                continue;
-            }
-
+        $pattern = dirname(__DIR__) . "/content/*/classes/content_type.php";
+        foreach (glob($pattern) ?: [] as $file) {
+            $type = basename(dirname(dirname($file)));
             require_once($file);
-            $classname = "\\flexbookcontent_{$type}\\types\\{$type}";
+            $classname = "\\flexbookcontent_{$type}\\content_type";
             if (class_exists($classname, false)) {
-                $hook->register($type, $classname);
+                $classname::register($hook);
             }
         }
     }

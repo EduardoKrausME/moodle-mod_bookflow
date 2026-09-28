@@ -318,6 +318,20 @@ class question extends editor_content {
     }
 
     /**
+     * Loads question submission behaviour from this subplugin.
+     */
+    public static function require_page_assets(stdClass $flexbook, bool $editing): void {
+        global $PAGE;
+        if (!$editing) {
+            $PAGE->requires->js_call_amd(
+                "flexbookcontent_question/question",
+                "init",
+                [$flexbook->id]
+            );
+        }
+    }
+
+    /**
      * Renders this content block.
      */
     public function render(renderer_base $output, bool $editing): string {

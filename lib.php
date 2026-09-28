@@ -22,6 +22,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use mod_flexbook\content_type_manager;
 use mod_flexbook\instance_manager;
 
 /**
@@ -213,8 +214,19 @@ function flexbook_pluginfile(
     require_login($course, true, $cm);
     require_capability("mod/flexbook:view", $context);
 
-    $allowed = ["intro", "content", "cover", "download"];
-    if (!in_array($filearea, $allowed)) {
+    $allowed = ["intro", "cover"];
+    $forcedownloadareas = [];
+    foreach (content_type_manager::get_classes() as $classname) {
+        $allowed = array_merge($allowed, $classname::get_fileareas());
+        $forcedownloadareas = array_merge(
+            $forcedownloadareas,
+            $classname::get_forcedownload_fileareas()
+        );
+    }
+    $allowed = array_values(array_unique($allowed));
+    $forcedownloadareas = array_values(array_unique($forcedownloadareas));
+
+    if (!in_array($filearea, $allowed, true)) {
         send_file_not_found();
     }
 
@@ -231,5 +243,11 @@ function flexbook_pluginfile(
         send_file_not_found();
     }
 
-    send_stored_file($file, 0, 0, $forcedownload || $filearea == "download", $options);
+    send_stored_file(
+        $file,
+        0,
+        0,
+        $forcedownload || in_array($filearea, $forcedownloadareas, true),
+        $options
+    );
 }
