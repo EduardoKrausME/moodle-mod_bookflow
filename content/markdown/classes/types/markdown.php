@@ -34,8 +34,8 @@ class markdown extends raw_content {
     /** @var string */
     protected static string $type = "markdown";
 
-    /** @var int */
-    protected static int $contentformat = FORMAT_MARKDOWN;
+    /** @var string */
+    protected static string $contentformat = FORMAT_MARKDOWN;
 
     /**
      * Gets the raw textarea label.
