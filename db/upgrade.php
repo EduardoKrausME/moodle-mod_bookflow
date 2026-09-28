@@ -29,5 +29,27 @@
  * @return bool
  */
 function xmldb_flexbook_upgrade(int $oldversion): bool {
+    global $DB;
+
+    $dbman = $DB->get_manager();
+
+    if ($oldversion < 2026092801) {
+        $table = new xmldb_table("flexbook");
+        $field = new xmldb_field(
+            "defaultcontenttype",
+            XMLDB_TYPE_CHAR,
+            "50",
+            null,
+            XMLDB_NOTNULL,
+            null,
+            null,
+            "numbering"
+        );
+
+        $dbman->change_field_default($table, $field);
+
+        upgrade_mod_savepoint(true, 2026092801, "flexbook");
+    }
+
     return true;
 }
