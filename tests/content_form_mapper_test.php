@@ -26,12 +26,12 @@ namespace mod_flexbook;
 
 use advanced_testcase;
 use mod_flexbook\form\content_form_mapper;
-use PHPUnit\Framework\Attributes\CoversClass;
 
 /**
  * Tests conversion between friendly forms and generic content storage.
+ *
+ * @covers \mod_flexbook\form\content_form_mapper
  */
-#[CoversClass(content_form_mapper::class)]
 final class content_form_mapper_test extends advanced_testcase {
     /**
      * Tests accordion rows are stored as JSON without blank rows.
