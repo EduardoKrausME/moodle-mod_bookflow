@@ -17,12 +17,12 @@
 /**
  * chapter_form.php
  *
- * @package   mod_flexbook
+ * @package   mod_bookflow
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_flexbook\form;
+namespace mod_bookflow\form;
 
 use moodleform;
 use Override;
@@ -53,11 +53,11 @@ class chapter_form extends moodleform {
         $mform->addElement("hidden", "chapterid");
         $mform->setType("chapterid", PARAM_INT);
 
-        $mform->addElement("text", "title", get_string("chaptertitle", "mod_flexbook"), ["size" => 64]);
+        $mform->addElement("text", "title", get_string("chaptertitle", "mod_bookflow"), ["size" => 64]);
         $mform->setType("title", PARAM_TEXT);
         $mform->addRule("title", null, "required", null, "client");
 
-        $mform->addElement("select", "parentid", get_string("parentchapter", "mod_flexbook"), [0 =>
+        $mform->addElement("select", "parentid", get_string("parentchapter", "mod_bookflow"), [0 =>
             get_string("none")] + $chapters);
         $mform->setDefault("parentid", 0);
 
@@ -67,9 +67,9 @@ class chapter_form extends moodleform {
         ]);
         $mform->setType("description_editor", PARAM_RAW);
 
-        $mform->addElement("advcheckbox", "required", get_string("chapterrequired", "mod_flexbook"));
-        $mform->addElement("advcheckbox", "hidden", get_string("hidden", "mod_flexbook"));
-        $mform->addElement("duration", "estimatedtime", get_string("estimatedtime", "mod_flexbook"),
+        $mform->addElement("advcheckbox", "required", get_string("chapterrequired", "mod_bookflow"));
+        $mform->addElement("advcheckbox", "hidden", get_string("hidden", "mod_bookflow"));
+        $mform->addElement("duration", "estimatedtime", get_string("estimatedtime", "mod_bookflow"),
             ["optional" => true]);
 
         $this->add_action_buttons();

@@ -16,7 +16,7 @@
 /**
  * progress_tracker.js
  *
- * @package   mod_flexbook
+ * @package   mod_bookflow
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -44,8 +44,8 @@ define(["core/ajax", "core/notification", "core/str"], function(Ajax, Notificati
             }
         });
         if (result.activitycompleted) {
-            Str.get_string("activitycompletedmessage", "mod_flexbook").then(function(message) {
-                const region = document.querySelector(".flexbook-reader-progress");
+            Str.get_string("activitycompletedmessage", "mod_bookflow").then(function(message) {
+                const region = document.querySelector(".bookflow-reader-progress");
                 if (region && !region.querySelector(".alert-success")) {
                     const notice = document.createElement("div");
                     notice.className = "alert alert-success mt-2";
@@ -58,7 +58,7 @@ define(["core/ajax", "core/notification", "core/str"], function(Ajax, Notificati
         }
     };
 
-    const flush = function(flexbookId) {
+    const flush = function(bookflowId) {
         if (flushTimer) {
             window.clearTimeout(flushTimer);
         }
@@ -69,12 +69,12 @@ define(["core/ajax", "core/notification", "core/str"], function(Ajax, Notificati
             return;
         }
         Ajax.call([{
-            methodname: "mod_flexbook_mark_contents_viewed",
-            args: {flexbookid: flexbookId, contentids: contentIds}
+            methodname: "mod_bookflow_mark_contents_viewed",
+            args: {bookflowid: bookflowId, contentids: contentIds}
         }])[0].then(updateProgress).catch(Notification.exception);
     };
 
-    const queueViewed = function(flexbookId, contentId) {
+    const queueViewed = function(bookflowId, contentId) {
         if (viewed.has(contentId)) {
             return;
         }
@@ -82,16 +82,16 @@ define(["core/ajax", "core/notification", "core/str"], function(Ajax, Notificati
         queued.add(contentId);
         if (!flushTimer) {
             flushTimer = window.setTimeout(function() {
-                flush(flexbookId);
+                flush(bookflowId);
             }, 800);
         }
     };
 
-    const complete = function(flexbookId, contentId, metric, details) {
+    const complete = function(bookflowId, contentId, metric, details) {
         return Ajax.call([{
-            methodname: "mod_flexbook_mark_content_completed",
+            methodname: "mod_bookflow_mark_content_completed",
             args: {
-                flexbookid: flexbookId,
+                bookflowid: bookflowId,
                 contentid: contentId,
                 metric: metric,
                 details: JSON.stringify(details || {})
@@ -99,11 +99,11 @@ define(["core/ajax", "core/notification", "core/str"], function(Ajax, Notificati
         }])[0].then(updateProgress).catch(Notification.exception);
     };
 
-    const savePosition = function(flexbookId, chapterId, contentId) {
+    const savePosition = function(bookflowId, chapterId, contentId) {
         Ajax.call([{
-            methodname: "mod_flexbook_save_user_position",
+            methodname: "mod_bookflow_save_user_position",
             args: {
-                flexbookid: flexbookId,
+                bookflowid: bookflowId,
                 chapterid: chapterId,
                 contentid: contentId,
                 scrollposition: Math.max(0, Math.round(window.scrollY))
@@ -111,11 +111,11 @@ define(["core/ajax", "core/notification", "core/str"], function(Ajax, Notificati
         }])[0].catch(Notification.exception);
     };
 
-    const init = function(flexbookId, chapterId) {
+    const init = function(bookflowId, chapterId) {
         const blocks = document.querySelectorAll(
-            ".flexbook-content[data-track-progress='1']"
+            ".bookflow-content[data-track-progress='1']"
         );
-        const positionBlocks = document.querySelectorAll(".flexbook-content");
+        const positionBlocks = document.querySelectorAll(".bookflow-content");
 
         const observer = new IntersectionObserver(function(entries) {
             entries.forEach(function(entry) {
@@ -125,11 +125,11 @@ define(["core/ajax", "core/notification", "core/str"], function(Ajax, Notificati
                 const completionValue = Number(block.dataset.completionValue || 0);
 
                 if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
-                    queueViewed(flexbookId, contentId);
+                    queueViewed(bookflowId, contentId);
                     if (completionType === "timed" && !timers.has(contentId)) {
-                        flush(flexbookId);
+                        flush(bookflowId);
                         const timer = window.setTimeout(function() {
-                            complete(flexbookId, contentId, 100, {visibleSeconds: completionValue});
+                            complete(bookflowId, contentId, 100, {visibleSeconds: completionValue});
                             timers.delete(contentId);
                         }, (Math.max(1, completionValue) + 1) * 1000);
                         timers.set(contentId, timer);
@@ -148,7 +148,7 @@ define(["core/ajax", "core/notification", "core/str"], function(Ajax, Notificati
         const positionObserver = new IntersectionObserver(function(entries) {
             entries.forEach(function(entry) {
                 if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
-                    savePosition(flexbookId, chapterId, Number(entry.target.dataset.contentId));
+                    savePosition(bookflowId, chapterId, Number(entry.target.dataset.contentId));
                 }
             });
         }, {threshold: [0.5]});
@@ -157,9 +157,9 @@ define(["core/ajax", "core/notification", "core/str"], function(Ajax, Notificati
         });
 
         document.addEventListener("click", function(event) {
-            const manual = event.target.closest("[data-action='flexbook-complete-manual']");
+            const manual = event.target.closest("[data-action='bookflow-complete-manual']");
             if (manual) {
-                complete(flexbookId, Number(manual.dataset.contentId), 100, {manual: true});
+                complete(bookflowId, Number(manual.dataset.contentId), 100, {manual: true});
             }
         });
     };

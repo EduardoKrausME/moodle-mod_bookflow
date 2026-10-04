@@ -17,18 +17,18 @@
 /**
  * content_type.php
  *
- * @package   flexbookcontent_video
+ * @package   bookflowcontent_video
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace flexbookcontent_video;
+namespace bookflowcontent_video;
 
-use flexbookcontent_video\types\video;
-use mod_flexbook\hook\content_types;
+use bookflowcontent_video\types\video;
+use mod_bookflow\hook\content_types;
 
 /**
- * Registers the Video content type in FlexBook.
+ * Registers the Video content type in BookFlow.
  */
 class content_type {
     /**

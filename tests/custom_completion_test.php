@@ -17,20 +17,20 @@
 /**
  * custom_completion_test.php
  *
- * @package   mod_flexbook
+ * @package   mod_bookflow
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_flexbook;
+namespace mod_bookflow;
 
 use advanced_testcase;
-use mod_flexbook\completion\custom_completion;
+use mod_bookflow\completion\custom_completion;
 
 /**
- * Tests the FlexBook custom completion integration with Moodle core.
+ * Tests the BookFlow custom completion integration with Moodle core.
  *
- * @covers \mod_flexbook\completion\custom_completion
+ * @covers \mod_bookflow\completion\custom_completion
  */
 final class custom_completion_test extends advanced_testcase {
     /**
@@ -43,24 +43,24 @@ final class custom_completion_test extends advanced_testcase {
 
         $course = $this->getDataGenerator()->create_course(["enablecompletion" => 1]);
         $user = $this->getDataGenerator()->create_and_enrol($course, "student");
-        $generator = $this->getDataGenerator()->get_plugin_generator("mod_flexbook");
-        $flexbook = $generator->create_instance([
+        $generator = $this->getDataGenerator()->get_plugin_generator("mod_bookflow");
+        $bookflow = $generator->create_instance([
             "course" => $course->id,
             "name" => "Completion test",
             "completion" => COMPLETION_TRACKING_AUTOMATIC,
-            "completionmode" => FLEXBOOK_COMPLETION_PERCENTAGE,
+            "completionmode" => BOOKFLOW_COMPLETION_PERCENTAGE,
             "completionpercentage" => 80,
         ]);
-        $chapter = $generator->create_chapter($flexbook);
+        $chapter = $generator->create_chapter($bookflow);
         $generator->create_content($chapter);
 
         rebuild_course_cache($course->id, true);
-        $cmrecord = get_coursemodule_from_instance("flexbook", $flexbook->id, $course->id, false, MUST_EXIST);
+        $cmrecord = get_coursemodule_from_instance("bookflow", $bookflow->id, $course->id, false, MUST_EXIST);
         $cm = get_fast_modinfo($course)->get_cm($cmrecord->id);
         $customdata = (array) $cm->customdata;
 
         $this->assertSame(["completionmode" => 1], $customdata["customcompletionrules"]);
-        $this->assertSame(FLEXBOOK_COMPLETION_PERCENTAGE, $customdata["completionmode"]);
+        $this->assertSame(BOOKFLOW_COMPLETION_PERCENTAGE, $customdata["completionmode"]);
         $this->assertSame(80, $customdata["completionpercentage"]);
 
         $completion = new custom_completion($cm, $user->id);

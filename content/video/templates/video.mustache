@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template flexbookcontent_video/video
+    @template bookflowcontent_video/video
 
     Example context (json):
     {
@@ -30,32 +30,32 @@
     }
 }}
 
-<div class="flexbook-video">
+<div class="bookflow-video">
     {{#title}}<h3>{{title}}</h3>{{/title}}
 
     {{#nativevideo}}
-        <video class="flexbook-video-player"
+        <video class="bookflow-video-player"
                controls
                playsinline
                preload="metadata"
-               data-flexbook-media="{{id}}">
+               data-bookflow-media="{{id}}">
             <source src="{{{source}}}">
             {{#captionsurl}}
                 <track kind="captions" src="{{{captionsurl}}}">
             {{/captionsurl}}
-            {{#str}}videonotsupported, mod_flexbook{{/str}}
+            {{#str}}videonotsupported, mod_bookflow{{/str}}
         </video>
     {{/nativevideo}}
 
     {{#embeddedvideo}}
-        <div class="flexbook-video-embed" data-flexbook-media-embed="{{id}}">
+        <div class="bookflow-video-embed" data-bookflow-media-embed="{{id}}">
             {{{embedhtml}}}
         </div>
     {{/embeddedvideo}}
 
     {{#data3}}
-        <details class="flexbook-video-transcript">
-            <summary>{{#str}}transcript, mod_flexbook{{/str}}</summary>
+        <details class="bookflow-video-transcript">
+            <summary>{{#str}}transcript, mod_bookflow{{/str}}</summary>
             <p>{{data3}}</p>
         </details>
     {{/data3}}

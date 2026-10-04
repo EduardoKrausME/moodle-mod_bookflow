@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template flexbookcontent_question/question
+    @template bookflowcontent_question/question
 
     Example context (json):
     {
@@ -23,7 +23,7 @@
     }
 }}
 
-<form class="flexbook-question" data-flexbook-question="{{id}}">
+<form class="bookflow-question" data-bookflow-question="{{id}}">
     {{#title}}<h3>{{title}}</h3>{{/title}}
     <div class="mb-3">{{{content}}}</div>
     <div class="d-flex flex-column gap-2 mb-3">
@@ -34,6 +34,6 @@
             </label>
         {{/items}}
     </div>
-    <button class="btn btn-primary" type="submit">{{#str}}submitanswer, mod_flexbook{{/str}}</button>
+    <button class="btn btn-primary" type="submit">{{#str}}submitanswer, mod_bookflow{{/str}}</button>
     <div data-region="question-feedback" aria-live="polite"></div>
 </form>

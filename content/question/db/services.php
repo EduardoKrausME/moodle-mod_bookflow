@@ -17,7 +17,7 @@
 /**
  * Question web services.
  *
- * @package flexbookcontent_question
+ * @package bookflowcontent_question
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -25,12 +25,12 @@
 defined('MOODLE_INTERNAL') || die;
 
 $functions = [
-    "flexbookcontent_question_submit_answer" => [
-        "classname" => "\\flexbookcontent_question\\external\\api",
+    "bookflowcontent_question_submit_answer" => [
+        "classname" => "\\bookflowcontent_question\\external\\api",
         "methodname" => "submit_answer",
-        "description" => get_string("wssubmitanswer", "flexbookcontent_question"),
+        "description" => get_string("wssubmitanswer", "bookflowcontent_question"),
         "type" => "write",
         "ajax" => true,
-        "capabilities" => "mod/flexbook:view",
+        "capabilities" => "mod/bookflow:view",
     ],
 ];

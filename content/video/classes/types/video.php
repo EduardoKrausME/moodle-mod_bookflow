@@ -17,21 +17,21 @@
 /**
  * video.php
  *
- * @package   flexbookcontent_video
+ * @package   bookflowcontent_video
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace flexbookcontent_video\types;
+namespace bookflowcontent_video\types;
 
-use mod_flexbook\form\content_form;
-use mod_flexbook\form\content_form_mapper;
-use mod_flexbook\types\media_content;
+use mod_bookflow\form\content_form;
+use mod_bookflow\form\content_form_mapper;
+use mod_bookflow\types\media_content;
 use renderer_base;
 use stdClass;
 
 /**
- * FlexBook Video content type.
+ * BookFlow Video content type.
  */
 class video extends media_content {
     /** @var string */
@@ -52,12 +52,12 @@ class video extends media_content {
     ): void {
         parent::add_form_fields($form, $editoroptions, $fileoptions, $repeatcount, $structureddraftid);
         $mform = $form->get_mform();
-        $mform->addElement("url", "captionsurl", get_string("captionsurl", "mod_flexbook"), ["size" => 64]);
+        $mform->addElement("url", "captionsurl", get_string("captionsurl", "mod_bookflow"), ["size" => 64]);
         $mform->setType("captionsurl", PARAM_URL);
         $mform->addElement(
             "textarea",
             "transcript",
-            get_string("transcript", "mod_flexbook"),
+            get_string("transcript", "mod_bookflow"),
             ["rows" => 8, "cols" => 90]
         );
         $mform->setType("transcript", PARAM_RAW);
@@ -70,8 +70,8 @@ class video extends media_content {
         $options = parent::get_completion_options();
         $none = $options["none"];
         unset($options["none"]);
-        $options["percent"] = get_string("completeonpercent", "mod_flexbook");
-        $options["end"] = get_string("completeonend", "mod_flexbook");
+        $options["percent"] = get_string("completeonpercent", "mod_bookflow");
+        $options["end"] = get_string("completeonend", "mod_bookflow");
         $options["none"] = $none;
         return $options;
     }
@@ -114,13 +114,13 @@ class video extends media_content {
     /**
      * Loads video progress tracking from this subplugin.
      */
-    public static function require_page_assets(stdClass $flexbook, bool $editing): void {
+    public static function require_page_assets(stdClass $bookflow, bool $editing): void {
         global $PAGE;
-        if (!$editing && !empty($flexbook->enabletracking)) {
+        if (!$editing && !empty($bookflow->enabletracking)) {
             $PAGE->requires->js_call_amd(
-                "flexbookcontent_video/video_progress",
+                "bookflowcontent_video/video_progress",
                 "init",
-                [$flexbook->id]
+                [$bookflow->id]
             );
         }
     }
@@ -201,7 +201,7 @@ class video extends media_content {
      */
     public function render(renderer_base $output, bool $editing): string {
         return $output->render_from_template(
-            "flexbookcontent_video/video",
+            "bookflowcontent_video/video",
             $this->export_data($editing)
         );
     }
@@ -210,7 +210,7 @@ class video extends media_content {
      * Gets the localized content type name.
      */
     public static function get_name(): string {
-        return get_string("pluginname", "flexbookcontent_video");
+        return get_string("pluginname", "bookflowcontent_video");
     }
 
 }

@@ -17,12 +17,12 @@
 /**
  * action.php
  *
- * @package   mod_flexbook
+ * @package   mod_bookflow
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use mod_flexbook\content_manager;
+use mod_bookflow\content_manager;
 
 require_once(__DIR__ . "/../../config.php");
 
@@ -31,25 +31,25 @@ $contentid = required_param("contentid", PARAM_INT);
 $action = required_param("action", PARAM_ALPHA);
 $confirm = optional_param("confirm", 0, PARAM_BOOL);
 
-$cm = get_coursemodule_from_id("flexbook", $id, 0, false, MUST_EXIST);
+$cm = get_coursemodule_from_id("bookflow", $id, 0, false, MUST_EXIST);
 $course = get_course($cm->course);
-$flexbook = $DB->get_record("flexbook", ["id" => $cm->instance], "*", MUST_EXIST);
+$bookflow = $DB->get_record("bookflow", ["id" => $cm->instance], "*", MUST_EXIST);
 $context = context_module::instance($cm->id);
 require_login($course, true, $cm);
-require_capability("mod/flexbook:managecontent", $context);
+require_capability("mod/bookflow:managecontent", $context);
 require_sesskey();
 
 $content = $DB->get_record_sql(
     "SELECT c.*
-       FROM {flexbook_contents} c
-       JOIN {flexbook_chapters} ch ON ch.id = c.chapterid
-      WHERE c.id = :contentid AND ch.flexbookid = :flexbookid",
-    ["contentid" => $contentid, "flexbookid" => $flexbook->id],
+       FROM {bookflow_contents} c
+       JOIN {bookflow_chapters} ch ON ch.id = c.chapterid
+      WHERE c.id = :contentid AND ch.bookflowid = :bookflowid",
+    ["contentid" => $contentid, "bookflowid" => $bookflow->id],
     MUST_EXIST
 );
 
 if ($action == "delete" && !$confirm) {
-    $PAGE->set_url("/mod/flexbook/action.php", [
+    $PAGE->set_url("/mod/bookflow/action.php", [
         "id" => $cm->id,
         "contentid" => $contentid,
         "action" => "delete",
@@ -58,15 +58,15 @@ if ($action == "delete" && !$confirm) {
     $PAGE->set_title(get_string("delete"));
     echo $OUTPUT->header();
     echo $OUTPUT->confirm(
-        get_string("confirmdeletecontent", "mod_flexbook", format_string($content->title)),
-        new moodle_url("/mod/flexbook/action.php", [
+        get_string("confirmdeletecontent", "mod_bookflow", format_string($content->title)),
+        new moodle_url("/mod/bookflow/action.php", [
             "id" => $cm->id,
             "contentid" => $contentid,
             "action" => "delete",
             "confirm" => 1,
             "sesskey" => sesskey(),
         ]),
-        new moodle_url("/mod/flexbook/view.php", [
+        new moodle_url("/mod/bookflow/view.php", [
             "id" => $cm->id,
             "chapterid" => $content->chapterid,
         ])
@@ -97,7 +97,7 @@ switch ($action) {
         throw new invalid_parameter_exception("Unknown action");
 }
 
-redirect(new moodle_url("/mod/flexbook/view.php", [
+redirect(new moodle_url("/mod/bookflow/view.php", [
     "id" => $cm->id,
     "chapterid" => $content->chapterid,
 ]));

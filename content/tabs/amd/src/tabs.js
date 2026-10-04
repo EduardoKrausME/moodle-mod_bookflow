@@ -16,14 +16,14 @@
 /**
  * tabs.js
  *
- * @package   flexbookcontent_tabs
+ * @package   bookflowcontent_tabs
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 define(["core/ajax"], function(Ajax) {
-    const init = function(flexbookId, trackProgress) {
-        document.querySelectorAll(".flexbook-content-tabs").forEach(function(block) {
+    const init = function(bookflowId, trackProgress) {
+        document.querySelectorAll(".bookflow-content-tabs").forEach(function(block) {
             const visited = new Set([0]);
             block.querySelectorAll("[role='tab']").forEach(function(tab) {
                 tab.addEventListener("click", function() {
@@ -41,9 +41,9 @@ define(["core/ajax"], function(Ajax) {
                         return;
                     }
                     Ajax.call([{
-                        methodname: "mod_flexbook_mark_content_completed",
+                        methodname: "mod_bookflow_mark_content_completed",
                         args: {
-                            flexbookid: flexbookId,
+                            bookflowid: bookflowId,
                             contentid: Number(block.dataset.contentId),
                             metric: visited.size,
                             details: JSON.stringify({visited: Array.from(visited)})

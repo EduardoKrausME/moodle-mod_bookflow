@@ -17,7 +17,7 @@
 /**
  * bookmarks.php
  *
- * @package   mod_flexbook
+ * @package   mod_bookflow
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -27,55 +27,55 @@ require_once(__DIR__ . "/../../config.php");
 $id = required_param("id", PARAM_INT);
 $delete = optional_param("delete", 0, PARAM_INT);
 
-$cm = get_coursemodule_from_id("flexbook", $id, 0, false, MUST_EXIST);
+$cm = get_coursemodule_from_id("bookflow", $id, 0, false, MUST_EXIST);
 $course = get_course($cm->course);
-$flexbook = $DB->get_record("flexbook", ["id" => $cm->instance], "*", MUST_EXIST);
+$bookflow = $DB->get_record("bookflow", ["id" => $cm->instance], "*", MUST_EXIST);
 $context = context_module::instance($cm->id);
 require_login($course, true, $cm);
-require_capability("mod/flexbook:view", $context);
+require_capability("mod/bookflow:view", $context);
 
-if (!$flexbook->enablebookmarks) {
-    throw new moodle_exception("bookmarksdisabled", "mod_flexbook");
+if (!$bookflow->enablebookmarks) {
+    throw new moodle_exception("bookmarksdisabled", "mod_bookflow");
 }
 if ($delete) {
     require_sesskey();
-    $bookmark = $DB->get_record("flexbook_bookmarks", [
+    $bookmark = $DB->get_record("bookflow_bookmarks", [
         "id" => $delete,
         "userid" => $USER->id,
-        "flexbookid" => $flexbook->id,
+        "bookflowid" => $bookflow->id,
     ], "*", MUST_EXIST);
-    $DB->delete_records("flexbook_bookmarks", ["id" => $bookmark->id]);
-    redirect(new moodle_url("/mod/flexbook/bookmarks.php", ["id" => $cm->id]));
+    $DB->delete_records("bookflow_bookmarks", ["id" => $bookmark->id]);
+    redirect(new moodle_url("/mod/bookflow/bookmarks.php", ["id" => $cm->id]));
 }
 
-$PAGE->set_url("/mod/flexbook/bookmarks.php", ["id" => $cm->id]);
-$PAGE->set_title(get_string("mybookmarks", "mod_flexbook"));
+$PAGE->set_url("/mod/bookflow/bookmarks.php", ["id" => $cm->id]);
+$PAGE->set_title(get_string("mybookmarks", "mod_bookflow"));
 $PAGE->set_heading(format_string($course->fullname));
 
 $sql = "SELECT b.*, ch.title AS chaptertitle, c.title AS contenttitle, c.type AS contenttype
-          FROM {flexbook_bookmarks} b
-     LEFT JOIN {flexbook_chapters} ch ON ch.id = b.chapterid
-     LEFT JOIN {flexbook_contents} c ON c.id = b.contentid
-         WHERE b.flexbookid = :flexbookid
+          FROM {bookflow_bookmarks} b
+     LEFT JOIN {bookflow_chapters} ch ON ch.id = b.chapterid
+     LEFT JOIN {bookflow_contents} c ON c.id = b.contentid
+         WHERE b.bookflowid = :bookflowid
            AND b.userid = :userid
       ORDER BY b.timecreated DESC";
-$records = $DB->get_records_sql($sql, ["flexbookid" => $flexbook->id, "userid" => $USER->id]);
+$records = $DB->get_records_sql($sql, ["bookflowid" => $bookflow->id, "userid" => $USER->id]);
 
 echo $OUTPUT->header();
-echo $OUTPUT->heading(get_string("mybookmarks", "mod_flexbook"));
+echo $OUTPUT->heading(get_string("mybookmarks", "mod_bookflow"));
 if (!$records) {
-    echo $OUTPUT->notification(get_string("nobookmarks", "mod_flexbook"), "info");
+    echo $OUTPUT->notification(get_string("nobookmarks", "mod_bookflow"), "info");
 } else {
     echo html_writer::start_tag("ul", ["class" => "list-group"]);
     foreach ($records as $record) {
         $title = $record->itemtype == "book"
-            ? $flexbook->name
+            ? $bookflow->name
             : ($record->contenttitle ?: $record->chaptertitle);
-        $url = new moodle_url("/mod/flexbook/view.php", [
+        $url = new moodle_url("/mod/bookflow/view.php", [
             "id" => $cm->id,
             "chapterid" => $record->chapterid,
-        ], $record->contentid ? "flexbook-content-{$record->contentid}" : null);
-        $deleteurl = new moodle_url("/mod/flexbook/bookmarks.php", [
+        ], $record->contentid ? "bookflow-content-{$record->contentid}" : null);
+        $deleteurl = new moodle_url("/mod/bookflow/bookmarks.php", [
             "id" => $cm->id,
             "delete" => $record->id,
             "sesskey" => sesskey(),

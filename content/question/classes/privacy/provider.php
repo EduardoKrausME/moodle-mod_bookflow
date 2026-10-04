@@ -17,12 +17,12 @@
 /**
  * Privacy provider for question attempts.
  *
- * @package flexbookcontent_question
+ * @package bookflowcontent_question
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace flexbookcontent_question\privacy;
+namespace bookflowcontent_question\privacy;
 
 use context;
 use context_module;
@@ -52,7 +52,7 @@ class provider implements
      */
     #[Override]
     public static function get_metadata(collection $collection): collection {
-        $collection->add_database_table("flexbook_question_attempts", [
+        $collection->add_database_table("bookflow_question_attempts", [
             "userid" => "privacy:metadata:userid",
             "answerjson" => "privacy:metadata:answer",
             "iscorrect" => "privacy:metadata:iscorrect",
@@ -75,19 +75,19 @@ class provider implements
                   FROM {context} ctx
                   JOIN {course_modules} cm ON cm.id = ctx.instanceid
                   JOIN {modules} m ON m.id = cm.module AND m.name = :modname
-                  JOIN {flexbook} f ON f.id = cm.instance
+                  JOIN {bookflow} f ON f.id = cm.instance
                  WHERE ctx.contextlevel = :contextlevel
                    AND EXISTS (
                         SELECT 1
-                          FROM {flexbook_question_attempts} a
-                          JOIN {flexbook_questions} q ON q.id = a.questionid
-                          JOIN {flexbook_contents} c ON c.id = q.contentid
-                          JOIN {flexbook_chapters} ch ON ch.id = c.chapterid
-                         WHERE ch.flexbookid = f.id
+                          FROM {bookflow_question_attempts} a
+                          JOIN {bookflow_questions} q ON q.id = a.questionid
+                          JOIN {bookflow_contents} c ON c.id = q.contentid
+                          JOIN {bookflow_chapters} ch ON ch.id = c.chapterid
+                         WHERE ch.bookflowid = f.id
                            AND a.userid = :userid
                    )";
         $contextlist->add_from_sql($sql, [
-            "modname" => "flexbook",
+            "modname" => "bookflow",
             "contextlevel" => CONTEXT_MODULE,
             "userid" => $userid,
         ]);
@@ -108,17 +108,17 @@ class provider implements
         }
 
         $sql = "SELECT a.userid
-                  FROM {flexbook_question_attempts} a
-                  JOIN {flexbook_questions} q ON q.id = a.questionid
-                  JOIN {flexbook_contents} c ON c.id = q.contentid
-                  JOIN {flexbook_chapters} ch ON ch.id = c.chapterid
-                  JOIN {flexbook} f ON f.id = ch.flexbookid
+                  FROM {bookflow_question_attempts} a
+                  JOIN {bookflow_questions} q ON q.id = a.questionid
+                  JOIN {bookflow_contents} c ON c.id = q.contentid
+                  JOIN {bookflow_chapters} ch ON ch.id = c.chapterid
+                  JOIN {bookflow} f ON f.id = ch.bookflowid
                   JOIN {course_modules} cm ON cm.instance = f.id
                   JOIN {modules} m ON m.id = cm.module AND m.name = :modname
                  WHERE cm.id = :cmid";
         $userlist->add_from_sql("userid", $sql, [
             "cmid" => $context->instanceid,
-            "modname" => "flexbook",
+            "modname" => "bookflow",
         ]);
     }
 
@@ -138,7 +138,7 @@ class provider implements
                 continue;
             }
             $cm = get_coursemodule_from_id(
-                "flexbook",
+                "bookflow",
                 $context->instanceid,
                 0,
                 false,
@@ -149,14 +149,14 @@ class provider implements
             }
 
             $sql = "SELECT a.*
-                      FROM {flexbook_question_attempts} a
-                      JOIN {flexbook_questions} q ON q.id = a.questionid
-                      JOIN {flexbook_contents} c ON c.id = q.contentid
-                      JOIN {flexbook_chapters} ch ON ch.id = c.chapterid
-                     WHERE ch.flexbookid = :flexbookid
+                      FROM {bookflow_question_attempts} a
+                      JOIN {bookflow_questions} q ON q.id = a.questionid
+                      JOIN {bookflow_contents} c ON c.id = q.contentid
+                      JOIN {bookflow_chapters} ch ON ch.id = c.chapterid
+                     WHERE ch.bookflowid = :bookflowid
                        AND a.userid = :userid";
             $records = $DB->get_records_sql($sql, [
-                "flexbookid" => $cm->instance,
+                "bookflowid" => $cm->instance,
                 "userid" => $userid,
             ]);
 
@@ -171,7 +171,7 @@ class provider implements
             }
 
             writer::with_context($context)->export_data(
-                [get_string("privacy:question_attempts", "flexbookcontent_question")],
+                [get_string("privacy:question_attempts", "bookflowcontent_question")],
                 $export
             );
         }
@@ -189,7 +189,7 @@ class provider implements
             return;
         }
         $cm = get_coursemodule_from_id(
-            "flexbook",
+            "bookflow",
             $context->instanceid,
             0,
             false,
@@ -214,7 +214,7 @@ class provider implements
                 continue;
             }
             $cm = get_coursemodule_from_id(
-                "flexbook",
+                "bookflow",
                 $context->instanceid,
                 0,
                 false,
@@ -239,7 +239,7 @@ class provider implements
             return;
         }
         $cm = get_coursemodule_from_id(
-            "flexbook",
+            "bookflow",
             $context->instanceid,
             0,
             false,
@@ -251,16 +251,16 @@ class provider implements
     }
 
     /**
-     * Deletes attempts for one FlexBook, optionally restricted to user ids.
+     * Deletes attempts for one BookFlow, optionally restricted to user ids.
      *
-     * @param int $flexbookid FlexBook id.
+     * @param int $bookflowid BookFlow id.
      * @param array $userids User ids, or empty for all.
      * @return void
      */
-    private static function delete_attempts(int $flexbookid, array $userids): void {
+    private static function delete_attempts(int $bookflowid, array $userids): void {
         global $DB;
 
-        $params = ["flexbookid" => $flexbookid];
+        $params = ["bookflowid" => $bookflowid];
         $userclause = "";
         if ($userids) {
             [$usersql, $userparams] = $DB->get_in_or_equal(
@@ -274,11 +274,11 @@ class provider implements
 
         $sql = "questionid IN (
                     SELECT q.id
-                      FROM {flexbook_questions} q
-                      JOIN {flexbook_contents} c ON c.id = q.contentid
-                      JOIN {flexbook_chapters} ch ON ch.id = c.chapterid
-                     WHERE ch.flexbookid = :flexbookid
+                      FROM {bookflow_questions} q
+                      JOIN {bookflow_contents} c ON c.id = q.contentid
+                      JOIN {bookflow_chapters} ch ON ch.id = c.chapterid
+                     WHERE ch.bookflowid = :bookflowid
                 ){$userclause}";
-        $DB->delete_records_select("flexbook_question_attempts", $sql, $params);
+        $DB->delete_records_select("bookflow_question_attempts", $sql, $params);
     }
 }

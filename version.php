@@ -17,15 +17,15 @@
 /**
  * version.php
  *
- * @package   mod_flexbook
+ * @package   mod_bookflow
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die;
 
-$plugin->version = 2026092803;
-$plugin->release = "1.2.3";
-$plugin->component = "mod_flexbook";
+$plugin->version = 2026100400;
+$plugin->release = "1.3.0";
+$plugin->component = "mod_bookflow";
 $plugin->requires = 2024042200;
 $plugin->maturity = MATURITY_STABLE;

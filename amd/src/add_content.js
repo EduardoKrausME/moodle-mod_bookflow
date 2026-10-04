@@ -20,7 +20,7 @@
  * is unavailable. When JavaScript is active, this module intercepts the
  * click and opens the content type chooser as a modal.
  *
- * @package   mod_flexbook
+ * @package   mod_bookflow
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -31,7 +31,7 @@ define([], function() {
     let activeTrigger = null;
 
     const getBackdrop = function(modal) {
-        return document.querySelector('[data-flexbook-modal-backdrop="' + modal.id + '"]');
+        return document.querySelector('[data-bookflow-modal-backdrop="' + modal.id + '"]');
     };
 
     const hideModal = function(modal) {
@@ -77,7 +77,7 @@ define([], function() {
         if (!getBackdrop(modal)) {
             const backdrop = document.createElement("div");
             backdrop.className = "modal-backdrop fade show";
-            backdrop.setAttribute("data-flexbook-modal-backdrop", modal.id);
+            backdrop.setAttribute("data-bookflow-modal-backdrop", modal.id);
             backdrop.addEventListener("click", function() {
                 hideModal(modal);
             });
@@ -99,7 +99,7 @@ define([], function() {
         initialised = true;
 
         document.addEventListener("click", function(event) {
-            const trigger = event.target.closest('[data-action="flexbook-add-content"]');
+            const trigger = event.target.closest('[data-action="bookflow-add-content"]');
             if (trigger) {
                 const modalId = trigger.getAttribute("data-modal-id");
                 const modal = modalId ? document.getElementById(modalId) : null;
@@ -110,7 +110,7 @@ define([], function() {
                 return;
             }
 
-            const close = event.target.closest('[data-action="flexbook-close-add-content"]');
+            const close = event.target.closest('[data-action="bookflow-close-add-content"]');
             if (close) {
                 event.preventDefault();
                 hideModal(close.closest(".modal"));

@@ -17,22 +17,22 @@
 /**
  * instance_manager.php
  *
- * @package   mod_flexbook
+ * @package   mod_bookflow
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_flexbook;
+namespace mod_bookflow;
 
 use context_module;
 use stdClass;
 
 /**
- * Manages FlexBook activity instances and their files.
+ * Manages BookFlow activity instances and their files.
  */
 class instance_manager {
     /**
-     * Creates a FlexBook activity instance.
+     * Creates a BookFlow activity instance.
      *
      * @param stdClass $data Record data.
      * @return int
@@ -43,13 +43,13 @@ class instance_manager {
         $now = time();
         $data->timecreated = $now;
         $data->timemodified = $now;
-        $id = $DB->insert_record("flexbook", $data);
+        $id = $DB->insert_record("bookflow", $data);
         self::save_cover($data);
         return $id;
     }
 
     /**
-     * Updates a FlexBook activity instance.
+     * Updates a BookFlow activity instance.
      *
      * @param stdClass $data Record data.
      * @return bool
@@ -57,13 +57,13 @@ class instance_manager {
     public static function update(stdClass $data): bool {
         global $DB;
 
-        $current = $DB->get_record("flexbook", ["id" => $data->instance], "*", MUST_EXIST);
+        $current = $DB->get_record("bookflow", ["id" => $data->instance], "*", MUST_EXIST);
         $data->id = $data->instance;
         $data->timemodified = time();
-        $result = $DB->update_record("flexbook", $data);
+        $result = $DB->update_record("bookflow", $data);
         self::save_cover($data);
 
-        $updated = $DB->get_record("flexbook", ["id" => $data->id], "*", MUST_EXIST);
+        $updated = $DB->get_record("bookflow", ["id" => $data->id], "*", MUST_EXIST);
         if ((string) $current->completionmode !== (string) $updated->completionmode
                 || (string) $current->completionpercentage !== (string) $updated->completionpercentage) {
             progress_recalculator::recalculate_all($data->id);
@@ -72,24 +72,24 @@ class instance_manager {
     }
 
     /**
-     * Deletes a FlexBook activity and all dependent records.
+     * Deletes a BookFlow activity and all dependent records.
      *
-     * @param int $id FlexBook ID.
+     * @param int $id BookFlow ID.
      * @return bool
      */
     public static function delete(int $id): bool {
         global $DB;
 
-        if (!$DB->record_exists("flexbook", ["id" => $id])) {
+        if (!$DB->record_exists("bookflow", ["id" => $id])) {
             return false;
         }
 
         $transaction = $DB->start_delegated_transaction();
-        $chapterids = $DB->get_fieldset_select("flexbook_chapters", "id", "flexbookid = ?", [$id]);
+        $chapterids = $DB->get_fieldset_select("bookflow_chapters", "id", "bookflowid = ?", [$id]);
         $contentids = [];
         if ($chapterids) {
             [$insql, $params] = $DB->get_in_or_equal($chapterids);
-            $contentids = $DB->get_fieldset_select("flexbook_contents", "id", "chapterid {$insql}", $params);
+            $contentids = $DB->get_fieldset_select("bookflow_contents", "id", "chapterid {$insql}", $params);
         }
 
         foreach ($contentids as $contentid) {
@@ -97,16 +97,16 @@ class instance_manager {
         }
 
         foreach ([
-            "flexbook_user_progress",
-            "flexbook_chapter_progress",
-            "flexbook_user_state",
-            "flexbook_bookmarks",
-            "flexbook_notes",
+            "bookflow_user_progress",
+            "bookflow_chapter_progress",
+            "bookflow_user_state",
+            "bookflow_bookmarks",
+            "bookflow_notes",
         ] as $table) {
-            $DB->delete_records($table, ["flexbookid" => $id]);
+            $DB->delete_records($table, ["bookflowid" => $id]);
         }
-        $DB->delete_records("flexbook_chapters", ["flexbookid" => $id]);
-        $DB->delete_records("flexbook", ["id" => $id]);
+        $DB->delete_records("bookflow_chapters", ["bookflowid" => $id]);
+        $DB->delete_records("bookflow", ["id" => $id]);
         $transaction->allow_commit();
         return true;
     }
@@ -125,7 +125,7 @@ class instance_manager {
         file_save_draft_area_files(
             $data->cover,
             $context->id,
-            "mod_flexbook",
+            "mod_bookflow",
             "cover",
             0,
             ["accepted_types" => ["image"], "maxfiles" => 1, "subdirs" => 0]

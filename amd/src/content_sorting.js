@@ -16,19 +16,19 @@
 /**
  * content_sorting.js
  *
- * @package   mod_flexbook
+ * @package   mod_bookflow
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 define(["core/ajax", "core/notification"], function(Ajax, Notification) {
-    const init = function(flexbookId, chapterId) {
+    const init = function(bookflowId, chapterId) {
         const list = document.querySelector("[data-region='content-list']");
         if (!list) {
             return;
         }
         let dragged = null;
-        list.querySelectorAll(".flexbook-content").forEach(function(block) {
+        list.querySelectorAll(".bookflow-content").forEach(function(block) {
             block.draggable = true;
             block.addEventListener("dragstart", function() {
                 dragged = block;
@@ -49,13 +49,13 @@ define(["core/ajax", "core/notification"], function(Ajax, Notification) {
         });
         list.addEventListener("drop", function(event) {
             event.preventDefault();
-            const contentIds = Array.from(list.querySelectorAll(".flexbook-content"))
+            const contentIds = Array.from(list.querySelectorAll(".bookflow-content"))
                 .map(function(block) {
                     return Number(block.dataset.contentId);
                 });
             Ajax.call([{
-                methodname: "mod_flexbook_reorder_contents",
-                args: {flexbookid: flexbookId, chapterid: chapterId, contentids: contentIds}
+                methodname: "mod_bookflow_reorder_contents",
+                args: {bookflowid: bookflowId, chapterid: chapterId, contentids: contentIds}
             }])[0].catch(Notification.exception);
         });
     };

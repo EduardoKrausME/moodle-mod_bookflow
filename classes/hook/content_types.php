@@ -17,18 +17,18 @@
 /**
  * content_types.php
  *
- * @package   mod_flexbook
+ * @package   mod_bookflow
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_flexbook\hook;
+namespace mod_bookflow\hook;
 
 use coding_exception;
-use mod_flexbook\types\content;
+use mod_bookflow\types\content;
 
 /**
- * Collects content type registrations from FlexBook and extension plugins.
+ * Collects content type registrations from BookFlow and extension plugins.
  */
 class content_types {
     /** @var array */
@@ -43,13 +43,13 @@ class content_types {
      */
     public function register(string $type, string $classname): void {
         if (!preg_match("/^[a-z][a-z0-9_]*$/", $type)) {
-            throw new coding_exception("Invalid FlexBook content type: {$type}");
+            throw new coding_exception("Invalid BookFlow content type: {$type}");
         }
         if (!is_subclass_of($classname, content::class)) {
-            throw new coding_exception("{$classname} must extend mod_flexbook\\types\\content");
+            throw new coding_exception("{$classname} must extend mod_bookflow\\types\\content");
         }
         if (isset($this->classes[$type]) && $this->classes[$type] != $classname) {
-            throw new coding_exception("FlexBook content type already registered: {$type}");
+            throw new coding_exception("BookFlow content type already registered: {$type}");
         }
         $this->classes[$type] = $classname;
     }

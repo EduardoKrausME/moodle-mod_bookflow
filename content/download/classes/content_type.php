@@ -17,18 +17,18 @@
 /**
  * content_type.php
  *
- * @package   flexbookcontent_download
+ * @package   bookflowcontent_download
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace flexbookcontent_download;
+namespace bookflowcontent_download;
 
-use flexbookcontent_download\types\download;
-use mod_flexbook\hook\content_types;
+use bookflowcontent_download\types\download;
+use mod_bookflow\hook\content_types;
 
 /**
- * Registers the Download content type in FlexBook.
+ * Registers the Download content type in BookFlow.
  */
 class content_type {
     /**

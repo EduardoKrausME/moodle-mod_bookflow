@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mod_flexbook/activity_overview
+    @template mod_bookflow/activity_overview
 
     Example context (json):
     {
@@ -23,50 +23,50 @@
     }
 }}
 
-<div class="flexbook-overview" data-flexbook-id="{{flexbookid}}">
-    <header class="flexbook-hero">
-        <div class="flexbook-cover" aria-hidden="true">
+<div class="bookflow-overview" data-bookflow-id="{{bookflowid}}">
+    <header class="bookflow-hero">
+        <div class="bookflow-cover" aria-hidden="true">
             {{#hascover}}<img src="{{{coverurl}}}" alt="">{{/hascover}}
-            {{^hascover}}<span class="flexbook-cover-icon">F</span>{{/hascover}}
+            {{^hascover}}<span class="bookflow-cover-icon">F</span>{{/hascover}}
         </div>
-        <div class="flexbook-hero-content">
+        <div class="bookflow-hero-content">
             <h2>{{name}}</h2>
-            <div class="flexbook-intro">{{{intro}}}</div>
-            <div class="flexbook-stats" aria-label="{{#str}}overviewstats, mod_flexbook{{/str}}">
+            <div class="bookflow-intro">{{{intro}}}</div>
+            <div class="bookflow-stats" aria-label="{{#str}}overviewstats, mod_bookflow{{/str}}">
                 <span>{{chaptercountlabel}}</span>
-                <span>{{estimatedtime}} {{#str}}ofstudy, mod_flexbook{{/str}}</span>
-                <span>{{progressrounded}}% {{#str}}completed, mod_flexbook{{/str}}</span>
+                <span>{{estimatedtime}} {{#str}}ofstudy, mod_bookflow{{/str}}</span>
+                <span>{{progressrounded}}% {{#str}}completed, mod_bookflow{{/str}}</span>
                 <span>{{chapteraccesslabel}}</span>
             </div>
-            {{> mod_flexbook/progress_bar}}
+            {{> mod_bookflow/progress_bar}}
             {{{emptycontent}}}
             {{#hascontinue}}
-                {{> mod_flexbook/continue_reading}}
+                {{> mod_bookflow/continue_reading}}
             {{/hascontinue}}
             {{{booktools}}}
         </div>
     </header>
 
-    <nav class="flexbook-tools" aria-label="{{#str}}flexbooktools, mod_flexbook{{/str}}">
-        {{#enablebookmarks}}<a class="btn btn-outline-secondary" href="{{{bookmarksurl}}}">{{#str}}mybookmarks, mod_flexbook{{/str}}</a>{{/enablebookmarks}}
-        {{#enablenotes}}<a class="btn btn-outline-secondary" href="{{{notesurl}}}">{{#str}}mynotes, mod_flexbook{{/str}}</a>{{/enablenotes}}
-        {{#canreport}}<a class="btn btn-outline-secondary" href="{{{reporturl}}}">{{#str}}reports, mod_flexbook{{/str}}</a>{{/canreport}}
-        {{#canmanage}}<a class="btn btn-primary" href="{{{manageurl}}}">{{#str}}managechapters, mod_flexbook{{/str}}</a>{{/canmanage}}
+    <nav class="bookflow-tools" aria-label="{{#str}}bookflowtools, mod_bookflow{{/str}}">
+        {{#enablebookmarks}}<a class="btn btn-outline-secondary" href="{{{bookmarksurl}}}">{{#str}}mybookmarks, mod_bookflow{{/str}}</a>{{/enablebookmarks}}
+        {{#enablenotes}}<a class="btn btn-outline-secondary" href="{{{notesurl}}}">{{#str}}mynotes, mod_bookflow{{/str}}</a>{{/enablenotes}}
+        {{#canreport}}<a class="btn btn-outline-secondary" href="{{{reporturl}}}">{{#str}}reports, mod_bookflow{{/str}}</a>{{/canreport}}
+        {{#canmanage}}<a class="btn btn-primary" href="{{{manageurl}}}">{{#str}}managechapters, mod_bookflow{{/str}}</a>{{/canmanage}}
     </nav>
 
     {{#enablesearch}}
-        <form class="flexbook-search" data-region="flexbook-search">
-            <label for="flexbook-search-input">{{#str}}searchinside, mod_flexbook{{/str}}</label>
+        <form class="bookflow-search" data-region="bookflow-search">
+            <label for="bookflow-search-input">{{#str}}searchinside, mod_bookflow{{/str}}</label>
             <div class="input-group">
-                <input id="flexbook-search-input" class="form-control" type="search" minlength="2">
+                <input id="bookflow-search-input" class="form-control" type="search" minlength="2">
                 <button class="btn btn-primary" type="submit">{{#str}}search{{/str}}</button>
             </div>
             <div data-region="search-results" aria-live="polite"></div>
         </form>
     {{/enablesearch}}
 
-    <section class="flexbook-overview-toc" aria-labelledby="flexbook-toc-title">
-        <h3 id="flexbook-toc-title">{{#str}}tableofcontents, mod_flexbook{{/str}}</h3>
-        {{> mod_flexbook/table_of_contents}}
+    <section class="bookflow-overview-toc" aria-labelledby="bookflow-toc-title">
+        <h3 id="bookflow-toc-title">{{#str}}tableofcontents, mod_bookflow{{/str}}</h3>
+        {{> mod_bookflow/table_of_contents}}
     </section>
 </div>

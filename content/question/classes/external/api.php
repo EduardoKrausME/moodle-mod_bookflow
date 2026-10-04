@@ -17,19 +17,19 @@
 /**
  * Question external API.
  *
- * @package flexbookcontent_question
+ * @package bookflowcontent_question
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace flexbookcontent_question\external;
+namespace bookflowcontent_question\external;
 
 use context_module;
 use external_api;
 use external_function_parameters;
 use external_single_structure;
 use external_value;
-use flexbookcontent_question\question_manager;
+use bookflowcontent_question\question_manager;
 
 defined('MOODLE_INTERNAL') || die;
 
@@ -44,7 +44,7 @@ class api extends external_api {
      */
     public static function submit_answer_parameters(): external_function_parameters {
         return new external_function_parameters([
-            "flexbookid" => new external_value(PARAM_INT, "FlexBook id"),
+            "bookflowid" => new external_value(PARAM_INT, "BookFlow id"),
             "contentid" => new external_value(PARAM_INT, "Content id"),
             "answer" => new external_value(PARAM_RAW, "JSON answer"),
         ]);
@@ -53,28 +53,28 @@ class api extends external_api {
     /**
      * Submits one answer.
      */
-    public static function submit_answer(int $flexbookid, int $contentid, string $answer): array {
+    public static function submit_answer(int $bookflowid, int $contentid, string $answer): array {
         global $DB, $USER;
 
         $params = self::validate_parameters(
             self::submit_answer_parameters(),
-            compact("flexbookid", "contentid", "answer")
+            compact("bookflowid", "contentid", "answer")
         );
 
-        $flexbook = $DB->get_record("flexbook", ["id" => $params["flexbookid"]], "*", MUST_EXIST);
+        $bookflow = $DB->get_record("bookflow", ["id" => $params["bookflowid"]], "*", MUST_EXIST);
         $cm = get_coursemodule_from_instance(
-            "flexbook",
-            $flexbook->id,
-            $flexbook->course,
+            "bookflow",
+            $bookflow->id,
+            $bookflow->course,
             false,
             MUST_EXIST
         );
         $context = context_module::instance($cm->id);
         self::validate_context($context);
-        require_capability("mod/flexbook:view", $context);
+        require_capability("mod/bookflow:view", $context);
 
         return question_manager::submit_answer(
-            $params["flexbookid"],
+            $params["bookflowid"],
             $params["contentid"],
             $USER->id,
             $params["answer"]

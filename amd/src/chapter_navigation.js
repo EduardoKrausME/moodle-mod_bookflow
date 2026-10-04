@@ -16,7 +16,7 @@
 /**
  * chapter_navigation.js
  *
- * @package   mod_flexbook
+ * @package   mod_bookflow
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -25,13 +25,13 @@ define([], function() {
     const init = function() {
         document.addEventListener("keydown", function(event) {
             if (event.altKey && event.key === "ArrowLeft") {
-                const previous = document.querySelector(".flexbook-chapter-navigation a:first-child");
+                const previous = document.querySelector(".bookflow-chapter-navigation a:first-child");
                 if (previous) {
                     previous.click();
                 }
             }
             if (event.altKey && event.key === "ArrowRight") {
-                const links = document.querySelectorAll(".flexbook-chapter-navigation a");
+                const links = document.querySelectorAll(".bookflow-chapter-navigation a");
                 const next = links.length ? links[links.length - 1] : null;
                 if (next) {
                     next.click();

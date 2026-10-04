@@ -17,18 +17,18 @@
 /**
  * markdown.php
  *
- * @package   flexbookcontent_markdown
+ * @package   bookflowcontent_markdown
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace flexbookcontent_markdown\types;
+namespace bookflowcontent_markdown\types;
 
-use mod_flexbook\types\raw_content;
+use mod_bookflow\types\raw_content;
 use renderer_base;
 
 /**
- * FlexBook Markdown content type.
+ * BookFlow Markdown content type.
  */
 class markdown extends raw_content {
     /** @var string */
@@ -41,7 +41,7 @@ class markdown extends raw_content {
      * Gets the raw textarea label.
      */
     protected static function get_raw_label(): string {
-        return get_string("markdowncontent", "mod_flexbook");
+        return get_string("markdowncontent", "mod_bookflow");
     }
 
     /**
@@ -56,7 +56,7 @@ class markdown extends raw_content {
      */
     public function render(renderer_base $output, bool $editing): string {
         return $output->render_from_template(
-            "flexbookcontent_markdown/markdown",
+            "bookflowcontent_markdown/markdown",
             $this->export_data($editing)
         );
     }
@@ -65,7 +65,7 @@ class markdown extends raw_content {
      * Gets the localized content type name.
      */
     public static function get_name(): string {
-        return get_string("pluginname", "flexbookcontent_markdown");
+        return get_string("pluginname", "bookflowcontent_markdown");
     }
 
 }

@@ -17,19 +17,19 @@
 /**
  * tabs.php
  *
- * @package   flexbookcontent_tabs
+ * @package   bookflowcontent_tabs
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace flexbookcontent_tabs\types;
+namespace bookflowcontent_tabs\types;
 
-use mod_flexbook\types\structured_content;
+use mod_bookflow\types\structured_content;
 use renderer_base;
 use stdClass;
 
 /**
- * FlexBook Tabs content type.
+ * BookFlow Tabs content type.
  */
 class tabs extends structured_content {
     /** @var string */
@@ -45,7 +45,7 @@ class tabs extends structured_content {
         $options = parent::get_completion_options();
         $none = $options["none"];
         unset($options["none"]);
-        $options["alltabs"] = get_string("completealltabs", "mod_flexbook");
+        $options["alltabs"] = get_string("completealltabs", "mod_bookflow");
         $options["none"] = $none;
         return $options;
     }
@@ -53,13 +53,13 @@ class tabs extends structured_content {
     /**
      * Loads tabs behaviour from this subplugin.
      */
-    public static function require_page_assets(stdClass $flexbook, bool $editing): void {
+    public static function require_page_assets(stdClass $bookflow, bool $editing): void {
         global $PAGE;
         if (!$editing) {
             $PAGE->requires->js_call_amd(
-                "flexbookcontent_tabs/tabs",
+                "bookflowcontent_tabs/tabs",
                 "init",
-                [$flexbook->id, !empty($flexbook->enabletracking)]
+                [$bookflow->id, !empty($bookflow->enabletracking)]
             );
         }
     }
@@ -69,7 +69,7 @@ class tabs extends structured_content {
      */
     public function render(renderer_base $output, bool $editing): string {
         return $output->render_from_template(
-            "flexbookcontent_tabs/tabs",
+            "bookflowcontent_tabs/tabs",
             $this->export_data($editing)
         );
     }
@@ -78,7 +78,7 @@ class tabs extends structured_content {
      * Gets the localized content type name.
      */
     public static function get_name(): string {
-        return get_string("pluginname", "flexbookcontent_tabs");
+        return get_string("pluginname", "bookflowcontent_tabs");
     }
 
 }

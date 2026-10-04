@@ -16,23 +16,23 @@
 /**
  * disclosure.js
  *
- * @package   flexbookcontent_disclosure
+ * @package   bookflowcontent_disclosure
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 define(["core/ajax"], function(Ajax) {
-    const init = function(flexbookId, trackProgress) {
-        document.querySelectorAll(".flexbook-content-disclosure details").forEach(function(details) {
+    const init = function(bookflowId, trackProgress) {
+        document.querySelectorAll(".bookflow-content-disclosure details").forEach(function(details) {
             details.addEventListener("toggle", function() {
                 if (!details.open || !trackProgress) {
                     return;
                 }
-                const block = details.closest(".flexbook-content");
+                const block = details.closest(".bookflow-content");
                 Ajax.call([{
-                    methodname: "mod_flexbook_mark_content_completed",
+                    methodname: "mod_bookflow_mark_content_completed",
                     args: {
-                        flexbookid: flexbookId,
+                        bookflowid: bookflowId,
                         contentid: Number(block.dataset.contentId),
                         metric: 100,
                         details: JSON.stringify({visited: [0]})

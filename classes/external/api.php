@@ -17,12 +17,12 @@
 /**
  * api.php
  *
- * @package   mod_flexbook
+ * @package   mod_bookflow
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_flexbook\external;
+namespace mod_bookflow\external;
 
 use context_module;
 use core_text;
@@ -32,13 +32,13 @@ use external_multiple_structure;
 use external_single_structure;
 use external_value;
 use invalid_parameter_exception;
-use mod_flexbook\event\bookmark_created;
-use mod_flexbook\event\bookmark_deleted;
-use mod_flexbook\event\note_created;
-use mod_flexbook\event\note_deleted;
-use mod_flexbook\event\note_updated;
-use mod_flexbook\content_manager;
-use mod_flexbook\progress\progress_manager;
+use mod_bookflow\event\bookmark_created;
+use mod_bookflow\event\bookmark_deleted;
+use mod_bookflow\event\note_created;
+use mod_bookflow\event\note_deleted;
+use mod_bookflow\event\note_updated;
+use mod_bookflow\content_manager;
+use mod_bookflow\progress\progress_manager;
 use moodle_exception;
 use moodle_url;
 
@@ -47,7 +47,7 @@ defined('MOODLE_INTERNAL') || die;
 require_once("{$CFG->libdir}/externallib.php");
 
 /**
- * Exposes the FlexBook AJAX web service functions.
+ * Exposes the BookFlow AJAX web service functions.
  */
 class api extends external_api {
     /**
@@ -57,7 +57,7 @@ class api extends external_api {
      */
     public static function mark_contents_viewed_parameters(): external_function_parameters {
         return new external_function_parameters([
-            "flexbookid" => new external_value(PARAM_INT, "FlexBook id"),
+            "bookflowid" => new external_value(PARAM_INT, "BookFlow id"),
             "contentids" => new external_multiple_structure(
                 new external_value(PARAM_INT, "Content id")
             ),
@@ -67,26 +67,26 @@ class api extends external_api {
     /**
      * Marks contents viewed.
      *
-     * @param int $flexbookid FlexBook ID.
+     * @param int $bookflowid BookFlow ID.
      * @param array $contentids Ordered content block IDs.
      * @return array
      */
-    public static function mark_contents_viewed(int $flexbookid, array $contentids): array {
+    public static function mark_contents_viewed(int $bookflowid, array $contentids): array {
         global $DB, $USER;
 
         $params = self::validate_parameters(self::mark_contents_viewed_parameters(), [
-            "flexbookid" => $flexbookid,
+            "bookflowid" => $bookflowid,
             "contentids" => $contentids,
         ]);
-        $context = self::require_instance($params["flexbookid"])[2];
+        $context = self::require_instance($params["bookflowid"])[2];
         self::validate_context($context);
         $manager = new progress_manager();
         $transaction = $DB->start_delegated_transaction();
         foreach (array_unique($params["contentids"]) as $contentid) {
-            $manager->mark_content_viewed($params["flexbookid"], $USER->id, $contentid);
+            $manager->mark_content_viewed($params["bookflowid"], $USER->id, $contentid);
         }
         $transaction->allow_commit();
-        return self::progress_result($params["flexbookid"], $USER->id);
+        return self::progress_result($params["bookflowid"], $USER->id);
     }
 
     /**
@@ -105,7 +105,7 @@ class api extends external_api {
      */
     public static function mark_content_completed_parameters(): external_function_parameters {
         return new external_function_parameters([
-            "flexbookid" => new external_value(PARAM_INT, "FlexBook id"),
+            "bookflowid" => new external_value(PARAM_INT, "BookFlow id"),
             "contentid" => new external_value(PARAM_INT, "Content id"),
             "metric" => new external_value(PARAM_FLOAT, "Validated progress evidence", VALUE_DEFAULT, 100),
             "details" => new external_value(PARAM_RAW, "JSON evidence", VALUE_DEFAULT, "{}"),
@@ -115,14 +115,14 @@ class api extends external_api {
     /**
      * Marks content completed.
      *
-     * @param int $flexbookid FlexBook ID.
+     * @param int $bookflowid BookFlow ID.
      * @param int $contentid Content block ID.
      * @param float $metric Completion metric reported by the client.
      * @param string $details Supporting completion evidence.
      * @return array
      */
     public static function mark_content_completed(
-        int $flexbookid,
+        int $bookflowid,
         int $contentid,
         float $metric = 100,
         string $details = "{}"
@@ -130,12 +130,12 @@ class api extends external_api {
         global $USER;
 
         $params = self::validate_parameters(self::mark_content_completed_parameters(), compact(
-            "flexbookid",
+            "bookflowid",
             "contentid",
             "metric",
             "details"
         ));
-        $context = self::require_instance($params["flexbookid"])[2];
+        $context = self::require_instance($params["bookflowid"])[2];
         self::validate_context($context);
         $decoded = json_decode($params["details"], true);
         if (!is_array($decoded)) {
@@ -143,13 +143,13 @@ class api extends external_api {
         }
         $manager = new progress_manager();
         $manager->update_content_metric(
-            $params["flexbookid"],
+            $params["bookflowid"],
             $USER->id,
             $params["contentid"],
             $params["metric"],
             $decoded
         );
-        return self::progress_result($params["flexbookid"], $USER->id);
+        return self::progress_result($params["bookflowid"], $USER->id);
     }
 
     /**
@@ -168,7 +168,7 @@ class api extends external_api {
      */
     public static function save_user_position_parameters(): external_function_parameters {
         return new external_function_parameters([
-            "flexbookid" => new external_value(PARAM_INT, "FlexBook id"),
+            "bookflowid" => new external_value(PARAM_INT, "BookFlow id"),
             "chapterid" => new external_value(PARAM_INT, "Chapter id"),
             "contentid" => new external_value(PARAM_INT, "Content id", VALUE_DEFAULT, 0),
             "scrollposition" => new external_value(PARAM_INT, "Approximate scroll position", VALUE_DEFAULT, 0),
@@ -178,14 +178,14 @@ class api extends external_api {
     /**
      * Saves user position.
      *
-     * @param int $flexbookid FlexBook ID.
+     * @param int $bookflowid BookFlow ID.
      * @param int $chapterid Chapter ID.
      * @param int $contentid Content block ID.
      * @param int $scrollposition Approximate vertical reading position.
      * @return array
      */
     public static function save_user_position(
-        int $flexbookid,
+        int $bookflowid,
         int $chapterid,
         int $contentid = 0,
         int $scrollposition = 0
@@ -193,16 +193,16 @@ class api extends external_api {
         global $USER;
 
         $params = self::validate_parameters(self::save_user_position_parameters(), compact(
-            "flexbookid",
+            "bookflowid",
             "chapterid",
             "contentid",
             "scrollposition"
         ));
-        $context = self::require_instance($params["flexbookid"])[2];
+        $context = self::require_instance($params["bookflowid"])[2];
         self::validate_context($context);
         $manager = new progress_manager();
         $manager->save_last_position(
-            $params["flexbookid"],
+            $params["bookflowid"],
             $USER->id,
             $params["chapterid"],
             $params["contentid"] ?: null,
@@ -229,23 +229,23 @@ class api extends external_api {
      */
     public static function get_user_progress_parameters(): external_function_parameters {
         return new external_function_parameters([
-            "flexbookid" => new external_value(PARAM_INT, "FlexBook id"),
+            "bookflowid" => new external_value(PARAM_INT, "BookFlow id"),
         ]);
     }
 
     /**
      * Gets user progress.
      *
-     * @param int $flexbookid FlexBook ID.
+     * @param int $bookflowid BookFlow ID.
      * @return array
      */
-    public static function get_user_progress(int $flexbookid): array {
+    public static function get_user_progress(int $bookflowid): array {
         global $USER;
 
-        $params = self::validate_parameters(self::get_user_progress_parameters(), compact("flexbookid"));
-        $context = self::require_instance($params["flexbookid"])[2];
+        $params = self::validate_parameters(self::get_user_progress_parameters(), compact("bookflowid"));
+        $context = self::require_instance($params["bookflowid"])[2];
         self::validate_context($context);
-        return self::progress_result($params["flexbookid"], $USER->id);
+        return self::progress_result($params["bookflowid"], $USER->id);
     }
 
     /**
@@ -264,7 +264,7 @@ class api extends external_api {
      */
     public static function get_chapter_progress_parameters(): external_function_parameters {
         return new external_function_parameters([
-            "flexbookid" => new external_value(PARAM_INT, "FlexBook id"),
+            "bookflowid" => new external_value(PARAM_INT, "BookFlow id"),
             "chapterid" => new external_value(PARAM_INT, "Chapter id"),
         ]);
     }
@@ -272,27 +272,27 @@ class api extends external_api {
     /**
      * Gets chapter progress.
      *
-     * @param int $flexbookid FlexBook ID.
+     * @param int $bookflowid BookFlow ID.
      * @param int $chapterid Chapter ID.
      * @return array
      */
-    public static function get_chapter_progress(int $flexbookid, int $chapterid): array {
+    public static function get_chapter_progress(int $bookflowid, int $chapterid): array {
         global $DB, $USER;
 
         $params = self::validate_parameters(self::get_chapter_progress_parameters(), compact(
-            "flexbookid",
+            "bookflowid",
             "chapterid"
         ));
-        $context = self::require_instance($params["flexbookid"])[2];
+        $context = self::require_instance($params["bookflowid"])[2];
         self::validate_context($context);
-        $DB->get_record("flexbook_chapters", [
+        $DB->get_record("bookflow_chapters", [
             "id" => $params["chapterid"],
-            "flexbookid" => $params["flexbookid"],
+            "bookflowid" => $params["bookflowid"],
         ], "*", MUST_EXIST);
 
         $sql = "SELECT c.id, c.weight, p.status
-                  FROM {flexbook_contents} c
-             LEFT JOIN {flexbook_user_progress} p
+                  FROM {bookflow_contents} c
+             LEFT JOIN {bookflow_user_progress} p
                     ON p.contentid = c.id AND p.userid = :userid
                  WHERE c.chapterid = :chapterid
                    AND c.hidden = 0
@@ -337,7 +337,7 @@ class api extends external_api {
      */
     public static function create_bookmark_parameters(): external_function_parameters {
         return new external_function_parameters([
-            "flexbookid" => new external_value(PARAM_INT, "FlexBook id"),
+            "bookflowid" => new external_value(PARAM_INT, "BookFlow id"),
             "itemtype" => new external_value(PARAM_ALPHA, "book, chapter or content"),
             "chapterid" => new external_value(PARAM_INT, "Chapter id", VALUE_DEFAULT, 0),
             "contentid" => new external_value(PARAM_INT, "Content id", VALUE_DEFAULT, 0),
@@ -347,14 +347,14 @@ class api extends external_api {
     /**
      * Creates a private bookmark for the current user.
      *
-     * @param int $flexbookid FlexBook ID.
+     * @param int $bookflowid BookFlow ID.
      * @param string $itemtype Bookmark target type.
      * @param int $chapterid Chapter ID.
      * @param int $contentid Content block ID.
      * @return array
      */
     public static function create_bookmark(
-        int $flexbookid,
+        int $bookflowid,
         string $itemtype,
         int $chapterid = 0,
         int $contentid = 0
@@ -362,14 +362,14 @@ class api extends external_api {
         global $DB, $USER;
 
         $params = self::validate_parameters(self::create_bookmark_parameters(), compact(
-            "flexbookid",
+            "bookflowid",
             "itemtype",
             "chapterid",
             "contentid"
         ));
-        [$flexbook, , $context] = self::require_instance($params["flexbookid"]);
+        [$bookflow, , $context] = self::require_instance($params["bookflowid"]);
         self::validate_context($context);
-        if (!$flexbook->enablebookmarks || !in_array($params["itemtype"], ["book", "chapter", "content"])) {
+        if (!$bookflow->enablebookmarks || !in_array($params["itemtype"], ["book", "chapter", "content"])) {
             throw new invalid_parameter_exception("Bookmarks are unavailable");
         }
         $validtarget = ($params["itemtype"] == "book" && !$params["chapterid"] && !$params["contentid"])
@@ -378,19 +378,19 @@ class api extends external_api {
         if (!$validtarget) {
             throw new invalid_parameter_exception("Invalid bookmark target");
         }
-        self::validate_item($params["flexbookid"], $params["chapterid"], $params["contentid"]);
+        self::validate_item($params["bookflowid"], $params["chapterid"], $params["contentid"]);
         $conditions = [
-            "flexbookid" => $params["flexbookid"],
+            "bookflowid" => $params["bookflowid"],
             "userid" => $USER->id,
             "itemtype" => $params["itemtype"],
             "chapterid" => $params["chapterid"],
             "contentid" => $params["contentid"],
         ];
-        $id = $DB->get_field("flexbook_bookmarks", "id", $conditions);
+        $id = $DB->get_field("bookflow_bookmarks", "id", $conditions);
         if (!$id) {
-            $id = $DB->insert_record("flexbook_bookmarks", (object) ($conditions + ["timecreated" => time()]));
+            $id = $DB->insert_record("bookflow_bookmarks", (object) ($conditions + ["timecreated" => time()]));
             bookmark_created::create_from_ids(
-                $params["flexbookid"],
+                $params["bookflowid"],
                 $params["chapterid"],
                 $params["contentid"],
                 $USER->id
@@ -418,7 +418,7 @@ class api extends external_api {
      */
     public static function delete_bookmark_parameters(): external_function_parameters {
         return new external_function_parameters([
-            "flexbookid" => new external_value(PARAM_INT, "FlexBook id"),
+            "bookflowid" => new external_value(PARAM_INT, "BookFlow id"),
             "bookmarkid" => new external_value(PARAM_INT, "Bookmark id"),
         ]);
     }
@@ -426,27 +426,27 @@ class api extends external_api {
     /**
      * Deletes a private bookmark owned by the current user.
      *
-     * @param int $flexbookid FlexBook ID.
+     * @param int $bookflowid BookFlow ID.
      * @param int $bookmarkid Bookmark ID.
      * @return array
      */
-    public static function delete_bookmark(int $flexbookid, int $bookmarkid): array {
+    public static function delete_bookmark(int $bookflowid, int $bookmarkid): array {
         global $DB, $USER;
 
         $params = self::validate_parameters(self::delete_bookmark_parameters(), compact(
-            "flexbookid",
+            "bookflowid",
             "bookmarkid"
         ));
-        $context = self::require_instance($params["flexbookid"])[2];
+        $context = self::require_instance($params["bookflowid"])[2];
         self::validate_context($context);
-        $bookmark = $DB->get_record("flexbook_bookmarks", [
+        $bookmark = $DB->get_record("bookflow_bookmarks", [
             "id" => $params["bookmarkid"],
-            "flexbookid" => $params["flexbookid"],
+            "bookflowid" => $params["bookflowid"],
             "userid" => $USER->id,
         ], "*", MUST_EXIST);
-        $DB->delete_records("flexbook_bookmarks", ["id" => $bookmark->id]);
+        $DB->delete_records("bookflow_bookmarks", ["id" => $bookmark->id]);
         bookmark_deleted::create_from_ids(
-            $params["flexbookid"],
+            $params["bookflowid"],
             $bookmark->chapterid,
             $bookmark->contentid,
             $USER->id
@@ -470,7 +470,7 @@ class api extends external_api {
      */
     public static function create_note_parameters(): external_function_parameters {
         return new external_function_parameters([
-            "flexbookid" => new external_value(PARAM_INT, "FlexBook id"),
+            "bookflowid" => new external_value(PARAM_INT, "BookFlow id"),
             "chapterid" => new external_value(PARAM_INT, "Chapter id", VALUE_DEFAULT, 0),
             "contentid" => new external_value(PARAM_INT, "Content id", VALUE_DEFAULT, 0),
             "note" => new external_value(PARAM_TEXT, "Private note"),
@@ -481,7 +481,7 @@ class api extends external_api {
     /**
      * Creates a private note for the current user.
      *
-     * @param int $flexbookid FlexBook ID.
+     * @param int $bookflowid BookFlow ID.
      * @param int $chapterid Chapter ID.
      * @param int $contentid Content block ID.
      * @param string $note Private note text.
@@ -489,7 +489,7 @@ class api extends external_api {
      * @return array
      */
     public static function create_note(
-        int $flexbookid,
+        int $bookflowid,
         int $chapterid,
         int $contentid,
         string $note,
@@ -498,24 +498,24 @@ class api extends external_api {
         global $DB, $USER;
 
         $params = self::validate_parameters(self::create_note_parameters(), compact(
-            "flexbookid",
+            "bookflowid",
             "chapterid",
             "contentid",
             "note",
             "selectiontext"
         ));
-        [$flexbook, , $context] = self::require_instance($params["flexbookid"]);
+        [$bookflow, , $context] = self::require_instance($params["bookflowid"]);
         self::validate_context($context);
-        if (!$flexbook->enablenotes) {
-            throw new moodle_exception("notesdisabled", "mod_flexbook");
+        if (!$bookflow->enablenotes) {
+            throw new moodle_exception("notesdisabled", "mod_bookflow");
         }
         if (!$params["chapterid"] && !$params["contentid"]) {
             throw new invalid_parameter_exception("A note must belong to a chapter or content block");
         }
-        self::validate_item($params["flexbookid"], $params["chapterid"], $params["contentid"]);
+        self::validate_item($params["bookflowid"], $params["chapterid"], $params["contentid"]);
         $now = time();
-        $id = $DB->insert_record("flexbook_notes", (object) [
-            "flexbookid" => $params["flexbookid"],
+        $id = $DB->insert_record("bookflow_notes", (object) [
+            "bookflowid" => $params["bookflowid"],
             "userid" => $USER->id,
             "chapterid" => $params["chapterid"],
             "contentid" => $params["contentid"],
@@ -525,7 +525,7 @@ class api extends external_api {
             "timemodified" => $now,
         ]);
         note_created::create_from_ids(
-            $params["flexbookid"],
+            $params["bookflowid"],
             $params["chapterid"],
             $params["contentid"],
             $USER->id
@@ -549,7 +549,7 @@ class api extends external_api {
      */
     public static function update_note_parameters(): external_function_parameters {
         return new external_function_parameters([
-            "flexbookid" => new external_value(PARAM_INT, "FlexBook id"),
+            "bookflowid" => new external_value(PARAM_INT, "BookFlow id"),
             "noteid" => new external_value(PARAM_INT, "Note id"),
             "note" => new external_value(PARAM_TEXT, "Private note"),
         ]);
@@ -558,31 +558,31 @@ class api extends external_api {
     /**
      * Updates a private note owned by the current user.
      *
-     * @param int $flexbookid FlexBook ID.
+     * @param int $bookflowid BookFlow ID.
      * @param int $noteid Note ID.
      * @param string $note Private note text.
      * @return array
      */
-    public static function update_note(int $flexbookid, int $noteid, string $note): array {
+    public static function update_note(int $bookflowid, int $noteid, string $note): array {
         global $DB, $USER;
 
         $params = self::validate_parameters(self::update_note_parameters(), compact(
-            "flexbookid",
+            "bookflowid",
             "noteid",
             "note"
         ));
-        $context = self::require_instance($params["flexbookid"])[2];
+        $context = self::require_instance($params["bookflowid"])[2];
         self::validate_context($context);
-        $record = $DB->get_record("flexbook_notes", [
+        $record = $DB->get_record("bookflow_notes", [
             "id" => $params["noteid"],
-            "flexbookid" => $params["flexbookid"],
+            "bookflowid" => $params["bookflowid"],
             "userid" => $USER->id,
         ], "*", MUST_EXIST);
         $record->note = $params["note"];
         $record->timemodified = time();
-        $DB->update_record("flexbook_notes", $record);
+        $DB->update_record("bookflow_notes", $record);
         note_updated::create_from_ids(
-            $params["flexbookid"],
+            $params["bookflowid"],
             $record->chapterid,
             $record->contentid,
             $USER->id
@@ -606,7 +606,7 @@ class api extends external_api {
      */
     public static function delete_note_parameters(): external_function_parameters {
         return new external_function_parameters([
-            "flexbookid" => new external_value(PARAM_INT, "FlexBook id"),
+            "bookflowid" => new external_value(PARAM_INT, "BookFlow id"),
             "noteid" => new external_value(PARAM_INT, "Note id"),
         ]);
     }
@@ -614,24 +614,24 @@ class api extends external_api {
     /**
      * Deletes a private note owned by the current user.
      *
-     * @param int $flexbookid FlexBook ID.
+     * @param int $bookflowid BookFlow ID.
      * @param int $noteid Note ID.
      * @return array
      */
-    public static function delete_note(int $flexbookid, int $noteid): array {
+    public static function delete_note(int $bookflowid, int $noteid): array {
         global $DB, $USER;
 
-        $params = self::validate_parameters(self::delete_note_parameters(), compact("flexbookid", "noteid"));
-        $context = self::require_instance($params["flexbookid"])[2];
+        $params = self::validate_parameters(self::delete_note_parameters(), compact("bookflowid", "noteid"));
+        $context = self::require_instance($params["bookflowid"])[2];
         self::validate_context($context);
-        $record = $DB->get_record("flexbook_notes", [
+        $record = $DB->get_record("bookflow_notes", [
             "id" => $params["noteid"],
-            "flexbookid" => $params["flexbookid"],
+            "bookflowid" => $params["bookflowid"],
             "userid" => $USER->id,
         ], "*", MUST_EXIST);
-        $DB->delete_records("flexbook_notes", ["id" => $record->id]);
+        $DB->delete_records("bookflow_notes", ["id" => $record->id]);
         note_deleted::create_from_ids(
-            $params["flexbookid"],
+            $params["bookflowid"],
             $record->chapterid,
             $record->contentid,
             $USER->id
@@ -655,36 +655,36 @@ class api extends external_api {
      */
     public static function search_contents_parameters(): external_function_parameters {
         return new external_function_parameters([
-            "flexbookid" => new external_value(PARAM_INT, "FlexBook id"),
+            "bookflowid" => new external_value(PARAM_INT, "BookFlow id"),
             "query" => new external_value(PARAM_TEXT, "Search query"),
         ]);
     }
 
     /**
-     * Searches accessible published FlexBook content.
+     * Searches accessible published BookFlow content.
      *
-     * @param int $flexbookid FlexBook ID.
+     * @param int $bookflowid BookFlow ID.
      * @param string $query Search query.
      * @return array
      */
-    public static function search_contents(int $flexbookid, string $query): array {
+    public static function search_contents(int $bookflowid, string $query): array {
         global $DB;
 
-        $params = self::validate_parameters(self::search_contents_parameters(), compact("flexbookid", "query"));
-        [$flexbook, $cm, $context] = self::require_instance($params["flexbookid"]);
+        $params = self::validate_parameters(self::search_contents_parameters(), compact("bookflowid", "query"));
+        [$bookflow, $cm, $context] = self::require_instance($params["bookflowid"]);
         self::validate_context($context);
-        if (!$flexbook->enablesearch || core_text::strlen(trim($params["query"])) < 2) {
+        if (!$bookflow->enablesearch || core_text::strlen(trim($params["query"])) < 2) {
             return [];
         }
         $like = "%" . $DB->sql_like_escape($params["query"]) . "%";
-        $hiddenclause = has_capability("mod/flexbook:managecontent", $context)
+        $hiddenclause = has_capability("mod/bookflow:managecontent", $context)
             ? ""
             : " AND ch.hidden = 0 AND c.hidden = 0";
         $sql = "SELECT c.id, c.chapterid, c.type, c.title, c.data1, c.data2, c.data3,
                        ch.title AS chaptertitle
-                  FROM {flexbook_contents} c
-                  JOIN {flexbook_chapters} ch ON ch.id = c.chapterid
-                 WHERE ch.flexbookid = :flexbookid
+                  FROM {bookflow_contents} c
+                  JOIN {bookflow_chapters} ch ON ch.id = c.chapterid
+                 WHERE ch.bookflowid = :bookflowid
                    {$hiddenclause}
                    AND (" . $DB->sql_like("c.title", ":q1", false) . "
                     OR " . $DB->sql_like("c.data1", ":q2", false) . "
@@ -692,7 +692,7 @@ class api extends external_api {
                     OR " . $DB->sql_like("c.data3", ":q4", false) . ")
               ORDER BY ch.sortorder, c.sortorder";
         $records = $DB->get_records_sql($sql, [
-            "flexbookid" => $params["flexbookid"],
+            "bookflowid" => $params["bookflowid"],
             "q1" => $like,
             "q2" => $like,
             "q3" => $like,
@@ -705,10 +705,10 @@ class api extends external_api {
                 "chapter" => format_string($record->chaptertitle),
                 "excerpt" => shorten_text($plain, 180),
                 "type" => $record->type,
-                "url" => (new moodle_url("/mod/flexbook/view.php", [
+                "url" => (new moodle_url("/mod/bookflow/view.php", [
                     "id" => $cm->id,
                     "chapterid" => $record->chapterid,
-                ], "flexbook-content-{$record->id}"))->out(false),
+                ], "bookflow-content-{$record->id}"))->out(false),
             ];
         }
         return $results;
@@ -735,7 +735,7 @@ class api extends external_api {
      */
     public static function reorder_contents_parameters(): external_function_parameters {
         return new external_function_parameters([
-            "flexbookid" => new external_value(PARAM_INT, "FlexBook id"),
+            "bookflowid" => new external_value(PARAM_INT, "BookFlow id"),
             "chapterid" => new external_value(PARAM_INT, "Chapter id"),
             "contentids" => new external_multiple_structure(new external_value(PARAM_INT, "Content id")),
         ]);
@@ -744,20 +744,20 @@ class api extends external_api {
     /**
      * Validates and applies a chapter content order.
      *
-     * @param int $flexbookid FlexBook ID.
+     * @param int $bookflowid BookFlow ID.
      * @param int $chapterid Chapter ID.
      * @param array $contentids Ordered content block IDs.
      * @return array
      */
-    public static function reorder_contents(int $flexbookid, int $chapterid, array $contentids): array {
+    public static function reorder_contents(int $bookflowid, int $chapterid, array $contentids): array {
         $params = self::validate_parameters(self::reorder_contents_parameters(), compact(
-            "flexbookid",
+            "bookflowid",
             "chapterid",
             "contentids"
         ));
-        [$flexbook, $cm, $context] = self::require_instance($params["flexbookid"], "mod/flexbook:managecontent");
+        [$bookflow, $cm, $context] = self::require_instance($params["bookflowid"], "mod/bookflow:managecontent");
         self::validate_context($context);
-        self::validate_item($params["flexbookid"], $params["chapterid"], 0);
+        self::validate_item($params["bookflowid"], $params["chapterid"], 0);
         content_manager::reorder($params["chapterid"], $params["contentids"]);
         return ["saved" => true];
     }
@@ -772,53 +772,53 @@ class api extends external_api {
     }
 
     /**
-     * Validates access to a FlexBook activity instance.
+     * Validates access to a BookFlow activity instance.
      *
-     * @param int $flexbookid FlexBook ID.
+     * @param int $bookflowid BookFlow ID.
      * @param string $capability Required module capability.
      * @return array
      */
     private static function require_instance(
-        int $flexbookid,
-        string $capability = "mod/flexbook:view"
+        int $bookflowid,
+        string $capability = "mod/bookflow:view"
     ): array {
         global $DB;
 
         require_sesskey();
-        $flexbook = $DB->get_record("flexbook", ["id" => $flexbookid], "*", MUST_EXIST);
-        $cm = get_coursemodule_from_instance("flexbook", $flexbookid, $flexbook->course, false, MUST_EXIST);
+        $bookflow = $DB->get_record("bookflow", ["id" => $bookflowid], "*", MUST_EXIST);
+        $cm = get_coursemodule_from_instance("bookflow", $bookflowid, $bookflow->course, false, MUST_EXIST);
         $context = context_module::instance($cm->id);
         self::validate_context($context);
-        require_login($flexbook->course, false, $cm);
+        require_login($bookflow->course, false, $cm);
         require_capability($capability, $context);
-        return [$flexbook, $cm, $context];
+        return [$bookflow, $cm, $context];
     }
 
     /**
-     * Validates that a chapter and content block belong to the FlexBook.
+     * Validates that a chapter and content block belong to the BookFlow.
      *
-     * @param int $flexbookid FlexBook ID.
+     * @param int $bookflowid BookFlow ID.
      * @param int $chapterid Chapter ID.
      * @param int $contentid Content block ID.
      * @return void
      */
-    private static function validate_item(int $flexbookid, int $chapterid, int $contentid): void {
+    private static function validate_item(int $bookflowid, int $chapterid, int $contentid): void {
         global $DB;
 
         if ($chapterid) {
-            $DB->get_record("flexbook_chapters", [
+            $DB->get_record("bookflow_chapters", [
                 "id" => $chapterid,
-                "flexbookid" => $flexbookid,
+                "bookflowid" => $bookflowid,
             ], "*", MUST_EXIST);
         }
         if ($contentid) {
             $sql = "SELECT c.id, c.chapterid
-                      FROM {flexbook_contents} c
-                      JOIN {flexbook_chapters} ch ON ch.id = c.chapterid
-                     WHERE c.id = :contentid AND ch.flexbookid = :flexbookid";
+                      FROM {bookflow_contents} c
+                      JOIN {bookflow_chapters} ch ON ch.id = c.chapterid
+                     WHERE c.id = :contentid AND ch.bookflowid = :bookflowid";
             $record = $DB->get_record_sql($sql, [
                 "contentid" => $contentid,
-                "flexbookid" => $flexbookid,
+                "bookflowid" => $bookflowid,
             ], MUST_EXIST);
             if ($chapterid && $record->chapterid != $chapterid) {
                 throw new invalid_parameter_exception("Content does not belong to chapter");
@@ -829,24 +829,24 @@ class api extends external_api {
     /**
      * Builds the external function progress result.
      *
-     * @param int $flexbookid FlexBook ID.
+     * @param int $bookflowid BookFlow ID.
      * @param int $userid User ID.
      * @return array
      */
-    private static function progress_result(int $flexbookid, int $userid): array {
+    private static function progress_result(int $bookflowid, int $userid): array {
         global $DB;
 
         $manager = new progress_manager();
-        $progress = $manager->calculate_user_progress($flexbookid, $userid);
+        $progress = $manager->calculate_user_progress($bookflowid, $userid);
         $stats = $DB->get_record_sql(
             "SELECT COUNT(c.id) AS total,
                     COALESCE(SUM(CASE WHEN p.status = :completed THEN 1 ELSE 0 END), 0) AS completed
-               FROM {flexbook_contents} c
-               JOIN {flexbook_chapters} ch ON ch.id = c.chapterid
-          LEFT JOIN {flexbook_user_progress} p
+               FROM {bookflow_contents} c
+               JOIN {bookflow_chapters} ch ON ch.id = c.chapterid
+          LEFT JOIN {bookflow_user_progress} p
                  ON p.contentid = c.id
                 AND p.userid = :userid
-              WHERE ch.flexbookid = :flexbookid
+              WHERE ch.bookflowid = :bookflowid
                 AND ch.hidden = 0
                 AND c.hidden = 0
                 AND c.trackprogress = 1
@@ -854,7 +854,7 @@ class api extends external_api {
             [
                 "completed" => progress_manager::STATUS_COMPLETED,
                 "userid" => $userid,
-                "flexbookid" => $flexbookid,
+                "bookflowid" => $bookflowid,
             ]
         );
         $completed = (int) ($stats->completed ?? 0);
@@ -863,8 +863,8 @@ class api extends external_api {
             "percentage" => $progress,
             "completed" => $completed,
             "total" => $total,
-            "pendingrequired" => $manager->get_pending_required_count($flexbookid, $userid),
-            "activitycompleted" => $manager->completion_requirements_met($flexbookid, $userid, $progress),
+            "pendingrequired" => $manager->get_pending_required_count($bookflowid, $userid),
+            "activitycompleted" => $manager->completion_requirements_met($bookflowid, $userid, $progress),
         ];
     }
 

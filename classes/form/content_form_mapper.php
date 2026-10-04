@@ -17,12 +17,12 @@
 /**
  * Delegates content form mapping to registered content subplugins and provides generic helpers.
  *
- * @package   mod_flexbook
+ * @package   mod_bookflow
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_flexbook\form;
+namespace mod_bookflow\form;
 
 defined('MOODLE_INTERNAL') || die;
 
@@ -31,7 +31,7 @@ require_once("{$CFG->dirroot}/repository/lib.php");
 
 use coding_exception;
 use context_module;
-use mod_flexbook\content_type_manager;
+use mod_bookflow\content_type_manager;
 use stdClass;
 
 /**
@@ -151,7 +151,7 @@ class content_form_mapper {
         $text = file_prepare_draft_area(
             $draftitemid,
             $context->id,
-            "mod_flexbook",
+            "mod_bookflow",
             "content",
             $itemid ?: null,
             $editoroptions,
@@ -179,7 +179,7 @@ class content_form_mapper {
         return file_save_draft_area_files(
             (int) ($editor["itemid"] ?? 0),
             $context->id,
-            "mod_flexbook",
+            "mod_bookflow",
             "content",
             $itemid,
             $editoroptions,
@@ -201,7 +201,7 @@ class content_form_mapper {
         file_prepare_draft_area(
             $draftitemid,
             $context->id,
-            "mod_flexbook",
+            "mod_bookflow",
             $filearea,
             $itemid ?: null,
             $fileoptions
@@ -227,7 +227,7 @@ class content_form_mapper {
         file_save_draft_area_files(
             $draftitemid,
             $context->id,
-            "mod_flexbook",
+            "mod_bookflow",
             $filearea,
             $itemid,
             $fileoptions
@@ -235,7 +235,7 @@ class content_form_mapper {
 
         $files = get_file_storage()->get_area_files(
             $context->id,
-            "mod_flexbook",
+            "mod_bookflow",
             $filearea,
             $itemid,
             "filepath, filename",
@@ -286,7 +286,7 @@ class content_form_mapper {
         file_prepare_draft_area(
             $draftitemid,
             $context->id,
-            "mod_flexbook",
+            "mod_bookflow",
             "content",
             $content->id ?? null,
             $editoroptions
@@ -311,7 +311,7 @@ class content_form_mapper {
             file_prepare_draft_area(
                 $draftitemid,
                 $context->id,
-                "mod_flexbook",
+                "mod_bookflow",
                 "content",
                 $itemid ?: null,
                 $editoroptions
@@ -326,7 +326,7 @@ class content_form_mapper {
             $text = file_prepare_draft_area(
                 $draftitemid,
                 $context->id,
-                "mod_flexbook",
+                "mod_bookflow",
                 "content",
                 $itemid ?: null,
                 $editoroptions,
@@ -364,7 +364,7 @@ class content_form_mapper {
             file_save_draft_area_files(
                 $draftitemid,
                 $context->id,
-                "mod_flexbook",
+                "mod_bookflow",
                 "content",
                 $itemid,
                 $editoroptions
@@ -469,7 +469,7 @@ class content_form_mapper {
     private static function get_content_class(string $type): string {
         $classes = content_type_manager::get_classes();
         if ($type === "" || !isset($classes[$type])) {
-            throw new coding_exception("Unknown FlexBook content type: {$type}");
+            throw new coding_exception("Unknown BookFlow content type: {$type}");
         }
         return $classes[$type];
     }

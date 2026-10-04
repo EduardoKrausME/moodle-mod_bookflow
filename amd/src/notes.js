@@ -16,15 +16,15 @@
 /**
  * notes.js
  *
- * @package   mod_flexbook
+ * @package   mod_bookflow
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 define(["core/ajax", "core/notification"], function(Ajax, Notification) {
-    const init = function(flexbookId) {
+    const init = function(bookflowId) {
         document.addEventListener("submit", function(event) {
-            const form = event.target.closest("[data-region='flexbook-note-form']");
+            const form = event.target.closest("[data-region='bookflow-note-form']");
             if (!form) {
                 return;
             }
@@ -32,9 +32,9 @@ define(["core/ajax", "core/notification"], function(Ajax, Notification) {
             const data = new FormData(form);
             const selection = window.getSelection();
             Ajax.call([{
-                methodname: "mod_flexbook_create_note",
+                methodname: "mod_bookflow_create_note",
                 args: {
-                    flexbookid: flexbookId,
+                    bookflowid: bookflowId,
                     chapterid: Number(data.get("chapterid") || 0),
                     contentid: Number(data.get("contentid") || 0),
                     note: data.get("note"),

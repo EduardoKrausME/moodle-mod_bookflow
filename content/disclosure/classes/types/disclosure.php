@@ -17,19 +17,19 @@
 /**
  * disclosure.php
  *
- * @package   flexbookcontent_disclosure
+ * @package   bookflowcontent_disclosure
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace flexbookcontent_disclosure\types;
+namespace bookflowcontent_disclosure\types;
 
-use mod_flexbook\types\editor_content;
+use mod_bookflow\types\editor_content;
 use renderer_base;
 use stdClass;
 
 /**
- * FlexBook Disclosure content type.
+ * BookFlow Disclosure content type.
  */
 class disclosure extends editor_content {
     /** @var string */
@@ -39,7 +39,7 @@ class disclosure extends editor_content {
      * Gets the editor label.
      */
     protected static function get_editor_label(): string {
-        return get_string("disclosurecontent", "mod_flexbook");
+        return get_string("disclosurecontent", "mod_bookflow");
     }
 
     /**
@@ -49,7 +49,7 @@ class disclosure extends editor_content {
         $options = parent::get_completion_options();
         $none = $options["none"];
         unset($options["none"]);
-        $options["click"] = get_string("completeonclick", "mod_flexbook");
+        $options["click"] = get_string("completeonclick", "mod_bookflow");
         $options["none"] = $none;
         return $options;
     }
@@ -86,13 +86,13 @@ class disclosure extends editor_content {
     /**
      * Loads disclosure interaction owned by this subplugin.
      */
-    public static function require_page_assets(stdClass $flexbook, bool $editing): void {
+    public static function require_page_assets(stdClass $bookflow, bool $editing): void {
         global $PAGE;
         if (!$editing) {
             $PAGE->requires->js_call_amd(
-                "flexbookcontent_disclosure/disclosure",
+                "bookflowcontent_disclosure/disclosure",
                 "init",
-                [$flexbook->id, !empty($flexbook->enabletracking)]
+                [$bookflow->id, !empty($bookflow->enabletracking)]
             );
         }
     }
@@ -102,7 +102,7 @@ class disclosure extends editor_content {
      */
     public function render(renderer_base $output, bool $editing): string {
         return $output->render_from_template(
-            "flexbookcontent_disclosure/disclosure",
+            "bookflowcontent_disclosure/disclosure",
             $this->export_data($editing)
         );
     }
@@ -111,7 +111,7 @@ class disclosure extends editor_content {
      * Gets the localized content type name.
      */
     public static function get_name(): string {
-        return get_string("pluginname", "flexbookcontent_disclosure");
+        return get_string("pluginname", "bookflowcontent_disclosure");
     }
 
 }

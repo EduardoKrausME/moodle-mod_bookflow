@@ -17,18 +17,18 @@
 /**
  * html.php
  *
- * @package   flexbookcontent_html
+ * @package   bookflowcontent_html
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace flexbookcontent_html\types;
+namespace bookflowcontent_html\types;
 
-use mod_flexbook\types\editor_content;
+use mod_bookflow\types\editor_content;
 use renderer_base;
 
 /**
- * FlexBook Html content type.
+ * BookFlow Html content type.
  */
 class html extends editor_content {
     /** @var string */
@@ -38,7 +38,7 @@ class html extends editor_content {
      * Gets the editor label.
      */
     protected static function get_editor_label(): string {
-        return get_string("contenthtml", "mod_flexbook");
+        return get_string("contenthtml", "mod_bookflow");
     }
 
     /**
@@ -46,7 +46,7 @@ class html extends editor_content {
      */
     public function render(renderer_base $output, bool $editing): string {
         return $output->render_from_template(
-            "flexbookcontent_html/html",
+            "bookflowcontent_html/html",
             $this->export_data($editing)
         );
     }
@@ -55,7 +55,7 @@ class html extends editor_content {
      * Gets the localized content type name.
      */
     public static function get_name(): string {
-        return get_string("pluginname", "flexbookcontent_html");
+        return get_string("pluginname", "bookflowcontent_html");
     }
 
 }

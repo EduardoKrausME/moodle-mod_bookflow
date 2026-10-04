@@ -1,10 +1,10 @@
-.mod-flexbook .flexbook-flashcards {
+.mod-bookflow .bookflow-flashcards {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 1rem;
 }
 
-.mod-flexbook .flexbook-flashcard {
+.mod-bookflow .bookflow-flashcard {
     min-height: 150px;
     padding: 1rem;
     color: #172033;
@@ -14,14 +14,14 @@
     box-shadow: 0 8px 20px rgba(23, 32, 51, .07);
 }
 
-.mod-flexbook .flexbook-flashcard .back {
+.mod-bookflow .bookflow-flashcard .back {
     display: none;
 }
 
-.mod-flexbook .flexbook-flashcard.is-flipped .front {
+.mod-bookflow .bookflow-flashcard.is-flipped .front {
     display: none;
 }
 
-.mod-flexbook .flexbook-flashcard.is-flipped .back {
+.mod-bookflow .bookflow-flashcard.is-flipped .back {
     display: inline;
 }

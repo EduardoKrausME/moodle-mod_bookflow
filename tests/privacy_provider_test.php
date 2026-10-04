@@ -17,22 +17,22 @@
 /**
  * privacy_provider_test.php
  *
- * @package   mod_flexbook
+ * @package   mod_bookflow
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_flexbook;
+namespace mod_bookflow;
 
 use context_module;
 use core_privacy\tests\provider_testcase;
-use mod_flexbook\privacy\provider;
-use mod_flexbook\progress\progress_manager;
+use mod_bookflow\privacy\provider;
+use mod_bookflow\progress\progress_manager;
 
 /**
  * Tests Privacy API context discovery and personal data deletion.
  *
- * @covers \mod_flexbook\privacy\provider
+ * @covers \mod_bookflow\privacy\provider
  */
 final class privacy_provider_test extends provider_testcase {
     /**
@@ -46,21 +46,21 @@ final class privacy_provider_test extends provider_testcase {
         $this->resetAfterTest();
         $course = $this->getDataGenerator()->create_course();
         $user = $this->getDataGenerator()->create_and_enrol($course, "student");
-        $generator = $this->getDataGenerator()->get_plugin_generator("mod_flexbook");
-        $flexbook = $generator->create_instance(["course" => $course->id]);
-        $chapter = $generator->create_chapter($flexbook);
+        $generator = $this->getDataGenerator()->get_plugin_generator("mod_bookflow");
+        $bookflow = $generator->create_instance(["course" => $course->id]);
+        $chapter = $generator->create_chapter($bookflow);
         $content = $generator->create_content($chapter);
         (new progress_manager())
-            ->mark_content_viewed($flexbook->id, $user->id, $content->id);
+            ->mark_content_viewed($bookflow->id, $user->id, $content->id);
 
         $contextlist = provider::get_contexts_for_userid($user->id);
         $this->assertCount(1, $contextlist->get_contextids());
 
-        $cm = get_coursemodule_from_instance("flexbook", $flexbook->id, $course->id);
+        $cm = get_coursemodule_from_instance("bookflow", $bookflow->id, $course->id);
         provider::delete_data_for_all_users_in_context(
             context_module::instance($cm->id)
         );
-        $this->assertFalse($DB->record_exists("flexbook_user_progress", ["userid" => $user->id]));
-        $this->assertFalse($DB->record_exists("flexbook_user_state", ["userid" => $user->id]));
+        $this->assertFalse($DB->record_exists("bookflow_user_progress", ["userid" => $user->id]));
+        $this->assertFalse($DB->record_exists("bookflow_user_state", ["userid" => $user->id]));
     }
 }

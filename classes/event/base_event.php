@@ -17,12 +17,12 @@
 /**
  * base_event.php
  *
- * @package   mod_flexbook
+ * @package   mod_bookflow
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_flexbook\event;
+namespace mod_bookflow\event;
 
 use context_module;
 use core\event\base;
@@ -30,13 +30,13 @@ use moodle_url;
 use Override;
 
 /**
- * Provides shared behavior for FlexBook events.
+ * Provides shared behavior for BookFlow events.
  */
 abstract class base_event extends base {
     /**
-     * Creates an event from FlexBook, chapter, and content identifiers.
+     * Creates an event from BookFlow, chapter, and content identifiers.
      *
-     * @param int $flexbookid FlexBook ID.
+     * @param int $bookflowid BookFlow ID.
      * @param int $chapterid Chapter ID.
      * @param int $contentid Content block ID.
      * @param int $userid User ID.
@@ -44,7 +44,7 @@ abstract class base_event extends base {
      * @return static
      */
     public static function create_from_ids(
-        int $flexbookid,
+        int $bookflowid,
         int $chapterid,
         int $contentid,
         int $userid,
@@ -52,12 +52,12 @@ abstract class base_event extends base {
     ): static {
         global $DB;
 
-        $flexbook = $DB->get_record("flexbook", ["id" => $flexbookid], "id, course", MUST_EXIST);
-        $cm = get_coursemodule_from_instance("flexbook", $flexbookid, $flexbook->course, false, MUST_EXIST);
+        $bookflow = $DB->get_record("bookflow", ["id" => $bookflowid], "id, course", MUST_EXIST);
+        $cm = get_coursemodule_from_instance("bookflow", $bookflowid, $bookflow->course, false, MUST_EXIST);
         return static::create([
-            "objectid" => $flexbookid,
+            "objectid" => $bookflowid,
             "context" => context_module::instance($cm->id),
-            "courseid" => $flexbook->course,
+            "courseid" => $bookflow->course,
             "relateduserid" => $userid,
             "other" => array_merge([
                 "chapterid" => $chapterid,
@@ -74,7 +74,7 @@ abstract class base_event extends base {
     #[Override]
     public static function get_name(): string {
         $shortname = substr(strrchr(static::class, "\\"), 1);
-        return get_string("event" . $shortname, "mod_flexbook");
+        return get_string("event" . $shortname, "mod_bookflow");
     }
 
     /**
@@ -84,10 +84,10 @@ abstract class base_event extends base {
      */
     #[Override]
     public function get_description(): string {
-        return get_string("eventdescription", "mod_flexbook", (object) [
+        return get_string("eventdescription", "mod_bookflow", (object) [
             "event" => static::get_name(),
             "userid" => $this->relateduserid,
-            "flexbookid" => $this->objectid,
+            "bookflowid" => $this->objectid,
         ]);
     }
 
@@ -105,7 +105,7 @@ abstract class base_event extends base {
         if (!empty($this->other["contentid"])) {
             $params["contentid"] = $this->other["contentid"];
         }
-        return new moodle_url("/mod/flexbook/view.php", $params);
+        return new moodle_url("/mod/bookflow/view.php", $params);
     }
 
     /**
@@ -115,7 +115,7 @@ abstract class base_event extends base {
      */
     #[Override]
     public static function get_objectid_mapping(): array {
-        return ["db" => "flexbook", "restore" => "flexbook"];
+        return ["db" => "bookflow", "restore" => "bookflow"];
     }
 
     /**
@@ -126,8 +126,8 @@ abstract class base_event extends base {
     #[Override]
     public static function get_other_mapping(): array {
         return [
-            "chapterid" => ["db" => "flexbook_chapters", "restore" => "flexbook_chapter"],
-            "contentid" => ["db" => "flexbook_contents", "restore" => "flexbook_content"],
+            "chapterid" => ["db" => "bookflow_chapters", "restore" => "bookflow_chapter"],
+            "contentid" => ["db" => "bookflow_contents", "restore" => "bookflow_content"],
         ];
     }
 }

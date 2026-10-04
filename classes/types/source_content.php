@@ -17,16 +17,16 @@
 /**
  * Shared base for content types backed by one uploaded file or external URL.
  *
- * @package mod_flexbook
+ * @package mod_bookflow
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_flexbook\types;
+namespace mod_bookflow\types;
 
 use context_module;
-use mod_flexbook\form\content_form;
-use mod_flexbook\form\content_form_mapper;
+use mod_bookflow\form\content_form;
+use mod_bookflow\form\content_form_mapper;
 use stdClass;
 
 /**
@@ -61,7 +61,7 @@ abstract class source_content extends template_content {
      */
     public static function validate_form(array $data, array $files): array {
         if (!content_form_mapper::has_source($data)) {
-            return ["sourcefile" => get_string("sourcerequired", "mod_flexbook")];
+            return ["sourcefile" => get_string("sourcerequired", "mod_bookflow")];
         }
         return [];
     }

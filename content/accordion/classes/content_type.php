@@ -17,18 +17,18 @@
 /**
  * content_type.php
  *
- * @package   flexbookcontent_accordion
+ * @package   bookflowcontent_accordion
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace flexbookcontent_accordion;
+namespace bookflowcontent_accordion;
 
-use flexbookcontent_accordion\types\accordion;
-use mod_flexbook\hook\content_types;
+use bookflowcontent_accordion\types\accordion;
+use mod_bookflow\hook\content_types;
 
 /**
- * Registers the Accordion content type in FlexBook.
+ * Registers the Accordion content type in BookFlow.
  */
 class content_type {
     /**

@@ -16,21 +16,21 @@
 /**
  * Tracks download completion.
  *
- * @package flexbookcontent_download
+ * @package bookflowcontent_download
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-define(["mod_flexbook/progress_tracker"], function(ProgressTracker) {
-    const init = function(flexbookId) {
+define(["mod_bookflow/progress_tracker"], function(ProgressTracker) {
+    const init = function(bookflowId) {
         document.addEventListener("click", function(event) {
-            const link = event.target.closest("[data-flexbook-download]");
+            const link = event.target.closest("[data-bookflow-download]");
             if (!link) {
                 return;
             }
             ProgressTracker.complete(
-                flexbookId,
-                Number(link.dataset.flexbookDownload),
+                bookflowId,
+                Number(link.dataset.bookflowDownload),
                 100,
                 {clicked: true}
             );

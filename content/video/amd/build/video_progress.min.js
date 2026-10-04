@@ -16,15 +16,15 @@
 /**
  * video_progress.js
  *
- * @package   flexbookcontent_video
+ * @package   bookflowcontent_video
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 define(["core/ajax", "core/notification"], function(Ajax, Notification) {
-    const init = function(flexbookId) {
-        document.querySelectorAll(".flexbook-content video").forEach(function(media) {
-            const block = media.closest(".flexbook-content");
+    const init = function(bookflowId) {
+        document.querySelectorAll(".bookflow-content video").forEach(function(media) {
+            const block = media.closest(".bookflow-content");
             let lastSent = -1;
             const send = function(force) {
                 if (!media.duration || !Number.isFinite(media.duration)) {
@@ -37,9 +37,9 @@ define(["core/ajax", "core/notification"], function(Ajax, Notification) {
                 }
                 lastSent = bucket;
                 Ajax.call([{
-                    methodname: "mod_flexbook_mark_content_completed",
+                    methodname: "mod_bookflow_mark_content_completed",
                     args: {
-                        flexbookid: flexbookId,
+                        bookflowid: bookflowId,
                         contentid: Number(block.dataset.contentId),
                         metric: percentage,
                         details: JSON.stringify({

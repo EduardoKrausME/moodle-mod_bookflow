@@ -17,15 +17,15 @@
 /**
  * Content editing form.
  *
- * @package   mod_flexbook
+ * @package   mod_bookflow
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_flexbook\form;
+namespace mod_bookflow\form;
 
 use coding_exception;
-use mod_flexbook\content_type_manager;
+use mod_bookflow\content_type_manager;
 use moodleform;
 use Override;
 
@@ -61,14 +61,14 @@ class content_form extends moodleform {
         $mform->addElement(
             "static",
             "typelabel",
-            get_string("contenttype", "mod_flexbook"),
+            get_string("contenttype", "mod_bookflow"),
             $classname::get_name()
         );
 
-        $mform->addElement("select", "chapterid", get_string("chapter", "mod_flexbook"), $chapters);
+        $mform->addElement("select", "chapterid", get_string("chapter", "mod_bookflow"), $chapters);
         $mform->addRule("chapterid", null, "required", null, "client");
 
-        $mform->addElement("text", "title", get_string("contenttitle", "mod_flexbook"), ["size" => 64]);
+        $mform->addElement("text", "title", get_string("contenttitle", "mod_bookflow"), ["size" => 64]);
         $mform->setType("title", PARAM_TEXT);
 
         $classname::add_form_fields(
@@ -79,21 +79,21 @@ class content_form extends moodleform {
             $structureddraftid
         );
 
-        $mform->addElement("header", "progressheading", get_string("progresssettings", "mod_flexbook"));
-        $mform->addElement("advcheckbox", "trackprogress", get_string("trackprogress", "mod_flexbook"));
+        $mform->addElement("header", "progressheading", get_string("progresssettings", "mod_bookflow"));
+        $mform->addElement("advcheckbox", "trackprogress", get_string("trackprogress", "mod_bookflow"));
         $mform->setDefault("trackprogress", 1);
 
-        $mform->addElement("advcheckbox", "required", get_string("contentrequired", "mod_flexbook"));
+        $mform->addElement("advcheckbox", "required", get_string("contentrequired", "mod_bookflow"));
         $mform->disabledIf("required", "trackprogress", "notchecked");
 
-        $mform->addElement("text", "weight", get_string("weight", "mod_flexbook"), ["size" => 8]);
+        $mform->addElement("text", "weight", get_string("weight", "mod_bookflow"), ["size" => 8]);
         $mform->setType("weight", PARAM_FLOAT);
         $mform->setDefault("weight", 1);
 
         $mform->addElement(
             "select",
             "completiontype",
-            get_string("completiontype", "mod_flexbook"),
+            get_string("completiontype", "mod_bookflow"),
             $classname::get_completion_options()
         );
         $mform->setDefault("completiontype", "view");
@@ -101,7 +101,7 @@ class content_form extends moodleform {
         $mform->addElement(
             "text",
             "completionvalue",
-            get_string("completionvalue", "mod_flexbook"),
+            get_string("completionvalue", "mod_bookflow"),
             ["size" => 8]
         );
         $mform->setType("completionvalue", PARAM_FLOAT);
@@ -113,10 +113,10 @@ class content_form extends moodleform {
         $mform->addElement(
             "duration",
             "estimatedtime",
-            get_string("estimatedtime", "mod_flexbook"),
+            get_string("estimatedtime", "mod_bookflow"),
             ["optional" => true]
         );
-        $mform->addElement("advcheckbox", "hidden", get_string("hidden", "mod_flexbook"));
+        $mform->addElement("advcheckbox", "hidden", get_string("hidden", "mod_bookflow"));
 
         $this->add_action_buttons();
     }
@@ -152,18 +152,18 @@ class content_form extends moodleform {
         $this->_form->addElement(
             "filemanager",
             "sourcefile",
-            get_string("sourcefile", "mod_flexbook"),
+            get_string("sourcefile", "mod_bookflow"),
             null,
             $fileoptions
         );
         $this->_form->addElement(
             "url",
             "sourceurl",
-            get_string("sourceurl", "mod_flexbook"),
+            get_string("sourceurl", "mod_bookflow"),
             ["size" => 64]
         );
         $this->_form->setType("sourceurl", PARAM_URL);
-        $this->_form->addHelpButton("sourceurl", "sourceurl", "mod_flexbook");
+        $this->_form->addHelpButton("sourceurl", "sourceurl", "mod_bookflow");
     }
 
     /**
@@ -212,20 +212,20 @@ class content_form extends moodleform {
         $completionoptions = $classname::get_completion_options();
 
         if (!array_key_exists($data["completiontype"], $completionoptions)) {
-            $errors["completiontype"] = get_string("invalidcompletiontypefortype", "mod_flexbook");
+            $errors["completiontype"] = get_string("invalidcompletiontypefortype", "mod_bookflow");
         }
         if ($data["weight"] < 0) {
-            $errors["weight"] = get_string("weightnegative", "mod_flexbook");
+            $errors["weight"] = get_string("weightnegative", "mod_bookflow");
         }
         if ($data["completiontype"] === "timed" && $data["completionvalue"] <= 0) {
-            $errors["completionvalue"] = get_string("completiontimepositive", "mod_flexbook");
+            $errors["completionvalue"] = get_string("completiontimepositive", "mod_bookflow");
         }
         if (!empty($data["trackprogress"]) && $data["completiontype"] === "none") {
-            $errors["completiontype"] = get_string("trackprogressneedscompletion", "mod_flexbook");
+            $errors["completiontype"] = get_string("trackprogressneedscompletion", "mod_bookflow");
         }
         if (!empty($data["required"])
                 && (empty($data["trackprogress"]) || $data["completiontype"] === "none")) {
-            $errors["required"] = get_string("requiredneedstracking", "mod_flexbook");
+            $errors["required"] = get_string("requiredneedstracking", "mod_bookflow");
         }
 
         return array_merge($errors, $classname::validate_form((array) $data, (array) $files));
@@ -240,7 +240,7 @@ class content_form extends moodleform {
     private function get_content_class(string $type): string {
         $classes = content_type_manager::get_classes();
         if ($type === "" || !isset($classes[$type])) {
-            throw new coding_exception("Unknown FlexBook content type: {$type}");
+            throw new coding_exception("Unknown BookFlow content type: {$type}");
         }
         return $classes[$type];
     }

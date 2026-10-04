@@ -17,17 +17,17 @@
 /**
  * chapter.php
  *
- * @package   mod_flexbook
+ * @package   mod_bookflow
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_flexbook\types;
+namespace mod_bookflow\types;
 
 use stdClass;
 
 /**
- * Represents a FlexBook chapter.
+ * Represents a BookFlow chapter.
  */
 class chapter {
     /**

@@ -17,12 +17,12 @@
 /**
  * provider.php
  *
- * @package   mod_flexbook
+ * @package   mod_bookflow
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_flexbook\privacy;
+namespace mod_bookflow\privacy;
 
 use context;
 use context_module;
@@ -38,7 +38,7 @@ use core_privacy\local\request\writer;
 use Override;
 
 /**
- * Implements the Moodle Privacy API for FlexBook user data.
+ * Implements the Moodle Privacy API for BookFlow user data.
  */
 class provider implements
     \core_privacy\local\metadata\provider,
@@ -46,14 +46,14 @@ class provider implements
     core_userlist_provider {
 
     /**
-     * Describes the personal data stored by FlexBook.
+     * Describes the personal data stored by BookFlow.
      *
      * @param collection $collection Metadata collection.
      * @return collection
      */
     #[Override]
     public static function get_metadata(collection $collection): collection {
-        $collection->add_database_table("flexbook_user_progress", [
+        $collection->add_database_table("bookflow_user_progress", [
             "userid" => "privacy:metadata:userid",
             "status" => "privacy:metadata:status",
             "progress" => "privacy:metadata:progress",
@@ -64,7 +64,7 @@ class provider implements
             "lastaccess" => "privacy:metadata:lastaccess",
             "timecompleted" => "privacy:metadata:timecompleted",
         ], "privacy:metadata:userprogress");
-        $collection->add_database_table("flexbook_user_state", [
+        $collection->add_database_table("bookflow_user_state", [
             "userid" => "privacy:metadata:userid",
             "lastchapterid" => "privacy:metadata:lastchapter",
             "lastcontentid" => "privacy:metadata:lastcontent",
@@ -73,7 +73,7 @@ class provider implements
             "firstaccess" => "privacy:metadata:firstaccess",
             "lastaccess" => "privacy:metadata:lastaccess",
         ], "privacy:metadata:userstate");
-        $collection->add_database_table("flexbook_chapter_progress", [
+        $collection->add_database_table("bookflow_chapter_progress", [
             "userid" => "privacy:metadata:userid",
             "status" => "privacy:metadata:status",
             "viewcount" => "privacy:metadata:viewcount",
@@ -82,14 +82,14 @@ class provider implements
             "lastaccess" => "privacy:metadata:lastaccess",
             "timecompleted" => "privacy:metadata:timecompleted",
         ], "privacy:metadata:chapterprogress");
-        $collection->add_database_table("flexbook_bookmarks", [
+        $collection->add_database_table("bookflow_bookmarks", [
             "userid" => "privacy:metadata:userid",
             "itemtype" => "privacy:metadata:itemtype",
             "chapterid" => "privacy:metadata:chapterid",
             "contentid" => "privacy:metadata:contentid",
             "timecreated" => "privacy:metadata:timecreated",
         ], "privacy:metadata:bookmarks");
-        $collection->add_database_table("flexbook_notes", [
+        $collection->add_database_table("bookflow_notes", [
             "userid" => "privacy:metadata:userid",
             "note" => "privacy:metadata:note",
             "selectiontext" => "privacy:metadata:selectiontext",
@@ -100,7 +100,7 @@ class provider implements
     }
 
     /**
-     * Gets contexts containing FlexBook data for a user.
+     * Gets contexts containing BookFlow data for a user.
      *
      * @param int $userid User ID.
      * @return contextlist
@@ -112,22 +112,22 @@ class provider implements
                   FROM {context} ctx
                   JOIN {course_modules} cm ON cm.id = ctx.instanceid
                   JOIN {modules} m ON m.id = cm.module AND m.name = :modname
-                  JOIN {flexbook} f ON f.id = cm.instance
+                  JOIN {bookflow} f ON f.id = cm.instance
                  WHERE ctx.contextlevel = :contextlevel
                    AND (
-                        EXISTS (SELECT 1 FROM {flexbook_user_progress} p
-                                 WHERE p.flexbookid = f.id AND p.userid = :u1)
-                     OR EXISTS (SELECT 1 FROM {flexbook_user_state} s
-                                 WHERE s.flexbookid = f.id AND s.userid = :u2)
-                     OR EXISTS (SELECT 1 FROM {flexbook_chapter_progress} cp
-                                 WHERE cp.flexbookid = f.id AND cp.userid = :u7)
-                     OR EXISTS (SELECT 1 FROM {flexbook_bookmarks} b
-                                 WHERE b.flexbookid = f.id AND b.userid = :u3)
-                     OR EXISTS (SELECT 1 FROM {flexbook_notes} n
-                                 WHERE n.flexbookid = f.id AND n.userid = :u4)
+                        EXISTS (SELECT 1 FROM {bookflow_user_progress} p
+                                 WHERE p.bookflowid = f.id AND p.userid = :u1)
+                     OR EXISTS (SELECT 1 FROM {bookflow_user_state} s
+                                 WHERE s.bookflowid = f.id AND s.userid = :u2)
+                     OR EXISTS (SELECT 1 FROM {bookflow_chapter_progress} cp
+                                 WHERE cp.bookflowid = f.id AND cp.userid = :u7)
+                     OR EXISTS (SELECT 1 FROM {bookflow_bookmarks} b
+                                 WHERE b.bookflowid = f.id AND b.userid = :u3)
+                     OR EXISTS (SELECT 1 FROM {bookflow_notes} n
+                                 WHERE n.bookflowid = f.id AND n.userid = :u4)
                    )";
         $contextlist->add_from_sql($sql, [
-            "modname" => "flexbook",
+            "modname" => "bookflow",
             "contextlevel" => CONTEXT_MODULE,
             "u1" => $userid,
             "u2" => $userid,
@@ -150,17 +150,17 @@ class provider implements
         if (!$context instanceof context_module) {
             return;
         }
-        $params = ["cmid" => $context->instanceid, "modname" => "flexbook"];
+        $params = ["cmid" => $context->instanceid, "modname" => "bookflow"];
         foreach ([
-            "flexbook_user_progress",
-            "flexbook_user_state",
-            "flexbook_chapter_progress",
-            "flexbook_bookmarks",
-            "flexbook_notes",
+            "bookflow_user_progress",
+            "bookflow_user_state",
+            "bookflow_chapter_progress",
+            "bookflow_bookmarks",
+            "bookflow_notes",
         ] as $table) {
             $sql = "SELECT d.userid
                       FROM {{$table}} d
-                      JOIN {flexbook} f ON f.id = d.flexbookid
+                      JOIN {bookflow} f ON f.id = d.bookflowid
                       JOIN {course_modules} cm ON cm.instance = f.id
                       JOIN {modules} m ON m.id = cm.module AND m.name = :modname
                      WHERE cm.id = :cmid";
@@ -169,7 +169,7 @@ class provider implements
     }
 
     /**
-     * Exports approved FlexBook user data.
+     * Exports approved BookFlow user data.
      *
      * @param approved_contextlist $contextlist Approved context list.
      * @return void
@@ -180,33 +180,33 @@ class provider implements
 
         $userid = $contextlist->get_user()->id;
         foreach ($contextlist->get_contexts() as $context) {
-            $cm = get_coursemodule_from_id("flexbook", $context->instanceid, 0, false, IGNORE_MISSING);
+            $cm = get_coursemodule_from_id("bookflow", $context->instanceid, 0, false, IGNORE_MISSING);
             if (!$cm) {
                 continue;
             }
-            $flexbook = $DB->get_record("flexbook", ["id" => $cm->instance], "*", MUST_EXIST);
+            $bookflow = $DB->get_record("bookflow", ["id" => $cm->instance], "*", MUST_EXIST);
             $contextdata = helper::get_context_data($context, $contextlist->get_user());
             writer::with_context($context)->export_data([], $contextdata);
 
             $datasets = [
-                "progress" => $DB->get_records("flexbook_user_progress", [
-                    "flexbookid" => $flexbook->id,
+                "progress" => $DB->get_records("bookflow_user_progress", [
+                    "bookflowid" => $bookflow->id,
                     "userid" => $userid,
                 ]),
-                "state" => $DB->get_records("flexbook_user_state", [
-                    "flexbookid" => $flexbook->id,
+                "state" => $DB->get_records("bookflow_user_state", [
+                    "bookflowid" => $bookflow->id,
                     "userid" => $userid,
                 ]),
-                "chapter_progress" => $DB->get_records("flexbook_chapter_progress", [
-                    "flexbookid" => $flexbook->id,
+                "chapter_progress" => $DB->get_records("bookflow_chapter_progress", [
+                    "bookflowid" => $bookflow->id,
                     "userid" => $userid,
                 ]),
-                "bookmarks" => $DB->get_records("flexbook_bookmarks", [
-                    "flexbookid" => $flexbook->id,
+                "bookmarks" => $DB->get_records("bookflow_bookmarks", [
+                    "bookflowid" => $bookflow->id,
                     "userid" => $userid,
                 ]),
-                "notes" => $DB->get_records("flexbook_notes", [
-                    "flexbookid" => $flexbook->id,
+                "notes" => $DB->get_records("bookflow_notes", [
+                    "bookflowid" => $bookflow->id,
                     "userid" => $userid,
                 ]),
             ];
@@ -222,13 +222,13 @@ class provider implements
                     }
                     $export[] = $copy;
                 }
-                writer::with_context($context)->export_data([get_string("privacy:{$name}", "mod_flexbook")], $export);
+                writer::with_context($context)->export_data([get_string("privacy:{$name}", "mod_bookflow")], $export);
             }
         }
     }
 
     /**
-     * Deletes all FlexBook user data in a context.
+     * Deletes all BookFlow user data in a context.
      *
      * @param context $context Module context.
      * @return void
@@ -240,15 +240,15 @@ class provider implements
         if (!$context instanceof context_module) {
             return;
         }
-        $cm = get_coursemodule_from_id("flexbook", $context->instanceid, 0, false, IGNORE_MISSING);
+        $cm = get_coursemodule_from_id("bookflow", $context->instanceid, 0, false, IGNORE_MISSING);
         if (!$cm) {
             return;
         }
-        self::delete_for_flexbook($cm->instance);
+        self::delete_for_bookflow($cm->instance);
     }
 
     /**
-     * Deletes FlexBook data for one approved user.
+     * Deletes BookFlow data for one approved user.
      *
      * @param approved_contextlist $contextlist Approved context list.
      * @return void
@@ -259,7 +259,7 @@ class provider implements
 
         $userid = $contextlist->get_user()->id;
         foreach ($contextlist->get_contexts() as $context) {
-            $cm = get_coursemodule_from_id("flexbook", $context->instanceid, 0, false, IGNORE_MISSING);
+            $cm = get_coursemodule_from_id("bookflow", $context->instanceid, 0, false, IGNORE_MISSING);
             if ($cm) {
                 self::delete_for_user($cm->instance, [$userid]);
             }
@@ -267,7 +267,7 @@ class provider implements
     }
 
     /**
-     * Deletes FlexBook data for approved users.
+     * Deletes BookFlow data for approved users.
      *
      * @param approved_userlist $userlist Approved user list.
      * @return void
@@ -278,40 +278,40 @@ class provider implements
         if (!$context instanceof context_module) {
             return;
         }
-        $cm = get_coursemodule_from_id("flexbook", $context->instanceid, 0, false, IGNORE_MISSING);
+        $cm = get_coursemodule_from_id("bookflow", $context->instanceid, 0, false, IGNORE_MISSING);
         if ($cm) {
             self::delete_for_user($cm->instance, $userlist->get_userids());
         }
     }
 
     /**
-     * Deletes all user-owned data for a FlexBook.
+     * Deletes all user-owned data for a BookFlow.
      *
-     * @param int $flexbookid FlexBook ID.
+     * @param int $bookflowid BookFlow ID.
      * @return void
      */
-    private static function delete_for_flexbook(int $flexbookid): void {
+    private static function delete_for_bookflow(int $bookflowid): void {
         global $DB;
 
         foreach ([
-            "flexbook_user_progress",
-            "flexbook_user_state",
-            "flexbook_chapter_progress",
-            "flexbook_bookmarks",
-            "flexbook_notes",
+            "bookflow_user_progress",
+            "bookflow_user_state",
+            "bookflow_chapter_progress",
+            "bookflow_bookmarks",
+            "bookflow_notes",
         ] as $table) {
-            $DB->delete_records($table, ["flexbookid" => $flexbookid]);
+            $DB->delete_records($table, ["bookflowid" => $bookflowid]);
         }
     }
 
     /**
-     * Deletes selected users' data from a FlexBook.
+     * Deletes selected users' data from a BookFlow.
      *
-     * @param int $flexbookid FlexBook ID.
+     * @param int $bookflowid BookFlow ID.
      * @param array $userids User IDs.
      * @return void
      */
-    private static function delete_for_user(int $flexbookid, array $userids): void {
+    private static function delete_for_user(int $bookflowid, array $userids): void {
         global $DB;
 
         if (!$userids) {
@@ -319,14 +319,14 @@ class provider implements
         }
         [$usersql, $userparams] = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED);
         foreach ([
-            "flexbook_user_progress",
-            "flexbook_user_state",
-            "flexbook_chapter_progress",
-            "flexbook_bookmarks",
-            "flexbook_notes",
+            "bookflow_user_progress",
+            "bookflow_user_state",
+            "bookflow_chapter_progress",
+            "bookflow_bookmarks",
+            "bookflow_notes",
         ] as $table) {
-            $DB->delete_records_select($table, "flexbookid = :flexbookid AND userid {$usersql}",
-                ["flexbookid" => $flexbookid] + $userparams);
+            $DB->delete_records_select($table, "bookflowid = :bookflowid AND userid {$usersql}",
+                ["bookflowid" => $bookflowid] + $userparams);
         }
     }
 }

@@ -17,7 +17,7 @@
 /**
  * access.php
  *
- * @package   mod_flexbook
+ * @package   mod_bookflow
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -25,14 +25,14 @@
 defined('MOODLE_INTERNAL') || die;
 
 $capabilities = [
-    "mod/flexbook:addinstance" => [
+    "mod/bookflow:addinstance" => [
         "riskbitmask" => RISK_XSS,
         "captype" => "write",
         "contextlevel" => CONTEXT_COURSE,
         "archetypes" => ["editingteacher" => CAP_ALLOW, "manager" => CAP_ALLOW],
         "clonepermissionsfrom" => "moodle/course:manageactivities",
     ],
-    "mod/flexbook:view" => [
+    "mod/bookflow:view" => [
         "captype" => "read",
         "contextlevel" => CONTEXT_MODULE,
         "archetypes" => [
@@ -43,42 +43,42 @@ $capabilities = [
             "manager" => CAP_ALLOW,
         ],
     ],
-    "mod/flexbook:managechapters" => [
+    "mod/bookflow:managechapters" => [
         "riskbitmask" => RISK_XSS,
         "captype" => "write",
         "contextlevel" => CONTEXT_MODULE,
         "archetypes" => ["editingteacher" => CAP_ALLOW, "manager" => CAP_ALLOW],
     ],
-    "mod/flexbook:managecontent" => [
+    "mod/bookflow:managecontent" => [
         "riskbitmask" => RISK_XSS,
         "captype" => "write",
         "contextlevel" => CONTEXT_MODULE,
         "archetypes" => ["editingteacher" => CAP_ALLOW, "manager" => CAP_ALLOW],
     ],
-    "mod/flexbook:editunsafecontent" => [
+    "mod/bookflow:editunsafecontent" => [
         "riskbitmask" => RISK_XSS,
         "captype" => "write",
         "contextlevel" => CONTEXT_MODULE,
         "archetypes" => ["manager" => CAP_ALLOW],
     ],
-    "mod/flexbook:viewreports" => [
+    "mod/bookflow:viewreports" => [
         "riskbitmask" => RISK_PERSONAL,
         "captype" => "read",
         "contextlevel" => CONTEXT_MODULE,
         "archetypes" => ["teacher" => CAP_ALLOW, "editingteacher" => CAP_ALLOW, "manager" => CAP_ALLOW],
     ],
-    "mod/flexbook:export" => [
+    "mod/bookflow:export" => [
         "captype" => "read",
         "contextlevel" => CONTEXT_MODULE,
         "archetypes" => ["teacher" => CAP_ALLOW, "editingteacher" => CAP_ALLOW, "manager" => CAP_ALLOW],
     ],
-    "mod/flexbook:import" => [
+    "mod/bookflow:import" => [
         "riskbitmask" => RISK_XSS,
         "captype" => "write",
         "contextlevel" => CONTEXT_MODULE,
         "archetypes" => ["editingteacher" => CAP_ALLOW, "manager" => CAP_ALLOW],
     ],
-    "mod/flexbook:viewallnotes" => [
+    "mod/bookflow:viewallnotes" => [
         "riskbitmask" => RISK_PERSONAL,
         "captype" => "read",
         "contextlevel" => CONTEXT_MODULE,

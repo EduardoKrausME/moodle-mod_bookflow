@@ -1,6 +1,6 @@
-# FlexBook
+# BookFlow
 
-`mod_flexbook` is a modern interactive-book activity for Moodle 4.4 or newer.
+`mod_bookflow` is a modern interactive-book activity for Moodle 4.4 or newer.
 It keeps content in independent blocks, tracks semantic reading state, calculates
 weighted progress and updates Moodle activity completion through
 `\completion_info`.
@@ -28,10 +28,10 @@ to Mustache through Moodle's standard `$OUTPUT->render_from_template()` method.
 
 ## Installation
 
-Copy the `flexbook` directory to:
+Copy the `bookflow` directory to:
 
 ```text
-mod/flexbook
+mod/bookflow
 ```
 
 Then open Site administration and complete the Moodle upgrade.
@@ -71,28 +71,28 @@ Example:
 
 ## Extending content types
 
-FlexBook declares the `flexbookcontent` subplugin type. A subplugin can register
-a class without changing `mod_flexbook`.
+BookFlow declares the `bookflowcontent` subplugin type. A subplugin can register
+a class without changing `mod_bookflow`.
 
 The content class must extend:
 
 ```php
-\mod_flexbook\types\content
+\mod_bookflow\types\content
 ```
 
 A conventional registration class can be placed at:
 
 ```text
-flexbookcontent_example/classes/local/content_type.php
+bookflowcontent_example/classes/local/content_type.php
 ```
 
 with:
 
 ```php
-public static function register(\mod_flexbook\hook\content_types $hook): void {
-    $hook->register("example", \flexbookcontent_example\types\example::class);
+public static function register(\mod_bookflow\hook\content_types $hook): void {
+    $hook->register("example", \bookflowcontent_example\types\example::class);
 }
 ```
 
-Plugins can also subscribe to `\mod_flexbook\hook\content_types` through
+Plugins can also subscribe to `\mod_bookflow\hook\content_types` through
 Moodle's hook manager and call the same `register()` method.

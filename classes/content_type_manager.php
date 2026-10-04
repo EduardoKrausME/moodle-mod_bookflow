@@ -17,24 +17,24 @@
 /**
  * content_type_manager.php
  *
- * @package   mod_flexbook
+ * @package   mod_bookflow
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_flexbook;
+namespace mod_bookflow;
 
 use context_module;
 use core\di;
 use core\hook\manager;
 use core_component;
-use mod_flexbook\hook\content_types;
-use mod_flexbook\types\content;
+use mod_bookflow\hook\content_types;
+use mod_bookflow\types\content;
 use moodle_exception;
 use stdClass;
 
 /**
- * Discovers and creates registered FlexBook content types.
+ * Discovers and creates registered BookFlow content types.
  */
 class content_type_manager {
     /**
@@ -46,7 +46,7 @@ class content_type_manager {
         global $CFG;
 
         $hook = new content_types();
-        $plugins = core_component::get_plugin_list("flexbookcontent");
+        $plugins = core_component::get_plugin_list("bookflowcontent");
 
         // The component cache can still describe the previous code tree immediately after a Git update.
         // Keep the bundled types usable until Moodle completes plugin discovery during upgrade/cache purge.
@@ -55,9 +55,9 @@ class content_type_manager {
         }
 
         foreach ($plugins as $name => $path) {
-            if (file_exists("{$CFG->dirroot}/mod/flexbook/content/{$name}/classes/content_type.php")) {
-                require_once("{$CFG->dirroot}/mod/flexbook/content/{$name}/classes/content_type.php");
-                $classname = "\\flexbookcontent_{$name}\\content_type";
+            if (file_exists("{$CFG->dirroot}/mod/bookflow/content/{$name}/classes/content_type.php")) {
+                require_once("{$CFG->dirroot}/mod/bookflow/content/{$name}/classes/content_type.php");
+                $classname = "\\bookflowcontent_{$name}\\content_type";
                 $classname::register($hook);
             }
         }
@@ -79,7 +79,7 @@ class content_type_manager {
         foreach (glob($pattern) ?: [] as $file) {
             $type = basename(dirname(dirname($file)));
             require_once($file);
-            $classname = "\\flexbookcontent_{$type}\\content_type";
+            $classname = "\\bookflowcontent_{$type}\\content_type";
             if (class_exists($classname, false)) {
                 $classname::register($hook);
             }
@@ -103,20 +103,20 @@ class content_type_manager {
      * Creates a content type object for a database record.
      *
      * @param stdClass $record Record data.
-     * @param stdClass $flexbook FlexBook record.
+     * @param stdClass $bookflow BookFlow record.
      * @param context_module $context Module context.
      * @return content
      */
     public static function create_content(
         stdClass $record,
-        stdClass $flexbook,
+        stdClass $bookflow,
         context_module $context
     ): content {
         $classes = self::get_classes();
         if (!isset($classes[$record->type])) {
-            throw new moodle_exception("unknowncontenttype", "mod_flexbook", "", $record->type);
+            throw new moodle_exception("unknowncontenttype", "mod_bookflow", "", $record->type);
         }
         $classname = $classes[$record->type];
-        return new $classname($record, $flexbook, $context);
+        return new $classname($record, $bookflow, $context);
     }
 }

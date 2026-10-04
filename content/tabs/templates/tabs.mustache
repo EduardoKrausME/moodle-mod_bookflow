@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template flexbookcontent_tabs/tabs
+    @template bookflowcontent_tabs/tabs
 
     Example context (json):
     {
@@ -24,7 +24,7 @@
 }}
 
 {{#title}}<h3>{{title}}</h3>{{/title}}
-<div class="flexbook-tabs" data-flexbook-interactive="{{id}}">
+<div class="bookflow-tabs" data-bookflow-interactive="{{id}}">
     <div role="tablist">
         {{#items}}<button class="btn btn-outline-primary {{#first}}active{{/first}}" role="tab" data-item-index="{{index}}" aria-selected="{{#first}}true{{/first}}{{^first}}false{{/first}}">{{title}}</button>{{/items}}
     </div>

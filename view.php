@@ -17,15 +17,15 @@
 /**
  * view.php
  *
- * @package   mod_flexbook
+ * @package   mod_bookflow
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use mod_flexbook\event\flexbook_viewed;
-use mod_flexbook\content_type_manager;
-use mod_flexbook\time_estimator;
-use mod_flexbook\progress\progress_manager;
+use mod_bookflow\event\bookflow_viewed;
+use mod_bookflow\content_type_manager;
+use mod_bookflow\time_estimator;
+use mod_bookflow\progress\progress_manager;
 
 require_once(__DIR__ . "/../../config.php");
 
@@ -33,63 +33,63 @@ $id = required_param("id", PARAM_INT);
 $chapterid = optional_param("chapterid", 0, PARAM_INT);
 $contentid = optional_param("contentid", 0, PARAM_INT);
 
-$cm = get_coursemodule_from_id("flexbook", $id, 0, false, MUST_EXIST);
+$cm = get_coursemodule_from_id("bookflow", $id, 0, false, MUST_EXIST);
 $course = get_course($cm->course);
-$flexbook = $DB->get_record("flexbook", ["id" => $cm->instance], "*", MUST_EXIST);
+$bookflow = $DB->get_record("bookflow", ["id" => $cm->instance], "*", MUST_EXIST);
 $context = context_module::instance($cm->id);
 
 require_login($course, true, $cm);
-require_capability("mod/flexbook:view", $context);
+require_capability("mod/bookflow:view", $context);
 
-$PAGE->set_url("/mod/flexbook/view.php", ["id" => $cm->id, "chapterid" => $chapterid]);
-$PAGE->set_title(format_string($flexbook->name));
+$PAGE->set_url("/mod/bookflow/view.php", ["id" => $cm->id, "chapterid" => $chapterid]);
+$PAGE->set_title(format_string($bookflow->name));
 $PAGE->set_heading(format_string($course->fullname));
 $PAGE->set_context($context);
-$PAGE->add_body_class("mod-flexbook");
-$PAGE->requires->css("/mod/flexbook/styles.css");
+$PAGE->add_body_class("mod-bookflow");
+$PAGE->requires->css("/mod/bookflow/styles.css");
 $PAGE->requires->strings_for_js([
     "activitycompletedmessage",
-], "mod_flexbook");
+], "mod_bookflow");
 
-$editing = has_capability("mod/flexbook:managecontent", $context) && $PAGE->user_is_editing();
+$editing = has_capability("mod/bookflow:managecontent", $context) && $PAGE->user_is_editing();
 $progressmanager = new progress_manager();
-$progress = $progressmanager->calculate_user_progress($flexbook->id, $USER->id);
-$lastposition = $progressmanager->get_last_position($flexbook->id, $USER->id);
-$chapters = $DB->get_records("flexbook_chapters", ["flexbookid" => $flexbook->id], "sortorder, id");
+$progress = $progressmanager->calculate_user_progress($bookflow->id, $USER->id);
+$lastposition = $progressmanager->get_last_position($bookflow->id, $USER->id);
+$chapters = $DB->get_records("bookflow_chapters", ["bookflowid" => $bookflow->id], "sortorder, id");
 $haschapters = !empty($chapters);
-$canmanagechapters = has_capability("mod/flexbook:managechapters", $context);
+$canmanagechapters = has_capability("mod/bookflow:managechapters", $context);
 if (!$editing) {
     $chapters = array_filter($chapters, fn($chapter) => !$chapter->hidden);
 }
 
-flexbook_viewed::create_from_ids($flexbook->id, 0, 0, $USER->id)->trigger();
+bookflow_viewed::create_from_ids($bookflow->id, 0, 0, $USER->id)->trigger();
 
 $toc = [];
 $chapterindex = 0;
 foreach ($chapters as $chapter) {
     $chapterindex++;
     $toccontents = [];
-    foreach ($DB->get_records("flexbook_contents", ["chapterid" => $chapter->id], "sortorder, id") as $toccontent) {
+    foreach ($DB->get_records("bookflow_contents", ["chapterid" => $chapter->id], "sortorder, id") as $toccontent) {
         if ($toccontent->hidden && !$editing) {
             continue;
         }
         $toccontents[] = [
-            "title" => format_string($toccontent->title ?: get_string("untitledcontent", "mod_flexbook")),
+            "title" => format_string($toccontent->title ?: get_string("untitledcontent", "mod_bookflow")),
             "type" => $toccontent->type,
-            "url" => (new moodle_url("/mod/flexbook/view.php", [
+            "url" => (new moodle_url("/mod/bookflow/view.php", [
                 "id" => $cm->id,
                 "chapterid" => $chapter->id,
-            ], "flexbook-content-{$toccontent->id}"))->out(false),
+            ], "bookflow-content-{$toccontent->id}"))->out(false),
         ];
     }
     $completedcount = $DB->count_records_sql(
         "SELECT COUNT(c.id)
-           FROM {flexbook_contents} c
+           FROM {bookflow_contents} c
           WHERE c.chapterid = :chapterid
             AND c.trackprogress = 1
             AND c.hidden = 0
             AND EXISTS (
-                SELECT 1 FROM {flexbook_user_progress} p
+                SELECT 1 FROM {bookflow_user_progress} p
                  WHERE p.contentid = c.id
                    AND p.userid = :userid
                    AND p.status = :completed
@@ -100,16 +100,16 @@ foreach ($chapters as $chapter) {
             "completed" => progress_manager::STATUS_COMPLETED,
         ]
     );
-    $totalcount = $DB->count_records("flexbook_contents", [
+    $totalcount = $DB->count_records("bookflow_contents", [
         "chapterid" => $chapter->id,
         "trackprogress" => 1,
         "hidden" => 0,
     ]);
     $toc[] = [
         "id" => $chapter->id,
-        "number" => $flexbook->numbering ? $chapterindex : "",
+        "number" => $bookflow->numbering ? $chapterindex : "",
         "title" => format_string($chapter->title),
-        "url" => (new moodle_url("/mod/flexbook/view.php", [
+        "url" => (new moodle_url("/mod/bookflow/view.php", [
             "id" => $cm->id,
             "chapterid" => $chapter->id,
         ]))->out(false),
@@ -123,21 +123,21 @@ foreach ($chapters as $chapter) {
     ];
 }
 
-$PAGE->navbar->add(format_string($flexbook->name), new moodle_url("/mod/flexbook/view.php", ["id" => $cm->id]));
+$PAGE->navbar->add(format_string($bookflow->name), new moodle_url("/mod/bookflow/view.php", ["id" => $cm->id]));
 
 echo $OUTPUT->header();
 
 $emptycontent = "";
 if (!$haschapters) {
     $emptymessage = $canmanagechapters
-        ? get_string("emptyflexbookteacher", "mod_flexbook")
-        : get_string("emptyflexbookstudent", "mod_flexbook");
+        ? get_string("emptybookflowteacher", "mod_bookflow")
+        : get_string("emptybookflowstudent", "mod_bookflow");
     if ($canmanagechapters) {
-        $createchapterurl = new moodle_url("/mod/flexbook/chapters.php", ["id" => $cm->id]);
+        $createchapterurl = new moodle_url("/mod/bookflow/chapters.php", ["id" => $cm->id]);
         $emptymessage .= html_writer::div(
             html_writer::link(
                 $createchapterurl,
-                get_string("createfirstchapter", "mod_flexbook"),
+                get_string("createfirstchapter", "mod_bookflow"),
                 ["class" => "btn btn-primary"]
             ),
             "mt-3"
@@ -149,15 +149,15 @@ if (!$haschapters) {
 if (!$chapterid) {
     $accessedchapters = $DB->count_records_sql(
         "SELECT COUNT(DISTINCT p.chapterid)
-           FROM {flexbook_chapter_progress} p
-          WHERE p.flexbookid = :flexbookid
+           FROM {bookflow_chapter_progress} p
+          WHERE p.bookflowid = :bookflowid
             AND p.userid = :userid",
-        ["flexbookid" => $flexbook->id, "userid" => $USER->id]
+        ["bookflowid" => $bookflow->id, "userid" => $USER->id]
     );
-    $estimated = time_estimator::for_flexbook($flexbook->id);
+    $estimated = time_estimator::for_bookflow($bookflow->id);
     $coverfiles = get_file_storage()->get_area_files(
         $context->id,
-        "mod_flexbook",
+        "mod_bookflow",
         "cover",
         0,
         "itemid, filepath, filename",
@@ -166,27 +166,27 @@ if (!$chapterid) {
     $cover = $coverfiles ? reset($coverfiles) : null;
     $data = [
         "cmid" => $cm->id,
-        "flexbookid" => $flexbook->id,
-        "name" => format_string($flexbook->name),
+        "bookflowid" => $bookflow->id,
+        "name" => format_string($bookflow->name),
         "hascover" => !empty($cover),
         "coverurl" => $cover
             ? moodle_url::make_pluginfile_url(
                 $context->id,
-                "mod_flexbook",
+                "mod_bookflow",
                 "cover",
                 0,
                 $cover->get_filepath(),
                 $cover->get_filename()
             )->out(false)
             : "",
-        "intro" => format_module_intro("flexbook", $flexbook, $cm->id),
+        "intro" => format_module_intro("bookflow", $bookflow, $cm->id),
         "chaptercount" => count($chapters),
-        "chaptercountlabel" => get_string("chaptercount", "mod_flexbook", count($chapters)),
+        "chaptercountlabel" => get_string("chaptercount", "mod_bookflow", count($chapters)),
         "estimatedtime" => format_time($estimated),
         "progress" => $progress,
         "progressrounded" => round($progress),
         "accessedchapters" => $accessedchapters,
-        "chapteraccesslabel" => get_string("chapteraccesscount", "mod_flexbook", (object) [
+        "chapteraccesslabel" => get_string("chapteraccesscount", "mod_bookflow", (object) [
             "accessed" => $accessedchapters,
             "total" => count($chapters),
         ]),
@@ -194,78 +194,78 @@ if (!$chapterid) {
         "emptycontent" => $emptycontent,
         "hascontinue" => $lastposition && $lastposition->lastchapterid,
         "continueurl" => $lastposition && $lastposition->lastchapterid
-            ? (new moodle_url("/mod/flexbook/view.php", [
+            ? (new moodle_url("/mod/bookflow/view.php", [
                 "id" => $cm->id,
                 "chapterid" => $lastposition->lastchapterid,
-            ], $lastposition->lastcontentid ? "flexbook-content-{$lastposition->lastcontentid}" : null))->out(false)
+            ], $lastposition->lastcontentid ? "bookflow-content-{$lastposition->lastcontentid}" : null))->out(false)
             : "",
         "continuechapter" => $lastposition->chaptertitle ?? "",
-        "manageurl" => (new moodle_url("/mod/flexbook/chapters.php", ["id" => $cm->id]))->out(false),
+        "manageurl" => (new moodle_url("/mod/bookflow/chapters.php", ["id" => $cm->id]))->out(false),
         "canmanage" => $canmanagechapters,
-        "bookmarksurl" => (new moodle_url("/mod/flexbook/bookmarks.php", ["id" => $cm->id]))->out(false),
-        "notesurl" => (new moodle_url("/mod/flexbook/notes.php", ["id" => $cm->id]))->out(false),
-        "reporturl" => (new moodle_url("/mod/flexbook/report.php", ["id" => $cm->id]))->out(false),
-        "canreport" => has_capability("mod/flexbook:viewreports", $context),
-        "enablebookmarks" => $flexbook->enablebookmarks,
-        "enablenotes" => $flexbook->enablenotes,
-        "enablesearch" => $flexbook->enablesearch,
-        "booktools" => $OUTPUT->render_from_template("mod_flexbook/content_tools", [
-            "enablebookmarks" => $flexbook->enablebookmarks,
+        "bookmarksurl" => (new moodle_url("/mod/bookflow/bookmarks.php", ["id" => $cm->id]))->out(false),
+        "notesurl" => (new moodle_url("/mod/bookflow/notes.php", ["id" => $cm->id]))->out(false),
+        "reporturl" => (new moodle_url("/mod/bookflow/report.php", ["id" => $cm->id]))->out(false),
+        "canreport" => has_capability("mod/bookflow:viewreports", $context),
+        "enablebookmarks" => $bookflow->enablebookmarks,
+        "enablenotes" => $bookflow->enablenotes,
+        "enablesearch" => $bookflow->enablesearch,
+        "booktools" => $OUTPUT->render_from_template("mod_bookflow/content_tools", [
+            "enablebookmarks" => $bookflow->enablebookmarks,
             "enablenotes" => false,
             "itemtype" => "book",
             "chapterid" => 0,
             "contentid" => 0,
-            "bookmarkid" => $DB->get_field("flexbook_bookmarks", "id", [
-                "flexbookid" => $flexbook->id,
+            "bookmarkid" => $DB->get_field("bookflow_bookmarks", "id", [
+                "bookflowid" => $bookflow->id,
                 "userid" => $USER->id,
                 "itemtype" => "book",
             ]),
-            "bookmarked" => $DB->record_exists("flexbook_bookmarks", [
-                "flexbookid" => $flexbook->id,
+            "bookmarked" => $DB->record_exists("bookflow_bookmarks", [
+                "bookflowid" => $bookflow->id,
                 "userid" => $USER->id,
                 "itemtype" => "book",
             ]),
         ]),
     ];
-    echo $OUTPUT->render_from_template("mod_flexbook/activity_overview", $data);
-    if ($flexbook->enablesearch) {
-        $PAGE->requires->js_call_amd("mod_flexbook/search", "init", [$flexbook->id]);
+    echo $OUTPUT->render_from_template("mod_bookflow/activity_overview", $data);
+    if ($bookflow->enablesearch) {
+        $PAGE->requires->js_call_amd("mod_bookflow/search", "init", [$bookflow->id]);
     }
-    if ($flexbook->enablebookmarks) {
-        $PAGE->requires->js_call_amd("mod_flexbook/bookmark", "init", [$flexbook->id]);
+    if ($bookflow->enablebookmarks) {
+        $PAGE->requires->js_call_amd("mod_bookflow/bookmark", "init", [$bookflow->id]);
     }
 } else {
-    $chapter = $DB->get_record("flexbook_chapters", [
+    $chapter = $DB->get_record("bookflow_chapters", [
         "id" => $chapterid,
-        "flexbookid" => $flexbook->id,
+        "bookflowid" => $bookflow->id,
     ], "*", MUST_EXIST);
     if ($chapter->hidden && !$editing) {
-        throw new moodle_exception("chapterhidden", "mod_flexbook");
+        throw new moodle_exception("chapterhidden", "mod_bookflow");
     }
     $PAGE->navbar->add(format_string($chapter->title));
-    $contents = $DB->get_records("flexbook_contents", ["chapterid" => $chapter->id], "sortorder, id");
+    $contents = $DB->get_records("bookflow_contents", ["chapterid" => $chapter->id], "sortorder, id");
     if (!$editing) {
         $contents = array_filter($contents, fn($content) => !$content->hidden);
     }
     $renderedcontents = [];
     $contentclasses = [];
     foreach ($contents as $content) {
-        $type = content_type_manager::create_content($content, $flexbook, $context);
+        $type = content_type_manager::create_content($content, $bookflow, $context);
         $contentclasses[$content->type] = get_class($type);
-        $toolshtml = $OUTPUT->render_from_template("mod_flexbook/content_tools", [
-            "enablebookmarks" => $flexbook->enablebookmarks,
-            "enablenotes" => $flexbook->enablenotes,
+        $toolshtml = $OUTPUT->render_from_template("mod_bookflow/content_tools", [
+            "enablebookmarks" => $bookflow->enablebookmarks,
+            "enablenotes" => $bookflow->enablenotes,
             "itemtype" => "content",
             "chapterid" => $chapter->id,
             "contentid" => $content->id,
-            "bookmarkid" => $DB->get_field("flexbook_bookmarks", "id", [
-                "flexbookid" => $flexbook->id,
+            "bookmarkid" => $DB->get_field("bookflow_bookmarks", "id", [
+                "bookflowid" => $bookflow->id,
                 "userid" => $USER->id,
                 "itemtype" => "content",
                 "contentid" => $content->id,
             ]),
-            "bookmarked" => $DB->record_exists("flexbook_bookmarks", [
-                "flexbookid" => $flexbook->id,
+            "bookmarked" => $DB->record_exists("bookflow_bookmarks", [
+                "bookflowid" => $bookflow->id,
                 "userid" => $USER->id,
                 "itemtype" => "content",
                 "contentid" => $content->id,
@@ -282,35 +282,35 @@ if (!$chapterid) {
             "completionvalue" => $content->completionvalue,
             "hidden" => $content->hidden,
             "toolshtml" => $toolshtml,
-            "editurl" => (new moodle_url("/mod/flexbook/content.php", [
+            "editurl" => (new moodle_url("/mod/bookflow/content.php", [
                 "id" => $cm->id,
                 "contentid" => $content->id,
             ]))->out(false),
-            "duplicateurl" => (new moodle_url("/mod/flexbook/action.php", [
+            "duplicateurl" => (new moodle_url("/mod/bookflow/action.php", [
                 "id" => $cm->id,
                 "contentid" => $content->id,
                 "action" => "duplicate",
                 "sesskey" => sesskey(),
             ]))->out(false),
-            "upurl" => (new moodle_url("/mod/flexbook/action.php", [
+            "upurl" => (new moodle_url("/mod/bookflow/action.php", [
                 "id" => $cm->id,
                 "contentid" => $content->id,
                 "action" => "up",
                 "sesskey" => sesskey(),
             ]))->out(false),
-            "downurl" => (new moodle_url("/mod/flexbook/action.php", [
+            "downurl" => (new moodle_url("/mod/bookflow/action.php", [
                 "id" => $cm->id,
                 "contentid" => $content->id,
                 "action" => "down",
                 "sesskey" => sesskey(),
             ]))->out(false),
-            "hideurl" => (new moodle_url("/mod/flexbook/action.php", [
+            "hideurl" => (new moodle_url("/mod/bookflow/action.php", [
                 "id" => $cm->id,
                 "contentid" => $content->id,
                 "action" => $content->hidden ? "show" : "hide",
                 "sesskey" => sesskey(),
             ]))->out(false),
-            "deleteurl" => (new moodle_url("/mod/flexbook/action.php", [
+            "deleteurl" => (new moodle_url("/mod/bookflow/action.php", [
                 "id" => $cm->id,
                 "contentid" => $content->id,
                 "action" => "delete",
@@ -323,25 +323,25 @@ if (!$chapterid) {
     $position = array_search($chapter->id, $chapterids);
     $previousid = $position !== false && $position > 0 ? $chapterids[$position - 1] : 0;
     $nextid = $position !== false && isset($chapterids[$position + 1]) ? $chapterids[$position + 1] : 0;
-    $progressmanager->save_last_position($flexbook->id, $USER->id, $chapter->id, $contentid ?: null);
+    $progressmanager->save_last_position($bookflow->id, $USER->id, $chapter->id, $contentid ?: null);
     if (!$chapter->hidden) {
-        $progressmanager->mark_chapter_viewed($flexbook->id, $USER->id, $chapter->id);
+        $progressmanager->mark_chapter_viewed($bookflow->id, $USER->id, $chapter->id);
     }
 
     $addcontenttypes = [];
     foreach ($contentclasses as $classname) {
-        $classname::require_page_assets($flexbook, $editing);
+        $classname::require_page_assets($bookflow, $editing);
     }
 
     if ($editing) {
         $typeoptions = content_type_manager::get_type_options();
         foreach (content_type_manager::get_classes() as $addtype => $classname) {
-            if (!$classname::can_create(null, $flexbook, $context)) {
+            if (!$classname::can_create(null, $bookflow, $context)) {
                 continue;
             }
             $addcontenttypes[] = [
                 "name" => $typeoptions[$addtype] ?? $classname::get_name(),
-                "url" => (new moodle_url("/mod/flexbook/content.php", [
+                "url" => (new moodle_url("/mod/bookflow/content.php", [
                     "id" => $cm->id,
                     "chapterid" => $chapter->id,
                     "type" => $addtype,
@@ -350,9 +350,9 @@ if (!$chapterid) {
         }
     }
 
-    echo $OUTPUT->render_from_template("mod_flexbook/chapter", [
+    echo $OUTPUT->render_from_template("mod_bookflow/chapter", [
         "cmid" => $cm->id,
-        "flexbookid" => $flexbook->id,
+        "bookflowid" => $bookflow->id,
         "chapterid" => $chapter->id,
         "title" => format_string($chapter->title),
         "description" => format_text($chapter->description, $chapter->descriptionformat, ["context" => $context]),
@@ -364,60 +364,60 @@ if (!$chapterid) {
         "toc" => $toc,
         "progress" => $progress,
         "progressrounded" => round($progress),
-        "chaptertools" => $OUTPUT->render_from_template("mod_flexbook/content_tools", [
-            "enablebookmarks" => $flexbook->enablebookmarks,
-            "enablenotes" => $flexbook->enablenotes,
+        "chaptertools" => $OUTPUT->render_from_template("mod_bookflow/content_tools", [
+            "enablebookmarks" => $bookflow->enablebookmarks,
+            "enablenotes" => $bookflow->enablenotes,
             "itemtype" => "chapter",
             "chapterid" => $chapter->id,
             "contentid" => 0,
-            "bookmarkid" => $DB->get_field("flexbook_bookmarks", "id", [
-                "flexbookid" => $flexbook->id,
+            "bookmarkid" => $DB->get_field("bookflow_bookmarks", "id", [
+                "bookflowid" => $bookflow->id,
                 "userid" => $USER->id,
                 "itemtype" => "chapter",
                 "chapterid" => $chapter->id,
             ]),
-            "bookmarked" => $DB->record_exists("flexbook_bookmarks", [
-                "flexbookid" => $flexbook->id,
+            "bookmarked" => $DB->record_exists("bookflow_bookmarks", [
+                "bookflowid" => $bookflow->id,
                 "userid" => $USER->id,
                 "itemtype" => "chapter",
                 "chapterid" => $chapter->id,
             ]),
         ]),
-        "overviewurl" => (new moodle_url("/mod/flexbook/view.php", ["id" => $cm->id]))->out(false),
-        "addcontenturl" => (new moodle_url("/mod/flexbook/content.php", [
+        "overviewurl" => (new moodle_url("/mod/bookflow/view.php", ["id" => $cm->id]))->out(false),
+        "addcontenturl" => (new moodle_url("/mod/bookflow/content.php", [
             "id" => $cm->id,
             "chapterid" => $chapter->id,
         ]))->out(false),
         "hasprevious" => $previousid > 0,
         "previousurl" => $previousid
-            ? (new moodle_url("/mod/flexbook/view.php", ["id" => $cm->id, "chapterid" => $previousid]))->out(false)
+            ? (new moodle_url("/mod/bookflow/view.php", ["id" => $cm->id, "chapterid" => $previousid]))->out(false)
             : "",
         "hasnext" => $nextid > 0,
         "nexturl" => $nextid
-            ? (new moodle_url("/mod/flexbook/view.php", ["id" => $cm->id, "chapterid" => $nextid]))->out(false)
+            ? (new moodle_url("/mod/bookflow/view.php", ["id" => $cm->id, "chapterid" => $nextid]))->out(false)
             : "",
     ]);
 
-    if ($flexbook->enabletracking && !$editing) {
-        $PAGE->requires->js_call_amd("mod_flexbook/progress_tracker", "init", [
-            $flexbook->id,
+    if ($bookflow->enabletracking && !$editing) {
+        $PAGE->requires->js_call_amd("mod_bookflow/progress_tracker", "init", [
+            $bookflow->id,
             $chapter->id,
         ]);
 
     }
     if ($editing) {
-        $PAGE->requires->js_call_amd("mod_flexbook/add_content", "init");
-        $PAGE->requires->js_call_amd("mod_flexbook/content_sorting", "init", [
-            $flexbook->id,
+        $PAGE->requires->js_call_amd("mod_bookflow/add_content", "init");
+        $PAGE->requires->js_call_amd("mod_bookflow/content_sorting", "init", [
+            $bookflow->id,
             $chapter->id,
         ]);
     }
-    $PAGE->requires->js_call_amd("mod_flexbook/chapter_navigation", "init", []);
-    if ($flexbook->enablebookmarks) {
-        $PAGE->requires->js_call_amd("mod_flexbook/bookmark", "init", [$flexbook->id]);
+    $PAGE->requires->js_call_amd("mod_bookflow/chapter_navigation", "init", []);
+    if ($bookflow->enablebookmarks) {
+        $PAGE->requires->js_call_amd("mod_bookflow/bookmark", "init", [$bookflow->id]);
     }
-    if ($flexbook->enablenotes) {
-        $PAGE->requires->js_call_amd("mod_flexbook/notes", "init", [$flexbook->id]);
+    if ($bookflow->enablenotes) {
+        $PAGE->requires->js_call_amd("mod_bookflow/notes", "init", [$bookflow->id]);
     }
 }
 

@@ -17,18 +17,18 @@
 /**
  * content_type.php
  *
- * @package   flexbookcontent_image
+ * @package   bookflowcontent_image
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace flexbookcontent_image;
+namespace bookflowcontent_image;
 
-use flexbookcontent_image\types\image;
-use mod_flexbook\hook\content_types;
+use bookflowcontent_image\types\image;
+use mod_bookflow\hook\content_types;
 
 /**
- * Registers the Image content type in FlexBook.
+ * Registers the Image content type in BookFlow.
  */
 class content_type {
     /**

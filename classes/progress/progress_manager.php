@@ -17,24 +17,24 @@
 /**
  * progress_manager.php
  *
- * @package   mod_flexbook
+ * @package   mod_bookflow
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_flexbook\progress;
+namespace mod_bookflow\progress;
 
 use completion_info;
 use context_module;
 use dml_write_exception;
 use invalid_parameter_exception;
-use mod_flexbook\content_type_manager;
-use mod_flexbook\event\chapter_completed;
-use mod_flexbook\event\chapter_viewed;
-use mod_flexbook\event\content_completed;
-use mod_flexbook\event\content_viewed;
-use mod_flexbook\event\flexbook_completed;
-use mod_flexbook\event\progress_updated;
+use mod_bookflow\content_type_manager;
+use mod_bookflow\event\chapter_completed;
+use mod_bookflow\event\chapter_viewed;
+use mod_bookflow\event\content_completed;
+use mod_bookflow\event\content_viewed;
+use mod_bookflow\event\bookflow_completed;
+use mod_bookflow\event\progress_updated;
 use moodle_exception;
 use stdClass;
 
@@ -59,23 +59,23 @@ class progress_manager {
     /**
      * Marks content viewed.
      *
-     * @param int $flexbookid FlexBook ID.
+     * @param int $bookflowid BookFlow ID.
      * @param int $userid User ID.
      * @param int $contentid Content block ID.
      * @return void
      */
-    public function mark_content_viewed(int $flexbookid, int $userid, int $contentid): void {
+    public function mark_content_viewed(int $bookflowid, int $userid, int $contentid): void {
         global $DB;
 
-        [$content, $chapter] = $this->validate_content($flexbookid, $contentid);
+        [$content, $chapter] = $this->validate_content($bookflowid, $contentid);
         if ($content->hidden || $chapter->hidden) {
-            throw new moodle_exception("contentnotavailable", "mod_flexbook");
+            throw new moodle_exception("contentnotavailable", "mod_bookflow");
         }
 
-        $record = $this->get_or_create_content_progress($flexbookid, $userid, $content, $chapter);
+        $record = $this->get_or_create_content_progress($bookflowid, $userid, $content, $chapter);
         $now = time();
         $DB->execute(
-            "UPDATE {flexbook_user_progress}
+            "UPDATE {bookflow_user_progress}
                 SET viewcount = viewcount + 1,
                     lastaccess = :lastaccess,
                     timemodified = :timemodified,
@@ -91,13 +91,13 @@ class progress_manager {
         );
 
         if (in_array($content->completiontype, ["open", "view"])) {
-            $this->mark_content_completed($flexbookid, $userid, $contentid);
+            $this->mark_content_completed($bookflowid, $userid, $contentid);
         } else {
-            $this->calculate_user_progress($flexbookid, $userid);
+            $this->calculate_user_progress($bookflowid, $userid);
         }
 
         content_viewed::create_from_ids(
-            $flexbookid,
+            $bookflowid,
             $chapter->id,
             $contentid,
             $userid
@@ -108,26 +108,26 @@ class progress_manager {
     /**
      * Marks content completed.
      *
-     * @param int $flexbookid FlexBook ID.
+     * @param int $bookflowid BookFlow ID.
      * @param int $userid User ID.
      * @param int $contentid Content block ID.
      * @return void
      */
-    public function mark_content_completed(int $flexbookid, int $userid, int $contentid): void {
+    public function mark_content_completed(int $bookflowid, int $userid, int $contentid): void {
         global $DB;
 
-        [$content, $chapter] = $this->validate_content($flexbookid, $contentid);
+        [$content, $chapter] = $this->validate_content($bookflowid, $contentid);
         if (!$content->trackprogress || $content->completiontype == "none") {
             return;
         }
 
-        $record = $DB->get_record("flexbook_user_progress", [
+        $record = $DB->get_record("bookflow_user_progress", [
             "userid" => $userid,
             "contentid" => $contentid,
         ]);
         if (!$record) {
-            $this->mark_content_viewed($flexbookid, $userid, $contentid);
-            $record = $DB->get_record("flexbook_user_progress", [
+            $this->mark_content_viewed($bookflowid, $userid, $contentid);
+            $record = $DB->get_record("bookflow_user_progress", [
                 "userid" => $userid,
                 "contentid" => $contentid,
             ], "*", MUST_EXIST);
@@ -135,28 +135,28 @@ class progress_manager {
         if ($record->status == self::STATUS_COMPLETED) {
             return;
         }
-        if (!$this->can_complete($flexbookid, $content, $record)) {
-            throw new moodle_exception("completionevidencemissing", "mod_flexbook");
+        if (!$this->can_complete($bookflowid, $content, $record)) {
+            throw new moodle_exception("completionevidencemissing", "mod_bookflow");
         }
 
         $record->status = self::STATUS_COMPLETED;
         $record->progress = 100;
         $record->timecompleted = time();
         $record->timemodified = time();
-        $DB->update_record("flexbook_user_progress", $record);
+        $DB->update_record("bookflow_user_progress", $record);
 
-        $progress = $this->calculate_user_progress($flexbookid, $userid);
-        $this->update_chapter_completion($flexbookid, $userid, $chapter->id);
-        $this->update_completion($flexbookid, $userid, $progress);
+        $progress = $this->calculate_user_progress($bookflowid, $userid);
+        $this->update_chapter_completion($bookflowid, $userid, $chapter->id);
+        $this->update_completion($bookflowid, $userid, $progress);
 
         content_completed::create_from_ids(
-            $flexbookid,
+            $bookflowid,
             $chapter->id,
             $contentid,
             $userid
         )->trigger();
         progress_updated::create_from_ids(
-            $flexbookid,
+            $bookflowid,
             $chapter->id,
             $contentid,
             $userid,
@@ -168,7 +168,7 @@ class progress_manager {
     /**
      * Updates content metric.
      *
-     * @param int $flexbookid FlexBook ID.
+     * @param int $bookflowid BookFlow ID.
      * @param int $userid User ID.
      * @param int $contentid Content block ID.
      * @param float $progress Progress evidence reported by the client.
@@ -176,7 +176,7 @@ class progress_manager {
      * @return void
      */
     public function update_content_metric(
-        int $flexbookid,
+        int $bookflowid,
         int $userid,
         int $contentid,
         float $progress,
@@ -184,31 +184,31 @@ class progress_manager {
     ): void {
         global $DB;
 
-        [$content, $chapter] = $this->validate_content($flexbookid, $contentid);
+        [$content, $chapter] = $this->validate_content($bookflowid, $contentid);
         if ($content->hidden || $chapter->hidden) {
-            throw new moodle_exception("contentnotavailable", "mod_flexbook");
+            throw new moodle_exception("contentnotavailable", "mod_bookflow");
         }
 
-        $record = $DB->get_record("flexbook_user_progress", [
+        $record = $DB->get_record("bookflow_user_progress", [
             "userid" => $userid,
             "contentid" => $contentid,
         ]);
         if (!$record) {
-            $this->mark_content_viewed($flexbookid, $userid, $contentid);
-            $record = $DB->get_record("flexbook_user_progress", [
+            $this->mark_content_viewed($bookflowid, $userid, $contentid);
+            $record = $DB->get_record("bookflow_user_progress", [
                 "userid" => $userid,
                 "contentid" => $contentid,
             ], "*", MUST_EXIST);
         }
 
-        $handler = $this->get_content_handler($flexbookid, $content);
+        $handler = $this->get_content_handler($bookflowid, $content);
         $record = $handler->update_completion_evidence($record, $progress, $details);
         $record->timemodified = time();
-        $DB->update_record("flexbook_user_progress", $record);
+        $DB->update_record("bookflow_user_progress", $record);
 
         if ($record->status != self::STATUS_COMPLETED
                 && $handler->completion_evidence_is_valid($record)) {
-            $this->mark_content_completed($flexbookid, $userid, $contentid);
+            $this->mark_content_completed($bookflowid, $userid, $contentid);
         }
     }
 
@@ -216,11 +216,11 @@ class progress_manager {
     /**
      * Calculates user progress.
      *
-     * @param int $flexbookid FlexBook ID.
+     * @param int $bookflowid BookFlow ID.
      * @param int $userid User ID.
      * @return float
      */
-    public function calculate_user_progress(int $flexbookid, int $userid): float {
+    public function calculate_user_progress(int $bookflowid, int $userid): float {
         global $DB;
 
         $sql = "SELECT
@@ -231,11 +231,11 @@ class progress_manager {
                            ELSE 0
                        END), 0) AS completedweight,
                        COALESCE(SUM(p.timeviewed), 0) AS timeviewed
-                  FROM {flexbook_contents} c
-                  JOIN {flexbook_chapters} ch ON ch.id = c.chapterid
-             LEFT JOIN {flexbook_user_progress} p
+                  FROM {bookflow_contents} c
+                  JOIN {bookflow_chapters} ch ON ch.id = c.chapterid
+             LEFT JOIN {bookflow_user_progress} p
                     ON p.contentid = c.id AND p.userid = :userid
-                 WHERE ch.flexbookid = :flexbookid
+                 WHERE ch.bookflowid = :bookflowid
                    AND ch.hidden = 0
                    AND c.hidden = 0
                    AND c.trackprogress = 1
@@ -243,7 +243,7 @@ class progress_manager {
         $stats = $DB->get_record_sql($sql, [
             "completed" => self::STATUS_COMPLETED,
             "userid" => $userid,
-            "flexbookid" => $flexbookid,
+            "bookflowid" => $bookflowid,
         ]);
 
         $totalweight = (float) ($stats->totalweight ?? 0);
@@ -251,7 +251,7 @@ class progress_manager {
         $progress = $totalweight > 0 ? ($completedweight / $totalweight) * 100 : 0;
         $progress = round(min(100, max(0, $progress)), 2);
         $this->save_aggregate_progress(
-            $flexbookid,
+            $bookflowid,
             $userid,
             $progress,
             (int) round($stats->timeviewed ?? 0)
@@ -262,45 +262,45 @@ class progress_manager {
     /**
      * Gets last position.
      *
-     * @param int $flexbookid FlexBook ID.
+     * @param int $bookflowid BookFlow ID.
      * @param int $userid User ID.
      * @return stdClass|null
      */
-    public function get_last_position(int $flexbookid, int $userid): ?stdClass {
+    public function get_last_position(int $bookflowid, int $userid): ?stdClass {
         global $DB;
 
         $sql = "SELECT s.*, ch.title AS chaptertitle
-                  FROM {flexbook_user_state} s
-             LEFT JOIN {flexbook_chapters} ch ON ch.id = s.lastchapterid
-                 WHERE s.flexbookid = :flexbookid
+                  FROM {bookflow_user_state} s
+             LEFT JOIN {bookflow_chapters} ch ON ch.id = s.lastchapterid
+                 WHERE s.bookflowid = :bookflowid
                    AND s.userid = :userid";
-        return $DB->get_record_sql($sql, ["flexbookid" => $flexbookid, "userid" => $userid]) ?: null;
+        return $DB->get_record_sql($sql, ["bookflowid" => $bookflowid, "userid" => $userid]) ?: null;
     }
 
 
     /**
      * Marks chapter viewed.
      *
-     * @param int $flexbookid FlexBook ID.
+     * @param int $bookflowid BookFlow ID.
      * @param int $userid User ID.
      * @param int $chapterid Chapter ID.
      * @return void
      */
-    public function mark_chapter_viewed(int $flexbookid, int $userid, int $chapterid): void {
+    public function mark_chapter_viewed(int $bookflowid, int $userid, int $chapterid): void {
         global $DB;
 
-        $chapter = $DB->get_record("flexbook_chapters", [
+        $chapter = $DB->get_record("bookflow_chapters", [
             "id" => $chapterid,
-            "flexbookid" => $flexbookid,
+            "bookflowid" => $bookflowid,
         ], "*", MUST_EXIST);
         if ($chapter->hidden) {
-            throw new moodle_exception("chapterhidden", "mod_flexbook");
+            throw new moodle_exception("chapterhidden", "mod_bookflow");
         }
 
-        $record = $this->get_or_create_chapter_progress($flexbookid, $userid, $chapterid);
+        $record = $this->get_or_create_chapter_progress($bookflowid, $userid, $chapterid);
         $now = time();
         $DB->execute(
-            "UPDATE {flexbook_chapter_progress}
+            "UPDATE {bookflow_chapter_progress}
                 SET viewcount = viewcount + 1,
                     lastaccess = :lastaccess,
                     timemodified = :timemodified,
@@ -315,7 +315,7 @@ class progress_manager {
             ]
         );
         chapter_viewed::create_from_ids(
-            $flexbookid,
+            $bookflowid,
             $chapterid,
             0,
             $userid
@@ -325,7 +325,7 @@ class progress_manager {
     /**
      * Saves last position.
      *
-     * @param int $flexbookid FlexBook ID.
+     * @param int $bookflowid BookFlow ID.
      * @param int $userid User ID.
      * @param int $chapterid Chapter ID.
      * @param int|null $contentid Content block ID.
@@ -333,7 +333,7 @@ class progress_manager {
      * @return void
      */
     public function save_last_position(
-        int $flexbookid,
+        int $bookflowid,
         int $userid,
         int $chapterid,
         ?int $contentid,
@@ -341,61 +341,61 @@ class progress_manager {
     ): void {
         global $DB;
 
-        $chapter = $DB->get_record("flexbook_chapters", [
+        $chapter = $DB->get_record("bookflow_chapters", [
             "id" => $chapterid,
-            "flexbookid" => $flexbookid,
+            "bookflowid" => $bookflowid,
         ], "*", MUST_EXIST);
-        if ($contentid && !$DB->record_exists("flexbook_contents", [
+        if ($contentid && !$DB->record_exists("bookflow_contents", [
                 "id" => $contentid,
                 "chapterid" => $chapter->id,
             ])) {
             throw new invalid_parameter_exception("Content does not belong to chapter");
         }
 
-        $state = $this->get_or_create_state($flexbookid, $userid);
+        $state = $this->get_or_create_state($bookflowid, $userid);
         $state->lastchapterid = $chapterid;
         $state->lastcontentid = $contentid ?? 0;
         $state->scrollposition = max(0, $scrollposition);
         $state->lastaccess = time();
         $state->timemodified = time();
-        $DB->update_record("flexbook_user_state", $state);
+        $DB->update_record("bookflow_user_state", $state);
     }
 
 
     /**
-     * Updates Moodle activity completion from the current FlexBook progress.
+     * Updates Moodle activity completion from the current BookFlow progress.
      *
-     * @param int $flexbookid FlexBook ID.
+     * @param int $bookflowid BookFlow ID.
      * @param int $userid User ID.
      * @param float|null $progress Already calculated aggregate progress.
      * @return void
      */
-    public function update_completion(int $flexbookid, int $userid, ?float $progress = null): void {
+    public function update_completion(int $bookflowid, int $userid, ?float $progress = null): void {
         global $DB;
 
-        $flexbook = $DB->get_record("flexbook", ["id" => $flexbookid], "*", MUST_EXIST);
-        $cm = get_coursemodule_from_instance("flexbook", $flexbookid, $flexbook->course, false, MUST_EXIST);
-        $completion = new completion_info(get_course($flexbook->course));
+        $bookflow = $DB->get_record("bookflow", ["id" => $bookflowid], "*", MUST_EXIST);
+        $cm = get_coursemodule_from_instance("bookflow", $bookflowid, $bookflow->course, false, MUST_EXIST);
+        $completion = new completion_info(get_course($bookflow->course));
         if (!$completion->is_enabled($cm)) {
             return;
         }
 
-        $complete = $this->completion_requirements_met($flexbookid, $userid, $progress);
+        $complete = $this->completion_requirements_met($bookflowid, $userid, $progress);
         $completion->update_state($cm, $complete ? COMPLETION_COMPLETE : COMPLETION_INCOMPLETE, $userid);
 
-        $state = $this->get_or_create_state($flexbookid, $userid);
+        $state = $this->get_or_create_state($bookflowid, $userid);
         if ($complete && !$state->timecompleted) {
             $state->timecompleted = time();
-            $DB->update_record("flexbook_user_state", $state);
-            flexbook_completed::create_from_ids(
-                $flexbookid,
+            $DB->update_record("bookflow_user_state", $state);
+            bookflow_completed::create_from_ids(
+                $bookflowid,
                 0,
                 0,
                 $userid
             )->trigger();
         } else if (!$complete && $state->timecompleted) {
             $state->timecompleted = 0;
-            $DB->update_record("flexbook_user_state", $state);
+            $DB->update_record("bookflow_user_state", $state);
         }
     }
 
@@ -403,32 +403,32 @@ class progress_manager {
     /**
      * Checks whether the user satisfies the configured completion requirements.
      *
-     * @param int $flexbookid FlexBook ID.
+     * @param int $bookflowid BookFlow ID.
      * @param int $userid User ID.
      * @param float|null $progress Already calculated aggregate progress.
      * @return bool
      */
     public function completion_requirements_met(
-        int $flexbookid,
+        int $bookflowid,
         int $userid,
         ?float $progress = null
     ): bool {
         global $DB;
 
-        $flexbook = $DB->get_record("flexbook", ["id" => $flexbookid], "*", MUST_EXIST);
-        $progress ??= $this->calculate_user_progress($flexbookid, $userid);
-        $percentagemet = $progress >= $flexbook->completionpercentage;
-        $requiredcontentcount = $this->get_required_content_count($flexbookid);
-        $requiredchaptercount = $this->get_required_chapter_count($flexbookid);
+        $bookflow = $DB->get_record("bookflow", ["id" => $bookflowid], "*", MUST_EXIST);
+        $progress ??= $this->calculate_user_progress($bookflowid, $userid);
+        $percentagemet = $progress >= $bookflow->completionpercentage;
+        $requiredcontentcount = $this->get_required_content_count($bookflowid);
+        $requiredchaptercount = $this->get_required_chapter_count($bookflowid);
         $mandatorymet = $requiredcontentcount > 0
-            && !$this->has_pending_required_contents($flexbookid, $userid);
+            && !$this->has_pending_required_contents($bookflowid, $userid);
         $chaptersmet = $requiredchaptercount > 0
-            && !$this->has_pending_required_chapters($flexbookid, $userid);
+            && !$this->has_pending_required_chapters($bookflowid, $userid);
 
-        return match ((int) $flexbook->completionmode) {
-            FLEXBOOK_COMPLETION_REQUIRED => $mandatorymet,
-            FLEXBOOK_COMPLETION_COMBINED => $percentagemet && $mandatorymet,
-            FLEXBOOK_COMPLETION_CHAPTERS => $chaptersmet,
+        return match ((int) $bookflow->completionmode) {
+            BOOKFLOW_COMPLETION_REQUIRED => $mandatorymet,
+            BOOKFLOW_COMPLETION_COMBINED => $percentagemet && $mandatorymet,
+            BOOKFLOW_COMPLETION_CHAPTERS => $chaptersmet,
             default => $percentagemet,
         };
     }
@@ -436,52 +436,52 @@ class progress_manager {
     /**
      * Recalculates all derived progress for one user.
      *
-     * @param int $flexbookid FlexBook ID.
+     * @param int $bookflowid BookFlow ID.
      * @param int $userid User ID.
      * @return void
      */
-    public function recalculate_user(int $flexbookid, int $userid): void {
-        $progress = $this->calculate_user_progress($flexbookid, $userid);
-        $this->recalculate_chapters($flexbookid, $userid);
-        $this->update_completion($flexbookid, $userid, $progress);
+    public function recalculate_user(int $bookflowid, int $userid): void {
+        $progress = $this->calculate_user_progress($bookflowid, $userid);
+        $this->recalculate_chapters($bookflowid, $userid);
+        $this->update_completion($bookflowid, $userid, $progress);
     }
 
     /**
      * Returns a warning for completion rules that cannot currently be satisfied.
      *
-     * @param int $flexbookid FlexBook ID.
+     * @param int $bookflowid BookFlow ID.
      * @return string|null
      */
-    public function get_completion_configuration_warning(int $flexbookid): ?string {
+    public function get_completion_configuration_warning(int $bookflowid): ?string {
         global $DB;
 
-        $flexbook = $DB->get_record("flexbook", ["id" => $flexbookid], "*", MUST_EXIST);
+        $bookflow = $DB->get_record("bookflow", ["id" => $bookflowid], "*", MUST_EXIST);
         $trackedcount = $DB->count_records_sql(
             "SELECT COUNT(c.id)
-               FROM {flexbook_contents} c
-               JOIN {flexbook_chapters} ch ON ch.id = c.chapterid
-              WHERE ch.flexbookid = :flexbookid
+               FROM {bookflow_contents} c
+               JOIN {bookflow_chapters} ch ON ch.id = c.chapterid
+              WHERE ch.bookflowid = :bookflowid
                 AND ch.hidden = 0
                 AND c.hidden = 0
                 AND c.trackprogress = 1
                    AND c.completiontype <> 'none'",
-            ["flexbookid" => $flexbookid]
+            ["bookflowid" => $bookflowid]
         );
 
-        if (in_array($flexbook->completionmode, [FLEXBOOK_COMPLETION_PERCENTAGE, FLEXBOOK_COMPLETION_COMBINED])
+        if (in_array($bookflow->completionmode, [BOOKFLOW_COMPLETION_PERCENTAGE, BOOKFLOW_COMPLETION_COMBINED])
                 && !$trackedcount) {
-            return get_string("completionconfignotracked", "mod_flexbook");
+            return get_string("completionconfignotracked", "mod_bookflow");
         }
-        if (in_array($flexbook->completionmode, [FLEXBOOK_COMPLETION_REQUIRED, FLEXBOOK_COMPLETION_COMBINED])
-                && !$this->get_required_content_count($flexbookid)) {
-            return get_string("completionconfignorequired", "mod_flexbook");
+        if (in_array($bookflow->completionmode, [BOOKFLOW_COMPLETION_REQUIRED, BOOKFLOW_COMPLETION_COMBINED])
+                && !$this->get_required_content_count($bookflowid)) {
+            return get_string("completionconfignorequired", "mod_bookflow");
         }
-        if ($flexbook->completionmode == FLEXBOOK_COMPLETION_CHAPTERS) {
-            if (!$this->get_required_chapter_count($flexbookid)) {
-                return get_string("completionconfignorequiredchapters", "mod_flexbook");
+        if ($bookflow->completionmode == BOOKFLOW_COMPLETION_CHAPTERS) {
+            if (!$this->get_required_chapter_count($bookflowid)) {
+                return get_string("completionconfignorequiredchapters", "mod_bookflow");
             }
-            if ($this->get_invalid_required_chapter_count($flexbookid)) {
-                return get_string("completionconfigemptyrequiredchapter", "mod_flexbook");
+            if ($this->get_invalid_required_chapter_count($bookflowid)) {
+                return get_string("completionconfigemptyrequiredchapter", "mod_bookflow");
             }
         }
         return null;
@@ -491,11 +491,11 @@ class progress_manager {
     /**
      * Recalculates chapter progress in one aggregate query.
      *
-     * @param int $flexbookid FlexBook ID.
+     * @param int $bookflowid BookFlow ID.
      * @param int $userid User ID.
      * @return void
      */
-    public function recalculate_chapters(int $flexbookid, int $userid): void {
+    public function recalculate_chapters(int $bookflowid, int $userid): void {
         global $DB;
 
         $sql = "SELECT ch.id,
@@ -505,24 +505,24 @@ class progress_manager {
                        MIN(p.firstaccess) AS firstaccess,
                        MAX(p.lastaccess) AS lastaccess,
                        COUNT(p.id) AS progressrecords
-                  FROM {flexbook_chapters} ch
-             LEFT JOIN {flexbook_contents} c
+                  FROM {bookflow_chapters} ch
+             LEFT JOIN {bookflow_contents} c
                     ON c.chapterid = ch.id
                    AND c.hidden = 0
                    AND c.trackprogress = 1
                    AND c.completiontype <> 'none'
-             LEFT JOIN {flexbook_user_progress} p
+             LEFT JOIN {bookflow_user_progress} p
                     ON p.contentid = c.id
                    AND p.userid = :userid
-                 WHERE ch.flexbookid = :flexbookid
+                 WHERE ch.bookflowid = :bookflowid
               GROUP BY ch.id";
         $stats = $DB->get_records_sql($sql, [
             "completed" => self::STATUS_COMPLETED,
             "userid" => $userid,
-            "flexbookid" => $flexbookid,
+            "bookflowid" => $bookflowid,
         ]);
-        $records = $DB->get_records("flexbook_chapter_progress", [
-            "flexbookid" => $flexbookid,
+        $records = $DB->get_records("bookflow_chapter_progress", [
+            "bookflowid" => $bookflowid,
             "userid" => $userid,
         ]);
         $bychapter = [];
@@ -537,7 +537,7 @@ class progress_manager {
                 continue;
             }
             if (!$record) {
-                $record = $this->get_or_create_chapter_progress($flexbookid, $userid, (int) $chapterid);
+                $record = $this->get_or_create_chapter_progress($bookflowid, $userid, (int) $chapterid);
                 $record->firstaccess = (int) ($chapterstats->firstaccess ?: $now);
             }
 
@@ -551,11 +551,11 @@ class progress_manager {
                 ? ($record->timecompleted ?: $now)
                 : 0;
             $record->timemodified = $now;
-            $DB->update_record("flexbook_chapter_progress", $record);
+            $DB->update_record("bookflow_chapter_progress", $record);
 
             if ($iscompleted && !$wascompleted) {
                 chapter_completed::create_from_ids(
-                    $flexbookid,
+                    $bookflowid,
                     (int) $chapterid,
                     0,
                     $userid
@@ -568,19 +568,19 @@ class progress_manager {
     /**
      * Gets pending required count.
      *
-     * @param int $flexbookid FlexBook ID.
+     * @param int $bookflowid BookFlow ID.
      * @param int $userid User ID.
      * @return int
      */
-    public function get_pending_required_count(int $flexbookid, int $userid): int {
+    public function get_pending_required_count(int $bookflowid, int $userid): int {
         global $DB;
 
         $sql = "SELECT COUNT(c.id)
-                  FROM {flexbook_contents} c
-                  JOIN {flexbook_chapters} ch ON ch.id = c.chapterid
-             LEFT JOIN {flexbook_user_progress} p
+                  FROM {bookflow_contents} c
+                  JOIN {bookflow_chapters} ch ON ch.id = c.chapterid
+             LEFT JOIN {bookflow_user_progress} p
                     ON p.contentid = c.id AND p.userid = :userid
-                 WHERE ch.flexbookid = :flexbookid
+                 WHERE ch.bookflowid = :bookflowid
                    AND ch.hidden = 0
                    AND c.hidden = 0
                    AND c.trackprogress = 1
@@ -588,7 +588,7 @@ class progress_manager {
                    AND c.required = 1
                    AND (p.status IS NULL OR p.status < :completed)";
         return $DB->count_records_sql($sql, [
-            "flexbookid" => $flexbookid,
+            "bookflowid" => $bookflowid,
             "userid" => $userid,
             "completed" => self::STATUS_COMPLETED,
         ]);
@@ -597,49 +597,49 @@ class progress_manager {
     /**
      * Checks whether required content blocks remain incomplete.
      *
-     * @param int $flexbookid FlexBook ID.
+     * @param int $bookflowid BookFlow ID.
      * @param int $userid User ID.
      * @return bool
      */
-    private function has_pending_required_contents(int $flexbookid, int $userid): bool {
-        return $this->get_pending_required_count($flexbookid, $userid) > 0;
+    private function has_pending_required_contents(int $bookflowid, int $userid): bool {
+        return $this->get_pending_required_count($bookflowid, $userid) > 0;
     }
 
 
     /**
      * Gets required content count.
      *
-     * @param int $flexbookid FlexBook ID.
+     * @param int $bookflowid BookFlow ID.
      * @return int
      */
-    private function get_required_content_count(int $flexbookid): int {
+    private function get_required_content_count(int $bookflowid): int {
         global $DB;
 
         return $DB->count_records_sql(
             "SELECT COUNT(c.id)
-               FROM {flexbook_contents} c
-               JOIN {flexbook_chapters} ch ON ch.id = c.chapterid
-              WHERE ch.flexbookid = :flexbookid
+               FROM {bookflow_contents} c
+               JOIN {bookflow_chapters} ch ON ch.id = c.chapterid
+              WHERE ch.bookflowid = :bookflowid
                 AND ch.hidden = 0
                 AND c.hidden = 0
                 AND c.trackprogress = 1
                    AND c.completiontype <> 'none'
                 AND c.required = 1",
-            ["flexbookid" => $flexbookid]
+            ["bookflowid" => $bookflowid]
         );
     }
 
     /**
      * Gets required chapter count.
      *
-     * @param int $flexbookid FlexBook ID.
+     * @param int $bookflowid BookFlow ID.
      * @return int
      */
-    private function get_required_chapter_count(int $flexbookid): int {
+    private function get_required_chapter_count(int $bookflowid): int {
         global $DB;
 
-        return $DB->count_records("flexbook_chapters", [
-            "flexbookid" => $flexbookid,
+        return $DB->count_records("bookflow_chapters", [
+            "bookflowid" => $bookflowid,
             "required" => 1,
             "hidden" => 0,
         ]);
@@ -650,47 +650,47 @@ class progress_manager {
     /**
      * Counts required chapters that do not contain any completable tracked block.
      *
-     * @param int $flexbookid FlexBook ID.
+     * @param int $bookflowid BookFlow ID.
      * @return int
      */
-    private function get_invalid_required_chapter_count(int $flexbookid): int {
+    private function get_invalid_required_chapter_count(int $bookflowid): int {
         global $DB;
 
         $sql = "SELECT COUNT(ch.id)
-                  FROM {flexbook_chapters} ch
-                 WHERE ch.flexbookid = :flexbookid
+                  FROM {bookflow_chapters} ch
+                 WHERE ch.bookflowid = :bookflowid
                    AND ch.required = 1
                    AND ch.hidden = 0
                    AND NOT EXISTS (
                        SELECT 1
-                         FROM {flexbook_contents} c
+                         FROM {bookflow_contents} c
                         WHERE c.chapterid = ch.id
                           AND c.hidden = 0
                           AND c.trackprogress = 1
                           AND c.completiontype <> 'none'
                    )";
-        return $DB->count_records_sql($sql, ["flexbookid" => $flexbookid]);
+        return $DB->count_records_sql($sql, ["bookflowid" => $bookflowid]);
     }
 
     /**
      * Checks whether required chapters remain incomplete.
      *
-     * @param int $flexbookid FlexBook ID.
+     * @param int $bookflowid BookFlow ID.
      * @param int $userid User ID.
      * @return bool
      */
-    private function has_pending_required_chapters(int $flexbookid, int $userid): bool {
+    private function has_pending_required_chapters(int $bookflowid, int $userid): bool {
         global $DB;
 
         $sql = "SELECT COUNT(ch.id)
-                  FROM {flexbook_chapters} ch
-                 WHERE ch.flexbookid = :flexbookid
+                  FROM {bookflow_chapters} ch
+                 WHERE ch.bookflowid = :bookflowid
                    AND ch.required = 1
                    AND ch.hidden = 0
                    AND (
                        NOT EXISTS (
                            SELECT 1
-                             FROM {flexbook_contents} eligible
+                             FROM {bookflow_contents} eligible
                             WHERE eligible.chapterid = ch.id
                               AND eligible.hidden = 0
                               AND eligible.trackprogress = 1
@@ -698,8 +698,8 @@ class progress_manager {
                        )
                        OR EXISTS (
                            SELECT 1
-                             FROM {flexbook_contents} c
-                        LEFT JOIN {flexbook_user_progress} p
+                             FROM {bookflow_contents} c
+                        LEFT JOIN {bookflow_user_progress} p
                                ON p.contentid = c.id
                               AND p.userid = :userid
                             WHERE c.chapterid = ch.id
@@ -710,7 +710,7 @@ class progress_manager {
                        )
                    )";
         return $DB->count_records_sql($sql, [
-            "flexbookid" => $flexbookid,
+            "bookflowid" => $bookflowid,
             "userid" => $userid,
             "completed" => self::STATUS_COMPLETED,
         ]) > 0;
@@ -720,19 +720,19 @@ class progress_manager {
     /**
      * Updates chapter completion.
      *
-     * @param int $flexbookid FlexBook ID.
+     * @param int $bookflowid BookFlow ID.
      * @param int $userid User ID.
      * @param int $chapterid Chapter ID.
      * @return void
      */
-    private function update_chapter_completion(int $flexbookid, int $userid, int $chapterid): void {
+    private function update_chapter_completion(int $bookflowid, int $userid, int $chapterid): void {
         global $DB;
 
         $sql = "SELECT COUNT(c.id) AS total,
                        COALESCE(SUM(CASE WHEN p.status = :completed THEN 1 ELSE 0 END), 0) AS completed,
                        COALESCE(SUM(p.timeviewed), 0) AS timeviewed
-                  FROM {flexbook_contents} c
-             LEFT JOIN {flexbook_user_progress} p
+                  FROM {bookflow_contents} c
+             LEFT JOIN {bookflow_user_progress} p
                     ON p.contentid = c.id AND p.userid = :userid
                  WHERE c.chapterid = :chapterid
                    AND c.hidden = 0
@@ -743,7 +743,7 @@ class progress_manager {
             "userid" => $userid,
             "chapterid" => $chapterid,
         ]);
-        $record = $DB->get_record("flexbook_chapter_progress", [
+        $record = $DB->get_record("bookflow_chapter_progress", [
             "userid" => $userid,
             "chapterid" => $chapterid,
         ]);
@@ -756,13 +756,13 @@ class progress_manager {
                 $record->timecompleted = 0;
                 $record->timeviewed = (int) round($stats->timeviewed ?? 0);
                 $record->timemodified = time();
-                $DB->update_record("flexbook_chapter_progress", $record);
+                $DB->update_record("bookflow_chapter_progress", $record);
             }
             return;
         }
 
         if (!$record) {
-            $record = $this->get_or_create_chapter_progress($flexbookid, $userid, $chapterid);
+            $record = $this->get_or_create_chapter_progress($bookflowid, $userid, $chapterid);
         }
         if ($record->status == self::STATUS_COMPLETED) {
             return;
@@ -771,9 +771,9 @@ class progress_manager {
         $record->timecompleted = time();
         $record->timeviewed = (int) round($stats->timeviewed ?? 0);
         $record->timemodified = time();
-        $DB->update_record("flexbook_chapter_progress", $record);
+        $DB->update_record("bookflow_chapter_progress", $record);
         chapter_completed::create_from_ids(
-            $flexbookid,
+            $bookflowid,
             $chapterid,
             0,
             $userid
@@ -784,54 +784,54 @@ class progress_manager {
     /**
      * Checks whether the available evidence satisfies a content completion rule.
      *
-     * @param int $flexbookid FlexBook ID.
+     * @param int $bookflowid BookFlow ID.
      * @param stdClass $content Content record.
      * @param stdClass $progress User progress record.
      * @return bool
      */
-    private function can_complete(int $flexbookid, stdClass $content, stdClass $progress): bool {
-        return $this->get_content_handler($flexbookid, $content)
+    private function can_complete(int $bookflowid, stdClass $content, stdClass $progress): bool {
+        return $this->get_content_handler($bookflowid, $content)
             ->completion_evidence_is_valid($progress);
     }
 
     /**
      * Creates the registered content handler used to validate completion evidence.
      *
-     * @param int $flexbookid FlexBook ID.
+     * @param int $bookflowid BookFlow ID.
      * @param stdClass $content Content record.
-     * @return \mod_flexbook\types\content
+     * @return \mod_bookflow\types\content
      */
-    private function get_content_handler(int $flexbookid, stdClass $content): \mod_flexbook\types\content {
+    private function get_content_handler(int $bookflowid, stdClass $content): \mod_bookflow\types\content {
         global $DB;
 
-        $flexbook = $DB->get_record("flexbook", ["id" => $flexbookid], "*", MUST_EXIST);
-        $cm = get_coursemodule_from_instance("flexbook", $flexbookid, $flexbook->course, false, MUST_EXIST);
+        $bookflow = $DB->get_record("bookflow", ["id" => $bookflowid], "*", MUST_EXIST);
+        $cm = get_coursemodule_from_instance("bookflow", $bookflowid, $bookflow->course, false, MUST_EXIST);
         $context = context_module::instance($cm->id);
-        return content_type_manager::create_content($content, $flexbook, $context);
+        return content_type_manager::create_content($content, $bookflow, $context);
     }
 
     /**
      * Validates a content block and returns it with its chapter.
      *
-     * @param int $flexbookid FlexBook ID.
+     * @param int $bookflowid BookFlow ID.
      * @param int $contentid Content block ID.
      * @return array
      */
-    private function validate_content(int $flexbookid, int $contentid): array {
+    private function validate_content(int $bookflowid, int $contentid): array {
         global $DB;
 
-        $sql = "SELECT c.*, ch.flexbookid, ch.hidden AS chapterhidden
-                  FROM {flexbook_contents} c
-                  JOIN {flexbook_chapters} ch ON ch.id = c.chapterid
-                 WHERE c.id = :contentid AND ch.flexbookid = :flexbookid";
+        $sql = "SELECT c.*, ch.bookflowid, ch.hidden AS chapterhidden
+                  FROM {bookflow_contents} c
+                  JOIN {bookflow_chapters} ch ON ch.id = c.chapterid
+                 WHERE c.id = :contentid AND ch.bookflowid = :bookflowid";
         $content = $DB->get_record_sql($sql, [
             "contentid" => $contentid,
-            "flexbookid" => $flexbookid,
+            "bookflowid" => $bookflowid,
         ], MUST_EXIST);
         $chapter = (object) [
             "id" => $content->chapterid,
             "hidden" => $content->chapterhidden,
-            "flexbookid" => $content->flexbookid,
+            "bookflowid" => $content->bookflowid,
         ];
         return [$content, $chapter];
     }
@@ -840,46 +840,46 @@ class progress_manager {
     /**
      * Stores the aggregate progress in the user state.
      *
-     * @param int $flexbookid FlexBook ID.
+     * @param int $bookflowid BookFlow ID.
      * @param int $userid User ID.
      * @param float $progress Calculated progress percentage.
      * @param int|null $timeviewed Already aggregated viewing time.
      * @return void
      */
     private function save_aggregate_progress(
-        int $flexbookid,
+        int $bookflowid,
         int $userid,
         float $progress,
         ?int $timeviewed = null
     ): void {
         global $DB;
 
-        $state = $this->get_or_create_state($flexbookid, $userid);
+        $state = $this->get_or_create_state($bookflowid, $userid);
         $state->progress = $progress;
         $state->timeviewed = $timeviewed ?? (int) $DB->get_field_sql(
             "SELECT COALESCE(SUM(timeviewed), 0)
-               FROM {flexbook_user_progress}
-              WHERE flexbookid = ? AND userid = ?",
-            [$flexbookid, $userid]
+               FROM {bookflow_user_progress}
+              WHERE bookflowid = ? AND userid = ?",
+            [$bookflowid, $userid]
         );
         $state->lastaccess = time();
         $state->timemodified = time();
-        $DB->update_record("flexbook_user_state", $state);
+        $DB->update_record("bookflow_user_state", $state);
     }
 
 
     /**
      * Gets or creates the aggregate user state.
      *
-     * @param int $flexbookid FlexBook ID.
+     * @param int $bookflowid BookFlow ID.
      * @param int $userid User ID.
      * @return stdClass
      */
-    private function get_or_create_state(int $flexbookid, int $userid): stdClass {
+    private function get_or_create_state(int $bookflowid, int $userid): stdClass {
         global $DB;
 
-        $state = $DB->get_record("flexbook_user_state", [
-            "flexbookid" => $flexbookid,
+        $state = $DB->get_record("bookflow_user_state", [
+            "bookflowid" => $bookflowid,
             "userid" => $userid,
         ]);
         if ($state) {
@@ -888,7 +888,7 @@ class progress_manager {
 
         $now = time();
         $state = (object) [
-            "flexbookid" => $flexbookid,
+            "bookflowid" => $bookflowid,
             "userid" => $userid,
             "lastchapterid" => 0,
             "lastcontentid" => 0,
@@ -901,11 +901,11 @@ class progress_manager {
             "timemodified" => $now,
         ];
         try {
-            $state->id = $DB->insert_record("flexbook_user_state", $state);
+            $state->id = $DB->insert_record("bookflow_user_state", $state);
             return $state;
         } catch (dml_write_exception $exception) {
-            $existing = $DB->get_record("flexbook_user_state", [
-                "flexbookid" => $flexbookid,
+            $existing = $DB->get_record("bookflow_user_state", [
+                "bookflowid" => $bookflowid,
                 "userid" => $userid,
             ]);
             if (!$existing) {
@@ -918,21 +918,21 @@ class progress_manager {
     /**
      * Gets or creates per-content progress safely under concurrent requests.
      *
-     * @param int $flexbookid FlexBook ID.
+     * @param int $bookflowid BookFlow ID.
      * @param int $userid User ID.
      * @param stdClass $content Content record.
      * @param stdClass $chapter Chapter record.
      * @return stdClass
      */
     private function get_or_create_content_progress(
-        int $flexbookid,
+        int $bookflowid,
         int $userid,
         stdClass $content,
         stdClass $chapter
     ): stdClass {
         global $DB;
 
-        $record = $DB->get_record("flexbook_user_progress", [
+        $record = $DB->get_record("bookflow_user_progress", [
             "userid" => $userid,
             "contentid" => $content->id,
         ]);
@@ -942,7 +942,7 @@ class progress_manager {
 
         $now = time();
         $record = (object) [
-            "flexbookid" => $flexbookid,
+            "bookflowid" => $bookflowid,
             "chapterid" => $chapter->id,
             "contentid" => $content->id,
             "userid" => $userid,
@@ -957,10 +957,10 @@ class progress_manager {
             "timemodified" => $now,
         ];
         try {
-            $record->id = $DB->insert_record("flexbook_user_progress", $record);
+            $record->id = $DB->insert_record("bookflow_user_progress", $record);
             return $record;
         } catch (dml_write_exception $exception) {
-            $existing = $DB->get_record("flexbook_user_progress", [
+            $existing = $DB->get_record("bookflow_user_progress", [
                 "userid" => $userid,
                 "contentid" => $content->id,
             ]);
@@ -974,15 +974,15 @@ class progress_manager {
     /**
      * Gets or creates chapter progress safely under concurrent requests.
      *
-     * @param int $flexbookid FlexBook ID.
+     * @param int $bookflowid BookFlow ID.
      * @param int $userid User ID.
      * @param int $chapterid Chapter ID.
      * @return stdClass
      */
-    private function get_or_create_chapter_progress(int $flexbookid, int $userid, int $chapterid): stdClass {
+    private function get_or_create_chapter_progress(int $bookflowid, int $userid, int $chapterid): stdClass {
         global $DB;
 
-        $record = $DB->get_record("flexbook_chapter_progress", [
+        $record = $DB->get_record("bookflow_chapter_progress", [
             "userid" => $userid,
             "chapterid" => $chapterid,
         ]);
@@ -992,7 +992,7 @@ class progress_manager {
 
         $now = time();
         $record = (object) [
-            "flexbookid" => $flexbookid,
+            "bookflowid" => $bookflowid,
             "chapterid" => $chapterid,
             "userid" => $userid,
             "status" => self::STATUS_NONE,
@@ -1004,10 +1004,10 @@ class progress_manager {
             "timemodified" => $now,
         ];
         try {
-            $record->id = $DB->insert_record("flexbook_chapter_progress", $record);
+            $record->id = $DB->insert_record("bookflow_chapter_progress", $record);
             return $record;
         } catch (dml_write_exception $exception) {
-            $existing = $DB->get_record("flexbook_chapter_progress", [
+            $existing = $DB->get_record("bookflow_chapter_progress", [
                 "userid" => $userid,
                 "chapterid" => $chapterid,
             ]);

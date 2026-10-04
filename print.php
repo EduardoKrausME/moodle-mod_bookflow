@@ -17,26 +17,26 @@
 /**
  * print.php
  *
- * @package   mod_flexbook
+ * @package   mod_bookflow
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use mod_flexbook\export_manager;
+use mod_bookflow\export_manager;
 
 require_once(__DIR__ . "/../../config.php");
 
 $id = required_param("id", PARAM_INT);
 $showanswers = optional_param("showanswers", 0, PARAM_BOOL);
-$cm = get_coursemodule_from_id("flexbook", $id, 0, false, MUST_EXIST);
+$cm = get_coursemodule_from_id("bookflow", $id, 0, false, MUST_EXIST);
 $course = get_course($cm->course);
-$flexbook = $DB->get_record("flexbook", ["id" => $cm->instance], "*", MUST_EXIST);
+$bookflow = $DB->get_record("bookflow", ["id" => $cm->instance], "*", MUST_EXIST);
 $context = context_module::instance($cm->id);
 require_login($course, true, $cm);
-require_capability("mod/flexbook:view", $context);
+require_capability("mod/bookflow:view", $context);
 if ($showanswers) {
-    require_capability("mod/flexbook:managecontent", $context);
+    require_capability("mod/bookflow:managecontent", $context);
 }
 
-$html = export_manager::to_html($flexbook->id, $context, $OUTPUT, $showanswers);
+$html = export_manager::to_html($bookflow->id, $context, $OUTPUT, $showanswers);
 echo $html;

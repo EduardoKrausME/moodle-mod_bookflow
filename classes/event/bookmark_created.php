@@ -17,12 +17,12 @@
 /**
  * bookmark_created.php
  *
- * @package   mod_flexbook
+ * @package   mod_bookflow
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_flexbook\event;
+namespace mod_bookflow\event;
 use Override;
 
 /**
@@ -38,7 +38,7 @@ class bookmark_created extends base_event {
     protected function init(): void {
         $this->data["crud"] = "c";
         $this->data["edulevel"] = self::LEVEL_PARTICIPATING;
-        $this->data["objecttable"] = "flexbook";
+        $this->data["objecttable"] = "bookflow";
         $this->data["action"] = "created";
     }
 }

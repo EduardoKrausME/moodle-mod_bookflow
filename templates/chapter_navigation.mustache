@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mod_flexbook/chapter_navigation
+    @template mod_bookflow/chapter_navigation
 
     Example context (json):
     {
@@ -23,8 +23,8 @@
     }
 }}
 
-<nav class="flexbook-chapter-navigation" aria-label="{{#str}}chapternavigation, mod_flexbook{{/str}}">
-    {{#hasprevious}}<a class="btn btn-outline-primary" href="{{{previousurl}}}">{{#str}}previouschapter, mod_flexbook{{/str}}</a>{{/hasprevious}}
-    <a class="btn btn-outline-secondary" href="{{{overviewurl}}}">{{#str}}backtotoc, mod_flexbook{{/str}}</a>
-    {{#hasnext}}<a class="btn btn-primary" href="{{{nexturl}}}">{{#str}}nextchapter, mod_flexbook{{/str}}</a>{{/hasnext}}
+<nav class="bookflow-chapter-navigation" aria-label="{{#str}}chapternavigation, mod_bookflow{{/str}}">
+    {{#hasprevious}}<a class="btn btn-outline-primary" href="{{{previousurl}}}">{{#str}}previouschapter, mod_bookflow{{/str}}</a>{{/hasprevious}}
+    <a class="btn btn-outline-secondary" href="{{{overviewurl}}}">{{#str}}backtotoc, mod_bookflow{{/str}}</a>
+    {{#hasnext}}<a class="btn btn-primary" href="{{{nexturl}}}">{{#str}}nextchapter, mod_bookflow{{/str}}</a>{{/hasnext}}
 </nav>

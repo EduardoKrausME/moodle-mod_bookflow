@@ -17,18 +17,18 @@
 /**
  * callout.php
  *
- * @package   flexbookcontent_callout
+ * @package   bookflowcontent_callout
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace flexbookcontent_callout\types;
+namespace bookflowcontent_callout\types;
 
-use mod_flexbook\types\editor_content;
+use mod_bookflow\types\editor_content;
 use renderer_base;
 
 /**
- * FlexBook Callout content type.
+ * BookFlow Callout content type.
  */
 class callout extends editor_content {
     /** @var string */
@@ -38,7 +38,7 @@ class callout extends editor_content {
      * Gets the editor label.
      */
     protected static function get_editor_label(): string {
-        return get_string("calloutcontent", "mod_flexbook");
+        return get_string("calloutcontent", "mod_bookflow");
     }
 
     /**
@@ -46,7 +46,7 @@ class callout extends editor_content {
      */
     public function render(renderer_base $output, bool $editing): string {
         return $output->render_from_template(
-            "flexbookcontent_callout/callout",
+            "bookflowcontent_callout/callout",
             $this->export_data($editing)
         );
     }
@@ -55,7 +55,7 @@ class callout extends editor_content {
      * Gets the localized content type name.
      */
     public static function get_name(): string {
-        return get_string("pluginname", "flexbookcontent_callout");
+        return get_string("pluginname", "bookflowcontent_callout");
     }
 
 }

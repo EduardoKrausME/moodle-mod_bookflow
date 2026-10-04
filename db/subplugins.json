@@ -1,8 +1,8 @@
 {
   "plugintypes": {
-    "flexbookcontent": "mod/flexbook/content"
+    "bookflowcontent": "mod/bookflow/content"
   },
   "subplugintypes": {
-    "flexbookcontent": "content"
+    "bookflowcontent": "content"
   }
 }

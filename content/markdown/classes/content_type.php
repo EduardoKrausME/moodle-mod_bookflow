@@ -17,18 +17,18 @@
 /**
  * content_type.php
  *
- * @package   flexbookcontent_markdown
+ * @package   bookflowcontent_markdown
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace flexbookcontent_markdown;
+namespace bookflowcontent_markdown;
 
-use flexbookcontent_markdown\types\markdown;
-use mod_flexbook\hook\content_types;
+use bookflowcontent_markdown\types\markdown;
+use mod_bookflow\hook\content_types;
 
 /**
- * Registers the Markdown content type in FlexBook.
+ * Registers the Markdown content type in BookFlow.
  */
 class content_type {
     /**

@@ -16,29 +16,29 @@
 /**
  * bookmark.js
  *
- * @package   mod_flexbook
+ * @package   mod_bookflow
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 define(["core/ajax", "core/notification"], function(Ajax, Notification) {
-    const init = function(flexbookId) {
+    const init = function(bookflowId) {
         document.addEventListener("click", function(event) {
-            const button = event.target.closest("[data-action='flexbook-bookmark']");
+            const button = event.target.closest("[data-action='bookflow-bookmark']");
             if (!button) {
                 return;
             }
             const bookmarked = button.getAttribute("aria-pressed") === "true";
             const request = bookmarked ? {
-                methodname: "mod_flexbook_delete_bookmark",
+                methodname: "mod_bookflow_delete_bookmark",
                 args: {
-                    flexbookid: flexbookId,
+                    bookflowid: bookflowId,
                     bookmarkid: Number(button.dataset.bookmarkId)
                 }
             } : {
-                methodname: "mod_flexbook_create_bookmark",
+                methodname: "mod_bookflow_create_bookmark",
                 args: {
-                    flexbookid: flexbookId,
+                    bookflowid: bookflowId,
                     itemtype: button.dataset.itemType,
                     chapterid: Number(button.dataset.chapterId || 0),
                     contentid: Number(button.dataset.contentId || 0)

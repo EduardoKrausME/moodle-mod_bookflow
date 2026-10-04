@@ -17,18 +17,18 @@
 /**
  * version.php
  *
- * @package   flexbookcontent_question
+ * @package   bookflowcontent_question
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die;
 
-$plugin->component = "flexbookcontent_question";
+$plugin->component = "bookflowcontent_question";
 $plugin->version = 2026092800;
 $plugin->requires = 2024042200;
 $plugin->maturity = MATURITY_STABLE;
 $plugin->release = "0.2.0";
 $plugin->dependencies = [
-    "mod_flexbook" => 2026092800,
+    "mod_bookflow" => 2026092800,
 ];

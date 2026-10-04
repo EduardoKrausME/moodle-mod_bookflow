@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="mod/flexbook/db" VERSION="20260928" COMMENT="XMLDB file for mod_flexbook"
+<XMLDB PATH="mod/bookflow/db" VERSION="20260928" COMMENT="XMLDB file for mod_bookflow"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd">
   <TABLES>
-    <TABLE NAME="flexbook" COMMENT="FlexBook activities">
+    <TABLE NAME="bookflow" COMMENT="BookFlow activities">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
@@ -28,10 +28,10 @@
         <KEY NAME="course" TYPE="foreign" FIELDS="course" REFTABLE="course" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="flexbook_chapters" COMMENT="Chapters and subchapters">
+    <TABLE NAME="bookflow_chapters" COMMENT="Chapters and subchapters">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="flexbookid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="bookflowid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="parentid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="title" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="description" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
@@ -45,14 +45,14 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="flexbookid" TYPE="foreign" FIELDS="flexbookid" REFTABLE="flexbook" REFFIELDS="id"/>
+        <KEY NAME="bookflowid" TYPE="foreign" FIELDS="bookflowid" REFTABLE="bookflow" REFFIELDS="id"/>
       </KEYS>
       <INDEXES>
         <INDEX NAME="parentid" UNIQUE="false" FIELDS="parentid"/>
-        <INDEX NAME="sortorder" UNIQUE="false" FIELDS="flexbookid, sortorder"/>
+        <INDEX NAME="sortorder" UNIQUE="false" FIELDS="bookflowid, sortorder"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="flexbook_contents" COMMENT="Independent chapter content blocks">
+    <TABLE NAME="bookflow_contents" COMMENT="Independent chapter content blocks">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="chapterid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
@@ -77,17 +77,17 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="chapterid" TYPE="foreign" FIELDS="chapterid" REFTABLE="flexbook_chapters" REFFIELDS="id"/>
+        <KEY NAME="chapterid" TYPE="foreign" FIELDS="chapterid" REFTABLE="bookflow_chapters" REFFIELDS="id"/>
       </KEYS>
       <INDEXES>
         <INDEX NAME="type" UNIQUE="false" FIELDS="type"/>
         <INDEX NAME="sortorder" UNIQUE="false" FIELDS="chapterid, sortorder"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="flexbook_user_progress" COMMENT="Per-user block progress">
+    <TABLE NAME="bookflow_user_progress" COMMENT="Per-user block progress">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="flexbookid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="bookflowid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="chapterid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="contentid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
@@ -103,21 +103,21 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="flexbookid" TYPE="foreign" FIELDS="flexbookid" REFTABLE="flexbook" REFFIELDS="id"/>
-        <KEY NAME="chapterid" TYPE="foreign" FIELDS="chapterid" REFTABLE="flexbook_chapters" REFFIELDS="id"/>
-        <KEY NAME="contentid" TYPE="foreign" FIELDS="contentid" REFTABLE="flexbook_contents" REFFIELDS="id"/>
+        <KEY NAME="bookflowid" TYPE="foreign" FIELDS="bookflowid" REFTABLE="bookflow" REFFIELDS="id"/>
+        <KEY NAME="chapterid" TYPE="foreign" FIELDS="chapterid" REFTABLE="bookflow_chapters" REFFIELDS="id"/>
+        <KEY NAME="contentid" TYPE="foreign" FIELDS="contentid" REFTABLE="bookflow_contents" REFFIELDS="id"/>
         <KEY NAME="userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
       </KEYS>
       <INDEXES>
         <INDEX NAME="usercontent" UNIQUE="true" FIELDS="userid, contentid"/>
-        <INDEX NAME="userflexbook" UNIQUE="false" FIELDS="userid, flexbookid"/>
-        <INDEX NAME="status" UNIQUE="false" FIELDS="flexbookid, status"/>
+        <INDEX NAME="userbookflow" UNIQUE="false" FIELDS="userid, bookflowid"/>
+        <INDEX NAME="status" UNIQUE="false" FIELDS="bookflowid, status"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="flexbook_chapter_progress" COMMENT="Per-user chapter access and completion">
+    <TABLE NAME="bookflow_chapter_progress" COMMENT="Per-user chapter access and completion">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="flexbookid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="bookflowid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="chapterid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="status" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="1" SEQUENCE="false"/>
@@ -130,19 +130,19 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="flexbookid" TYPE="foreign" FIELDS="flexbookid" REFTABLE="flexbook" REFFIELDS="id"/>
-        <KEY NAME="chapterid" TYPE="foreign" FIELDS="chapterid" REFTABLE="flexbook_chapters" REFFIELDS="id"/>
+        <KEY NAME="bookflowid" TYPE="foreign" FIELDS="bookflowid" REFTABLE="bookflow" REFFIELDS="id"/>
+        <KEY NAME="chapterid" TYPE="foreign" FIELDS="chapterid" REFTABLE="bookflow_chapters" REFFIELDS="id"/>
         <KEY NAME="userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
       </KEYS>
       <INDEXES>
         <INDEX NAME="userchapter" UNIQUE="true" FIELDS="userid, chapterid"/>
-        <INDEX NAME="status" UNIQUE="false" FIELDS="flexbookid, status"/>
+        <INDEX NAME="status" UNIQUE="false" FIELDS="bookflowid, status"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="flexbook_user_state" COMMENT="Per-user reading state and aggregate progress">
+    <TABLE NAME="bookflow_user_state" COMMENT="Per-user reading state and aggregate progress">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="flexbookid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="bookflowid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="lastchapterid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="lastcontentid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
@@ -156,18 +156,18 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="flexbookid" TYPE="foreign" FIELDS="flexbookid" REFTABLE="flexbook" REFFIELDS="id"/>
+        <KEY NAME="bookflowid" TYPE="foreign" FIELDS="bookflowid" REFTABLE="bookflow" REFFIELDS="id"/>
         <KEY NAME="userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
       </KEYS>
       <INDEXES>
-        <INDEX NAME="userflexbook" UNIQUE="true" FIELDS="userid, flexbookid"/>
-        <INDEX NAME="lastaccess" UNIQUE="false" FIELDS="flexbookid, lastaccess"/>
+        <INDEX NAME="userbookflow" UNIQUE="true" FIELDS="userid, bookflowid"/>
+        <INDEX NAME="lastaccess" UNIQUE="false" FIELDS="bookflowid, lastaccess"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="flexbook_bookmarks" COMMENT="User favorites">
+    <TABLE NAME="bookflow_bookmarks" COMMENT="User favorites">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="flexbookid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="bookflowid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="itemtype" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="chapterid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
@@ -176,17 +176,17 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="flexbookid" TYPE="foreign" FIELDS="flexbookid" REFTABLE="flexbook" REFFIELDS="id"/>
+        <KEY NAME="bookflowid" TYPE="foreign" FIELDS="bookflowid" REFTABLE="bookflow" REFFIELDS="id"/>
         <KEY NAME="userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
       </KEYS>
       <INDEXES>
-        <INDEX NAME="useritem" UNIQUE="true" FIELDS="userid, flexbookid, itemtype, chapterid, contentid"/>
+        <INDEX NAME="useritem" UNIQUE="true" FIELDS="userid, bookflowid, itemtype, chapterid, contentid"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="flexbook_notes" COMMENT="Private user notes">
+    <TABLE NAME="bookflow_notes" COMMENT="Private user notes">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="flexbookid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="bookflowid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="chapterid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="contentid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
@@ -197,11 +197,11 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="flexbookid" TYPE="foreign" FIELDS="flexbookid" REFTABLE="flexbook" REFFIELDS="id"/>
+        <KEY NAME="bookflowid" TYPE="foreign" FIELDS="bookflowid" REFTABLE="bookflow" REFFIELDS="id"/>
         <KEY NAME="userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
       </KEYS>
       <INDEXES>
-        <INDEX NAME="userflexbook" UNIQUE="false" FIELDS="userid, flexbookid"/>
+        <INDEX NAME="userbookflow" UNIQUE="false" FIELDS="userid, bookflowid"/>
         <INDEX NAME="contentid" UNIQUE="false" FIELDS="contentid"/>
       </INDEXES>
     </TABLE>

@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mod_flexbook/table_of_contents
+    @template mod_bookflow/table_of_contents
 
     Example context (json):
     {
@@ -23,18 +23,18 @@
     }
 }}
 
-<ol class="flexbook-toc-list">
+<ol class="bookflow-toc-list">
     {{#toc}}
-        <li class="{{#subchapter}}flexbook-subchapter{{/subchapter}} {{#current}}is-current{{/current}}">
+        <li class="{{#subchapter}}bookflow-subchapter{{/subchapter}} {{#current}}is-current{{/current}}">
             <a href="{{{url}}}" {{#current}}aria-current="page"{{/current}}>
-                {{#number}}<span class="flexbook-toc-number">{{number}}</span>{{/number}}
+                {{#number}}<span class="bookflow-toc-number">{{number}}</span>{{/number}}
                 <span>{{title}}</span>
-                {{#required}}<span class="badge text-bg-warning">{{#str}}required, mod_flexbook{{/str}}</span>{{/required}}
-                {{#completed}}<span class="flexbook-status-complete">{{#str}}completed, mod_flexbook{{/str}}</span>{{/completed}}
-                {{#hidden}}<span class="badge text-bg-secondary">{{#str}}hidden, mod_flexbook{{/str}}</span>{{/hidden}}
+                {{#required}}<span class="badge text-bg-warning">{{#str}}required, mod_bookflow{{/str}}</span>{{/required}}
+                {{#completed}}<span class="bookflow-status-complete">{{#str}}completed, mod_bookflow{{/str}}</span>{{/completed}}
+                {{#hidden}}<span class="badge text-bg-secondary">{{#str}}hidden, mod_bookflow{{/str}}</span>{{/hidden}}
             </a>
             {{#hascontents}}
-                <ol class="flexbook-toc-contents">
+                <ol class="bookflow-toc-contents">
                     {{#contents}}
                         <li><a href="{{{url}}}"><span>{{title}}</span><small>{{type}}</small></a></li>
                     {{/contents}}

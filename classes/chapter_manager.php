@@ -17,17 +17,17 @@
 /**
  * chapter_manager.php
  *
- * @package   mod_flexbook
+ * @package   mod_bookflow
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_flexbook;
+namespace mod_bookflow;
 
 use stdClass;
 
 /**
- * Manages FlexBook chapter records and ordering.
+ * Manages BookFlow chapter records and ordering.
  */
 class chapter_manager {
     /**
@@ -40,12 +40,12 @@ class chapter_manager {
         global $DB;
 
         $data->sortorder = $DB->get_field_sql(
-            "SELECT COALESCE(MAX(sortorder), -1) + 1 FROM {flexbook_chapters} WHERE flexbookid = ?",
-            [$data->flexbookid]
+            "SELECT COALESCE(MAX(sortorder), -1) + 1 FROM {bookflow_chapters} WHERE bookflowid = ?",
+            [$data->bookflowid]
         );
         $data->timecreated = time();
         $data->timemodified = $data->timecreated;
-        return $DB->insert_record("flexbook_chapters", $data);
+        return $DB->insert_record("bookflow_chapters", $data);
     }
 
     /**
@@ -57,13 +57,13 @@ class chapter_manager {
     public static function update(stdClass $data): bool {
         global $DB;
 
-        $current = $DB->get_record("flexbook_chapters", ["id" => $data->id], "*", MUST_EXIST);
+        $current = $DB->get_record("bookflow_chapters", ["id" => $data->id], "*", MUST_EXIST);
         $data->timemodified = time();
-        $result = $DB->update_record("flexbook_chapters", $data);
-        $updated = $DB->get_record("flexbook_chapters", ["id" => $data->id], "*", MUST_EXIST);
+        $result = $DB->update_record("bookflow_chapters", $data);
+        $updated = $DB->get_record("bookflow_chapters", ["id" => $data->id], "*", MUST_EXIST);
         if ((string) $current->hidden !== (string) $updated->hidden
                 || (string) $current->required !== (string) $updated->required) {
-            progress_recalculator::recalculate_all($updated->flexbookid);
+            progress_recalculator::recalculate_all($updated->bookflowid);
         }
         return $result;
     }
@@ -77,34 +77,34 @@ class chapter_manager {
     public static function delete(int $chapterid): void {
         global $DB;
 
-        $chapter = $DB->get_record("flexbook_chapters", ["id" => $chapterid], "*", MUST_EXIST);
+        $chapter = $DB->get_record("bookflow_chapters", ["id" => $chapterid], "*", MUST_EXIST);
         $transaction = $DB->start_delegated_transaction();
-        $contentids = $DB->get_fieldset_select("flexbook_contents", "id", "chapterid = ?", [$chapterid]);
+        $contentids = $DB->get_fieldset_select("bookflow_contents", "id", "chapterid = ?", [$chapterid]);
         foreach ($contentids as $contentid) {
             content_manager::delete($contentid, false);
         }
-        $DB->delete_records("flexbook_chapter_progress", ["chapterid" => $chapterid]);
-        $DB->delete_records("flexbook_chapters", ["id" => $chapterid]);
-        self::normalize_sortorder($chapter->flexbookid);
-        progress_recalculator::recalculate_all($chapter->flexbookid);
+        $DB->delete_records("bookflow_chapter_progress", ["chapterid" => $chapterid]);
+        $DB->delete_records("bookflow_chapters", ["id" => $chapterid]);
+        self::normalize_sortorder($chapter->bookflowid);
+        progress_recalculator::recalculate_all($chapter->bookflowid);
         $transaction->allow_commit();
     }
 
     /**
      * Normalizes chapter sort order values.
      *
-     * @param int $flexbookid FlexBook ID.
+     * @param int $bookflowid BookFlow ID.
      * @return void
      */
-    public static function normalize_sortorder(int $flexbookid): void {
+    public static function normalize_sortorder(int $bookflowid): void {
         global $DB;
 
-        $records = $DB->get_records("flexbook_chapters", ["flexbookid" => $flexbookid], "sortorder, id");
+        $records = $DB->get_records("bookflow_chapters", ["bookflowid" => $bookflowid], "sortorder, id");
         $sortorder = 0;
         foreach ($records as $record) {
             if ($record->sortorder != $sortorder) {
                 $record->sortorder = $sortorder;
-                $DB->update_record("flexbook_chapters", $record);
+                $DB->update_record("bookflow_chapters", $record);
             }
             $sortorder++;
         }

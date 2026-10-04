@@ -17,21 +17,21 @@
 /**
  * download.php
  *
- * @package   flexbookcontent_download
+ * @package   bookflowcontent_download
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace flexbookcontent_download\types;
+namespace bookflowcontent_download\types;
 
-use mod_flexbook\form\content_form;
-use mod_flexbook\form\content_form_mapper;
-use mod_flexbook\types\source_content;
+use mod_bookflow\form\content_form;
+use mod_bookflow\form\content_form_mapper;
+use mod_bookflow\types\source_content;
 use renderer_base;
 use stdClass;
 
 /**
- * FlexBook Download content type.
+ * BookFlow Download content type.
  */
 class download extends source_content {
     /** @var string */
@@ -55,7 +55,7 @@ class download extends source_content {
         $mform->addElement(
             "textarea",
             "filedescription",
-            get_string("filedescription", "mod_flexbook"),
+            get_string("filedescription", "mod_bookflow"),
             ["rows" => 5, "cols" => 90]
         );
         $mform->setType("filedescription", PARAM_TEXT);
@@ -68,7 +68,7 @@ class download extends source_content {
         $options = parent::get_completion_options();
         $none = $options["none"];
         unset($options["none"]);
-        $options["click"] = get_string("completeonclick", "mod_flexbook");
+        $options["click"] = get_string("completeonclick", "mod_bookflow");
         $options["none"] = $none;
         return $options;
     }
@@ -135,13 +135,13 @@ class download extends source_content {
     /**
      * Loads download tracking from this subplugin.
      */
-    public static function require_page_assets(stdClass $flexbook, bool $editing): void {
+    public static function require_page_assets(stdClass $bookflow, bool $editing): void {
         global $PAGE;
-        if (!$editing && !empty($flexbook->enabletracking)) {
+        if (!$editing && !empty($bookflow->enabletracking)) {
             $PAGE->requires->js_call_amd(
-                "flexbookcontent_download/download",
+                "bookflowcontent_download/download",
                 "init",
-                [$flexbook->id]
+                [$bookflow->id]
             );
         }
     }
@@ -151,7 +151,7 @@ class download extends source_content {
      */
     public function render(renderer_base $output, bool $editing): string {
         return $output->render_from_template(
-            "flexbookcontent_download/download",
+            "bookflowcontent_download/download",
             $this->export_data($editing)
         );
     }
@@ -160,7 +160,7 @@ class download extends source_content {
      * Gets the localized content type name.
      */
     public static function get_name(): string {
-        return get_string("pluginname", "flexbookcontent_download");
+        return get_string("pluginname", "bookflowcontent_download");
     }
 
 }

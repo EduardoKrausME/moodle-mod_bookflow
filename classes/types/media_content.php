@@ -17,12 +17,12 @@
 /**
  * Shared completion behaviour for time-based media.
  *
- * @package mod_flexbook
+ * @package mod_bookflow
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_flexbook\types;
+namespace mod_bookflow\types;
 
 use stdClass;
 
@@ -50,7 +50,7 @@ abstract class media_content extends source_content {
         $errors = parent::validate_form($data, $files);
         if (in_array($data["completiontype"] ?? "", ["percent", "end"], true)
                 && (($data["completionvalue"] ?? 0) <= 0 || ($data["completionvalue"] ?? 0) > 100)) {
-            $errors["completionvalue"] = get_string("percentageerror", "mod_flexbook");
+            $errors["completionvalue"] = get_string("percentageerror", "mod_bookflow");
         }
         return $errors;
     }

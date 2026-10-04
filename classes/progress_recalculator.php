@@ -17,30 +17,30 @@
 /**
  * Queues aggregate progress recalculation after structural changes.
  *
- * @package   mod_flexbook
+ * @package   mod_bookflow
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_flexbook;
+namespace mod_bookflow;
 
 use core\task\manager;
-use mod_flexbook\task\recalculate_progress;
+use mod_bookflow\task\recalculate_progress;
 
 /**
  * Schedules progress recalculation outside the teacher request.
  */
 class progress_recalculator {
     /**
-     * Queues recalculation for all users that already have state in a FlexBook.
+     * Queues recalculation for all users that already have state in a BookFlow.
      *
-     * @param int $flexbookid FlexBook ID.
+     * @param int $bookflowid BookFlow ID.
      * @return void
      */
-    public static function recalculate_all(int $flexbookid): void {
+    public static function recalculate_all(int $bookflowid): void {
         $task = new recalculate_progress();
         $task->set_custom_data([
-            "flexbookid" => $flexbookid,
+            "bookflowid" => $bookflowid,
             "afteruserid" => 0,
         ]);
         manager::queue_adhoc_task($task, true);

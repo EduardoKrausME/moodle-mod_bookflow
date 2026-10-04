@@ -17,14 +17,14 @@
 /**
  * question_answered.php
  *
- * @package   flexbookcontent_question
+ * @package   bookflowcontent_question
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace flexbookcontent_question\event;
+namespace bookflowcontent_question\event;
 
-use mod_flexbook\event\base_event;
+use mod_bookflow\event\base_event;
 use Override;
 
 /**
@@ -35,7 +35,7 @@ class question_answered extends base_event {
      * Gets the localized event name.
      */
     public static function get_name(): string {
-        return get_string("eventquestion_answered", "flexbookcontent_question");
+        return get_string("eventquestion_answered", "bookflowcontent_question");
     }
 
     /**
@@ -47,7 +47,7 @@ class question_answered extends base_event {
     protected function init(): void {
         $this->data["crud"] = "c";
         $this->data["edulevel"] = self::LEVEL_PARTICIPATING;
-        $this->data["objecttable"] = "flexbook";
+        $this->data["objecttable"] = "bookflow";
         $this->data["action"] = "answered";
     }
 }

@@ -17,19 +17,19 @@
 /**
  * content_manager.php
  *
- * @package   mod_flexbook
+ * @package   mod_bookflow
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_flexbook;
+namespace mod_bookflow;
 
 use context_module;
 use invalid_parameter_exception;
 use stdClass;
 
 /**
- * Manages FlexBook content block records and ordering.
+ * Manages BookFlow content block records and ordering.
  */
 class content_manager {
     /** @var array Fields whose change can alter derived progress or completion. */
@@ -54,17 +54,17 @@ class content_manager {
         global $DB;
 
         $data->sortorder = $DB->get_field_sql(
-            "SELECT COALESCE(MAX(sortorder), -1) + 1 FROM {flexbook_contents} WHERE chapterid = ?",
+            "SELECT COALESCE(MAX(sortorder), -1) + 1 FROM {bookflow_contents} WHERE chapterid = ?",
             [$data->chapterid]
         );
         $data->timecreated = time();
         $data->timemodified = $data->timecreated;
-        $id = $DB->insert_record("flexbook_contents", $data);
+        $id = $DB->insert_record("bookflow_contents", $data);
         $classname = self::get_content_class($data->type);
         $classname::after_create($id);
-        $flexbookid = self::get_flexbookid($data->chapterid);
+        $bookflowid = self::get_bookflowid($data->chapterid);
         if (empty($data->hidden) && !empty($data->trackprogress) && $data->completiontype !== "none") {
-            progress_recalculator::recalculate_all($flexbookid);
+            progress_recalculator::recalculate_all($bookflowid);
         }
         return $id;
     }
@@ -78,7 +78,7 @@ class content_manager {
     public static function update(stdClass $data): bool {
         global $DB;
 
-        $current = $DB->get_record("flexbook_contents", ["id" => $data->id], "*", MUST_EXIST);
+        $current = $DB->get_record("bookflow_contents", ["id" => $data->id], "*", MUST_EXIST);
         $currentclass = self::get_content_class($current->type);
         $newclass = self::get_content_class($data->type);
         $data->timemodified = time();
@@ -87,15 +87,15 @@ class content_manager {
             $currentclass::before_delete($data->id);
         }
         $newclass::before_update($current, $data);
-        $result = $DB->update_record("flexbook_contents", $data);
+        $result = $DB->update_record("bookflow_contents", $data);
         $newclass::after_update($data->id);
-        $updated = $DB->get_record("flexbook_contents", ["id" => $data->id], "*", MUST_EXIST);
-        $oldflexbookid = self::get_flexbookid($current->chapterid);
-        $newflexbookid = self::get_flexbookid($updated->chapterid);
+        $updated = $DB->get_record("bookflow_contents", ["id" => $data->id], "*", MUST_EXIST);
+        $oldbookflowid = self::get_bookflowid($current->chapterid);
+        $newbookflowid = self::get_bookflowid($updated->chapterid);
         if (self::progress_structure_changed($current, $updated)) {
-            progress_recalculator::recalculate_all($oldflexbookid);
-            if ($newflexbookid != $oldflexbookid) {
-                progress_recalculator::recalculate_all($newflexbookid);
+            progress_recalculator::recalculate_all($oldbookflowid);
+            if ($newbookflowid != $oldbookflowid) {
+                progress_recalculator::recalculate_all($newbookflowid);
             }
         }
         if ($current->chapterid != $updated->chapterid) {
@@ -114,12 +114,12 @@ class content_manager {
     public static function duplicate(int $contentid): int {
         global $DB;
 
-        $content = $DB->get_record("flexbook_contents", ["id" => $contentid], "*", MUST_EXIST);
+        $content = $DB->get_record("bookflow_contents", ["id" => $contentid], "*", MUST_EXIST);
         $sourcecontentid = $content->id;
         $classname = self::get_content_class($content->type);
         $fileareas = $classname::get_fileareas();
         unset($content->id);
-        $content->title = get_string("copyof", "mod_flexbook", $content->title);
+        $content->title = get_string("copyof", "mod_bookflow", $content->title);
         $newcontentid = self::create($content);
         self::copy_content_files($sourcecontentid, $newcontentid, $content->chapterid, $fileareas);
         return $newcontentid;
@@ -135,19 +135,19 @@ class content_manager {
     public static function delete(int $contentid, bool $recalculate = true): void {
         global $DB;
 
-        $content = $DB->get_record("flexbook_contents", ["id" => $contentid], "*", MUST_EXIST);
-        $flexbookid = self::get_flexbookid($content->chapterid);
+        $content = $DB->get_record("bookflow_contents", ["id" => $contentid], "*", MUST_EXIST);
+        $bookflowid = self::get_bookflowid($content->chapterid);
         $classname = self::get_content_class($content->type);
         $classname::before_delete($contentid);
         self::delete_content_files($contentid, $content->chapterid, $classname::get_fileareas());
-        $DB->delete_records("flexbook_user_progress", ["contentid" => $contentid]);
-        $DB->delete_records("flexbook_bookmarks", ["contentid" => $contentid]);
-        $DB->delete_records("flexbook_notes", ["contentid" => $contentid]);
-        $DB->delete_records("flexbook_contents", ["id" => $contentid]);
+        $DB->delete_records("bookflow_user_progress", ["contentid" => $contentid]);
+        $DB->delete_records("bookflow_bookmarks", ["contentid" => $contentid]);
+        $DB->delete_records("bookflow_notes", ["contentid" => $contentid]);
+        $DB->delete_records("bookflow_contents", ["id" => $contentid]);
         self::normalize_sortorder($content->chapterid);
         if ($recalculate && empty($content->hidden) && !empty($content->trackprogress)
                 && $content->completiontype !== "none") {
-            progress_recalculator::recalculate_all($flexbookid);
+            progress_recalculator::recalculate_all($bookflowid);
         }
     }
 
@@ -161,12 +161,12 @@ class content_manager {
     public static function move(int $contentid, int $direction): void {
         global $DB;
 
-        $content = $DB->get_record("flexbook_contents", ["id" => $contentid], "*", MUST_EXIST);
+        $content = $DB->get_record("bookflow_contents", ["id" => $contentid], "*", MUST_EXIST);
         $operator = $direction < 0 ? "<" : ">";
         $order = $direction < 0 ? "DESC" : "ASC";
         $other = $DB->get_record_sql(
             "SELECT *
-               FROM {flexbook_contents}
+               FROM {bookflow_contents}
               WHERE chapterid = :chapterid
                 AND sortorder {$operator} :sortorder
            ORDER BY sortorder {$order}, id {$order}",
@@ -179,8 +179,8 @@ class content_manager {
         $oldorder = $content->sortorder;
         $content->sortorder = $other->sortorder;
         $other->sortorder = $oldorder;
-        $DB->update_record("flexbook_contents", $content);
-        $DB->update_record("flexbook_contents", $other);
+        $DB->update_record("bookflow_contents", $content);
+        $DB->update_record("bookflow_contents", $other);
     }
 
     /**
@@ -193,13 +193,13 @@ class content_manager {
     public static function reorder(int $chapterid, array $contentids): void {
         global $DB;
 
-        $records = $DB->get_records("flexbook_contents", ["chapterid" => $chapterid]);
+        $records = $DB->get_records("bookflow_contents", ["chapterid" => $chapterid]);
         if (count($records) != count($contentids) || array_diff(array_keys($records), $contentids)) {
             throw new invalid_parameter_exception("Invalid content order");
         }
         $transaction = $DB->start_delegated_transaction();
         foreach (array_values($contentids) as $sortorder => $contentid) {
-            $DB->set_field("flexbook_contents", "sortorder", $sortorder, [
+            $DB->set_field("bookflow_contents", "sortorder", $sortorder, [
                 "id" => $contentid,
                 "chapterid" => $chapterid,
             ]);
@@ -216,12 +216,12 @@ class content_manager {
     public static function normalize_sortorder(int $chapterid): void {
         global $DB;
 
-        $records = $DB->get_records("flexbook_contents", ["chapterid" => $chapterid], "sortorder, id");
+        $records = $DB->get_records("bookflow_contents", ["chapterid" => $chapterid], "sortorder, id");
         $sortorder = 0;
         foreach ($records as $record) {
             if ($record->sortorder != $sortorder) {
                 $record->sortorder = $sortorder;
-                $DB->update_record("flexbook_contents", $record);
+                $DB->update_record("bookflow_contents", $record);
             }
             $sortorder++;
         }
@@ -246,7 +246,7 @@ class content_manager {
         foreach ($fileareas as $filearea) {
             $files = $fs->get_area_files(
                 $context->id,
-                "mod_flexbook",
+                "mod_bookflow",
                 $filearea,
                 $sourcecontentid,
                 "id",
@@ -255,7 +255,7 @@ class content_manager {
             foreach ($files as $file) {
                 $filerecord = [
                     "contextid" => $context->id,
-                    "component" => "mod_flexbook",
+                    "component" => "mod_bookflow",
                     "filearea" => $filearea,
                     "itemid" => $targetcontentid,
                     "filepath" => $file->get_filepath(),
@@ -277,7 +277,7 @@ class content_manager {
         $context = self::get_context($chapterid);
         $fs = get_file_storage();
         foreach ($fileareas as $filearea) {
-            $fs->delete_area_files($context->id, "mod_flexbook", $filearea, $contentid);
+            $fs->delete_area_files($context->id, "mod_bookflow", $filearea, $contentid);
         }
     }
 
@@ -290,7 +290,7 @@ class content_manager {
     private static function get_content_class(string $type): string {
         $classes = content_type_manager::get_classes();
         if (!isset($classes[$type])) {
-            throw new invalid_parameter_exception("Unknown FlexBook content type: {$type}");
+            throw new invalid_parameter_exception("Unknown BookFlow content type: {$type}");
         }
         return $classes[$type];
     }
@@ -302,20 +302,20 @@ class content_manager {
      * @return context_module
      */
     private static function get_context(int $chapterid): context_module {
-        $flexbookid = self::get_flexbookid($chapterid);
-        $cm = get_coursemodule_from_instance("flexbook", $flexbookid, 0, false, MUST_EXIST);
+        $bookflowid = self::get_bookflowid($chapterid);
+        $cm = get_coursemodule_from_instance("bookflow", $bookflowid, 0, false, MUST_EXIST);
         return context_module::instance($cm->id);
     }
 
     /**
-     * Gets the FlexBook ID that owns a chapter.
+     * Gets the BookFlow ID that owns a chapter.
      *
      * @param int $chapterid Chapter ID.
      * @return int
      */
-    private static function get_flexbookid(int $chapterid): int {
+    private static function get_bookflowid(int $chapterid): int {
         global $DB;
-        return $DB->get_field("flexbook_chapters", "flexbookid", ["id" => $chapterid], MUST_EXIST);
+        return $DB->get_field("bookflow_chapters", "bookflowid", ["id" => $chapterid], MUST_EXIST);
     }
 
     /**

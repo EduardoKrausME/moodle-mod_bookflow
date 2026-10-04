@@ -15,18 +15,18 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Recalculates FlexBook progress in bounded batches.
+ * Recalculates BookFlow progress in bounded batches.
  *
- * @package   mod_flexbook
+ * @package   mod_bookflow
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_flexbook\task;
+namespace mod_bookflow\task;
 
 use core\task\adhoc_task;
 use core\task\manager;
-use mod_flexbook\progress\progress_manager;
+use mod_bookflow\progress\progress_manager;
 
 /**
  * Recalculates derived progress after content structure changes.
@@ -44,21 +44,21 @@ class recalculate_progress extends adhoc_task {
         global $DB;
 
         $data = $this->get_custom_data();
-        $flexbookid = (int) ($data->flexbookid ?? 0);
+        $bookflowid = (int) ($data->bookflowid ?? 0);
         $afteruserid = (int) ($data->afteruserid ?? 0);
 
-        if (!$flexbookid || !$DB->record_exists("flexbook", ["id" => $flexbookid])) {
+        if (!$bookflowid || !$DB->record_exists("bookflow", ["id" => $bookflowid])) {
             return;
         }
 
         $userids = $DB->get_fieldset_sql(
             "SELECT userid
-               FROM {flexbook_user_state}
-              WHERE flexbookid = :flexbookid
+               FROM {bookflow_user_state}
+              WHERE bookflowid = :bookflowid
                 AND userid > :afteruserid
            ORDER BY userid",
             [
-                "flexbookid" => $flexbookid,
+                "bookflowid" => $bookflowid,
                 "afteruserid" => $afteruserid,
             ],
             0,
@@ -67,13 +67,13 @@ class recalculate_progress extends adhoc_task {
 
         $progressmanager = new progress_manager();
         foreach ($userids as $userid) {
-            $progressmanager->recalculate_user($flexbookid, (int) $userid);
+            $progressmanager->recalculate_user($bookflowid, (int) $userid);
         }
 
         if (count($userids) === self::BATCH_SIZE) {
             $next = new self();
             $next->set_custom_data([
-                "flexbookid" => $flexbookid,
+                "bookflowid" => $bookflowid,
                 "afteruserid" => (int) end($userids),
             ]);
             manager::queue_adhoc_task($next, true);

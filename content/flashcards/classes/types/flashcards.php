@@ -17,22 +17,22 @@
 /**
  * flashcards.php
  *
- * @package   flexbookcontent_flashcards
+ * @package   bookflowcontent_flashcards
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace flexbookcontent_flashcards\types;
+namespace bookflowcontent_flashcards\types;
 
 use context_module;
-use mod_flexbook\form\content_form;
-use mod_flexbook\form\content_form_mapper;
-use mod_flexbook\types\template_content;
+use mod_bookflow\form\content_form;
+use mod_bookflow\form\content_form_mapper;
+use mod_bookflow\types\template_content;
 use renderer_base;
 use stdClass;
 
 /**
- * FlexBook Flashcards content type.
+ * BookFlow Flashcards content type.
  */
 class flashcards extends template_content {
     /** @var string */
@@ -56,13 +56,13 @@ class flashcards extends template_content {
             $mform->createElement(
                 "textarea",
                 "cardfront",
-                get_string("cardfront", "mod_flexbook"),
+                get_string("cardfront", "mod_bookflow"),
                 ["rows" => 4, "cols" => 80]
             ),
             $mform->createElement(
                 "textarea",
                 "cardback",
-                get_string("cardback", "mod_flexbook"),
+                get_string("cardback", "mod_bookflow"),
                 ["rows" => 4, "cols" => 80]
             ),
         ];
@@ -76,7 +76,7 @@ class flashcards extends template_content {
             $options,
             "card_repeats",
             "card_add_fields",
-            get_string("addcard", "mod_flexbook")
+            get_string("addcard", "mod_bookflow")
         );
     }
 
@@ -87,7 +87,7 @@ class flashcards extends template_content {
         $options = parent::get_completion_options();
         $none = $options["none"];
         unset($options["none"]);
-        $options["allcards"] = get_string("completeallcards", "mod_flexbook");
+        $options["allcards"] = get_string("completeallcards", "mod_bookflow");
         $options["none"] = $none;
         return $options;
     }
@@ -101,7 +101,7 @@ class flashcards extends template_content {
             (array) ($data["cardback"] ?? [])
         );
         if ($count === 0) {
-            return ["cardfront[0]" => get_string("flashcardrequired", "mod_flexbook")];
+            return ["cardfront[0]" => get_string("flashcardrequired", "mod_bookflow")];
         }
         return [];
     }
@@ -204,13 +204,13 @@ class flashcards extends template_content {
     /**
      * Loads flashcard interaction from this subplugin.
      */
-    public static function require_page_assets(stdClass $flexbook, bool $editing): void {
+    public static function require_page_assets(stdClass $bookflow, bool $editing): void {
         global $PAGE;
         if (!$editing) {
             $PAGE->requires->js_call_amd(
-                "flexbookcontent_flashcards/flashcards",
+                "bookflowcontent_flashcards/flashcards",
                 "init",
-                [$flexbook->id, !empty($flexbook->enabletracking)]
+                [$bookflow->id, !empty($bookflow->enabletracking)]
             );
         }
     }
@@ -220,7 +220,7 @@ class flashcards extends template_content {
      */
     public function render(renderer_base $output, bool $editing): string {
         return $output->render_from_template(
-            "flexbookcontent_flashcards/flashcards",
+            "bookflowcontent_flashcards/flashcards",
             $this->export_data($editing)
         );
     }
@@ -229,7 +229,7 @@ class flashcards extends template_content {
      * Gets the localized content type name.
      */
     public static function get_name(): string {
-        return get_string("pluginname", "flexbookcontent_flashcards");
+        return get_string("pluginname", "bookflowcontent_flashcards");
     }
 
 }

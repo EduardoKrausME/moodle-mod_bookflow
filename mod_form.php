@@ -17,21 +17,21 @@
 /**
  * mod_form.php
  *
- * @package   mod_flexbook
+ * @package   mod_bookflow
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use mod_flexbook\content_type_manager;
+use mod_bookflow\content_type_manager;
 
 defined('MOODLE_INTERNAL') || die;
 
 require_once($CFG->dirroot . "/course/moodleform_mod.php");
 
 /**
- * Defines the FlexBook activity settings form.
+ * Defines the BookFlow activity settings form.
  */
-class mod_flexbook_mod_form extends moodleform_mod {
+class mod_bookflow_mod_form extends moodleform_mod {
     /**
      * Defines the form fields.
      *
@@ -41,38 +41,38 @@ class mod_flexbook_mod_form extends moodleform_mod {
     public function definition(): void {
         $mform = $this->_form;
 
-        $mform->addElement("text", "name", get_string("flexbookname", "mod_flexbook"), ["size" => 64]);
+        $mform->addElement("text", "name", get_string("bookflowname", "mod_bookflow"), ["size" => 64]);
         $mform->setType("name", PARAM_TEXT);
         $mform->addRule("name", null, "required", null, "client");
 
         $this->standard_intro_elements();
 
-        $mform->addElement("filemanager", "cover", get_string("cover", "mod_flexbook"), null, [
+        $mform->addElement("filemanager", "cover", get_string("cover", "mod_bookflow"), null, [
             "accepted_types" => ["image"],
             "maxfiles" => 1,
             "subdirs" => 0,
         ]);
 
         $mform->addElement("header", "appearance", get_string("appearance"));
-        $mform->addElement("select", "numbering", get_string("numbering", "mod_flexbook"), [
-            FLEXBOOK_NUMBERING_NONE => get_string("numberingnone", "mod_flexbook"),
-            FLEXBOOK_NUMBERING_NUMERIC => get_string("numberingnumeric", "mod_flexbook"),
+        $mform->addElement("select", "numbering", get_string("numbering", "mod_bookflow"), [
+            BOOKFLOW_NUMBERING_NONE => get_string("numberingnone", "mod_bookflow"),
+            BOOKFLOW_NUMBERING_NUMERIC => get_string("numberingnumeric", "mod_bookflow"),
         ]);
-        $mform->setDefault("numbering", FLEXBOOK_NUMBERING_NUMERIC);
+        $mform->setDefault("numbering", BOOKFLOW_NUMBERING_NUMERIC);
 
         $contenttypes = content_type_manager::get_type_options();
-        $mform->addElement("select", "defaultcontenttype", get_string("defaultcontenttype", "mod_flexbook"),
+        $mform->addElement("select", "defaultcontenttype", get_string("defaultcontenttype", "mod_bookflow"),
             $contenttypes);
         if ($contenttypes) {
             $mform->setDefault("defaultcontenttype", array_key_first($contenttypes));
         }
 
-        $mform->addElement("duration", "estimatedtime", get_string("manualestimatedtime", "mod_flexbook"),
+        $mform->addElement("duration", "estimatedtime", get_string("manualestimatedtime", "mod_bookflow"),
             ["optional" => true]);
 
-        $mform->addElement("header", "features", get_string("features", "mod_flexbook"));
+        $mform->addElement("header", "features", get_string("features", "mod_bookflow"));
         foreach (["enablebookmarks", "enablenotes", "enablesearch", "enabletracking"] as $field) {
-            $mform->addElement("advcheckbox", $field, get_string($field, "mod_flexbook"));
+            $mform->addElement("advcheckbox", $field, get_string($field, "mod_bookflow"));
             $mform->setDefault($field, 1);
         }
 
@@ -89,22 +89,22 @@ class mod_flexbook_mod_form extends moodleform_mod {
     public function add_completion_rules(): array {
         $mform = $this->_form;
 
-        $mform->addElement("select", "completionmode", get_string("completionmode", "mod_flexbook"), [
-            FLEXBOOK_COMPLETION_PERCENTAGE => get_string("completionpercentage", "mod_flexbook"),
-            FLEXBOOK_COMPLETION_REQUIRED => get_string("completionrequired", "mod_flexbook"),
-            FLEXBOOK_COMPLETION_COMBINED => get_string("completioncombined", "mod_flexbook"),
-            FLEXBOOK_COMPLETION_CHAPTERS => get_string("completionchapters", "mod_flexbook"),
+        $mform->addElement("select", "completionmode", get_string("completionmode", "mod_bookflow"), [
+            BOOKFLOW_COMPLETION_PERCENTAGE => get_string("completionpercentage", "mod_bookflow"),
+            BOOKFLOW_COMPLETION_REQUIRED => get_string("completionrequired", "mod_bookflow"),
+            BOOKFLOW_COMPLETION_COMBINED => get_string("completioncombined", "mod_bookflow"),
+            BOOKFLOW_COMPLETION_CHAPTERS => get_string("completionchapters", "mod_bookflow"),
         ]);
-        $mform->setDefault("completionmode", FLEXBOOK_COMPLETION_PERCENTAGE);
+        $mform->setDefault("completionmode", BOOKFLOW_COMPLETION_PERCENTAGE);
 
-        $mform->addElement("text", "completionpercentage", get_string("completionpercentagelabel", "mod_flexbook"),
+        $mform->addElement("text", "completionpercentage", get_string("completionpercentagelabel", "mod_bookflow"),
             ["size" => 4]);
         $mform->setType("completionpercentage", PARAM_INT);
         $mform->setDefault("completionpercentage", 80);
-        $mform->addRule("completionpercentage", get_string("completionpercentageerror", "mod_flexbook"),
+        $mform->addRule("completionpercentage", get_string("completionpercentageerror", "mod_bookflow"),
             "numeric", null, "client");
-        $mform->disabledIf("completionpercentage", "completionmode", "eq", FLEXBOOK_COMPLETION_REQUIRED);
-        $mform->disabledIf("completionpercentage", "completionmode", "eq", FLEXBOOK_COMPLETION_CHAPTERS);
+        $mform->disabledIf("completionpercentage", "completionmode", "eq", BOOKFLOW_COMPLETION_REQUIRED);
+        $mform->disabledIf("completionpercentage", "completionmode", "eq", BOOKFLOW_COMPLETION_CHAPTERS);
 
         return ["completionmode", "completionpercentage"];
     }
@@ -132,7 +132,7 @@ class mod_flexbook_mod_form extends moodleform_mod {
         $errors = parent::validation($data, $files);
         if (isset($data["completionpercentage"])
                 && ($data["completionpercentage"] < 1 || $data["completionpercentage"] > 100)) {
-            $errors["completionpercentage"] = get_string("completionpercentageerror", "mod_flexbook");
+            $errors["completionpercentage"] = get_string("completionpercentageerror", "mod_bookflow");
         }
         return $errors;
     }
@@ -153,7 +153,7 @@ class mod_flexbook_mod_form extends moodleform_mod {
         file_prepare_draft_area(
             $draftitemid,
             $this->context->id,
-            "mod_flexbook",
+            "mod_bookflow",
             "cover",
             0,
             ["accepted_types" => ["image"], "maxfiles" => 1, "subdirs" => 0]

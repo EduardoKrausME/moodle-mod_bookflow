@@ -17,23 +17,23 @@
 /**
  * question.php
  *
- * @package   flexbookcontent_question
+ * @package   bookflowcontent_question
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace flexbookcontent_question\types;
+namespace bookflowcontent_question\types;
 
 use context_module;
-use mod_flexbook\form\content_form;
-use mod_flexbook\form\content_form_mapper;
-use flexbookcontent_question\question_manager;
-use mod_flexbook\types\editor_content;
+use mod_bookflow\form\content_form;
+use mod_bookflow\form\content_form_mapper;
+use bookflowcontent_question\question_manager;
+use mod_bookflow\types\editor_content;
 use renderer_base;
 use stdClass;
 
 /**
- * FlexBook Question content type.
+ * BookFlow Question content type.
  */
 class question extends editor_content {
     /** @var string */
@@ -43,7 +43,7 @@ class question extends editor_content {
      * Gets the question editor label.
      */
     protected static function get_editor_label(): string {
-        return get_string("questiontext", "mod_flexbook");
+        return get_string("questiontext", "mod_bookflow");
     }
 
     /**
@@ -63,14 +63,14 @@ class question extends editor_content {
             $mform->createElement(
                 "text",
                 "optiontext",
-                get_string("optiontext", "mod_flexbook"),
+                get_string("optiontext", "mod_bookflow"),
                 ["size" => 56]
             ),
             $mform->createElement("hidden", "optionvalue"),
             $mform->createElement(
                 "advcheckbox",
                 "optioncorrect",
-                get_string("optioncorrect", "mod_flexbook")
+                get_string("optioncorrect", "mod_bookflow")
             ),
         ];
         $options = [
@@ -84,13 +84,13 @@ class question extends editor_content {
             $options,
             "option_repeats",
             "option_add_fields",
-            get_string("addoption", "mod_flexbook")
+            get_string("addoption", "mod_bookflow")
         );
 
         $mform->addElement(
             "textarea",
             "questionfeedback",
-            get_string("questionfeedback", "mod_flexbook"),
+            get_string("questionfeedback", "mod_bookflow"),
             ["rows" => 5, "cols" => 90]
         );
         $mform->setType("questionfeedback", PARAM_TEXT);
@@ -103,9 +103,9 @@ class question extends editor_content {
         $options = parent::get_completion_options();
         $none = $options["none"];
         unset($options["none"]);
-        $options["answer"] = get_string("completeonanswer", "mod_flexbook");
-        $options["attempt"] = get_string("completeonattempt", "mod_flexbook");
-        $options["correct"] = get_string("completeoncorrect", "mod_flexbook");
+        $options["answer"] = get_string("completeonanswer", "mod_bookflow");
+        $options["attempt"] = get_string("completeonattempt", "mod_bookflow");
+        $options["correct"] = get_string("completeoncorrect", "mod_bookflow");
         $options["none"] = $none;
         return $options;
     }
@@ -131,9 +131,9 @@ class question extends editor_content {
         }
 
         if ($optioncount < 2) {
-            $errors["optiontext[0]"] = get_string("questionoptionsrequired", "mod_flexbook");
+            $errors["optiontext[0]"] = get_string("questionoptionsrequired", "mod_bookflow");
         } else if ($correctcount !== 1) {
-            $errors["optioncorrect[0]"] = get_string("questioncorrectrequired", "mod_flexbook");
+            $errors["optioncorrect[0]"] = get_string("questioncorrectrequired", "mod_bookflow");
         }
         return $errors;
     }
@@ -263,7 +263,7 @@ class question extends editor_content {
         global $DB;
 
         $data = parent::export_data($editing);
-        $question = $DB->get_record("flexbook_questions", ["contentid" => $this->record->id]);
+        $question = $DB->get_record("bookflow_questions", ["contentid" => $this->record->id]);
         if (!$question) {
             $data["items"] = [];
             $data["hasitems"] = false;
@@ -287,7 +287,7 @@ class question extends editor_content {
             $question->questiontext,
             "pluginfile.php",
             $this->context->id,
-            "mod_flexbook",
+            "mod_bookflow",
             "content",
             $this->record->id
         );
@@ -311,8 +311,8 @@ class question extends editor_content {
         }
 
         $sql = "SELECT COUNT(a.id)
-                  FROM {flexbook_question_attempts} a
-                  JOIN {flexbook_questions} q ON q.id = a.questionid
+                  FROM {bookflow_question_attempts} a
+                  JOIN {bookflow_questions} q ON q.id = a.questionid
                  WHERE q.contentid = :contentid
                    AND a.userid = :userid";
         $params = [
@@ -344,7 +344,7 @@ class question extends editor_content {
         if (!$showanswers) {
             return "";
         }
-        $answer = $DB->get_field("flexbook_questions", "answerjson", [
+        $answer = $DB->get_field("bookflow_questions", "answerjson", [
             "contentid" => $this->record->id,
         ]);
         if ($answer === false || $answer === null) {
@@ -354,7 +354,7 @@ class question extends editor_content {
         $decoded = json_decode($answer, true);
         $answertext = is_array($decoded) ? json_encode($decoded) : $decoded;
         return "<div class=\"answer\"><strong>"
-            . get_string("answer", "flexbookcontent_question")
+            . get_string("answer", "bookflowcontent_question")
             . ":</strong> "
             . s($answertext)
             . "</div>";
@@ -365,25 +365,25 @@ class question extends editor_content {
      */
     public static function get_user_report_columns(): array {
         return [
-            "questionsanswered" => get_string("questionsanswered", "flexbookcontent_question"),
+            "questionsanswered" => get_string("questionsanswered", "bookflowcontent_question"),
         ];
     }
 
     /**
      * Gets question attempt counts keyed by user id.
      */
-    public static function get_user_report_data(int $flexbookid): array {
+    public static function get_user_report_data(int $bookflowid): array {
         global $DB;
 
         $records = $DB->get_records_sql(
             "SELECT a.userid, COUNT(a.id) AS questionsanswered
-               FROM {flexbook_question_attempts} a
-               JOIN {flexbook_questions} q ON q.id = a.questionid
-               JOIN {flexbook_contents} c ON c.id = q.contentid
-               JOIN {flexbook_chapters} ch ON ch.id = c.chapterid
-              WHERE ch.flexbookid = :flexbookid
+               FROM {bookflow_question_attempts} a
+               JOIN {bookflow_questions} q ON q.id = a.questionid
+               JOIN {bookflow_contents} c ON c.id = q.contentid
+               JOIN {bookflow_chapters} ch ON ch.id = c.chapterid
+              WHERE ch.bookflowid = :bookflowid
            GROUP BY a.userid",
-            ["flexbookid" => $flexbookid]
+            ["bookflowid" => $bookflowid]
         );
 
         $result = [];
@@ -398,13 +398,13 @@ class question extends editor_content {
     /**
      * Loads question submission behaviour from this subplugin.
      */
-    public static function require_page_assets(stdClass $flexbook, bool $editing): void {
+    public static function require_page_assets(stdClass $bookflow, bool $editing): void {
         global $PAGE;
         if (!$editing) {
             $PAGE->requires->js_call_amd(
-                "flexbookcontent_question/question",
+                "bookflowcontent_question/question",
                 "init",
-                [$flexbook->id]
+                [$bookflow->id]
             );
         }
     }
@@ -414,7 +414,7 @@ class question extends editor_content {
      */
     public function render(renderer_base $output, bool $editing): string {
         return $output->render_from_template(
-            "flexbookcontent_question/question",
+            "bookflowcontent_question/question",
             $this->export_data($editing)
         );
     }
@@ -423,7 +423,7 @@ class question extends editor_content {
      * Gets the localized content type name.
      */
     public static function get_name(): string {
-        return get_string("pluginname", "flexbookcontent_question");
+        return get_string("pluginname", "bookflowcontent_question");
     }
 
 }

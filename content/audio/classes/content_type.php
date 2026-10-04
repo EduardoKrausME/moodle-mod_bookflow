@@ -17,18 +17,18 @@
 /**
  * content_type.php
  *
- * @package   flexbookcontent_audio
+ * @package   bookflowcontent_audio
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace flexbookcontent_audio;
+namespace bookflowcontent_audio;
 
-use flexbookcontent_audio\types\audio;
-use mod_flexbook\hook\content_types;
+use bookflowcontent_audio\types\audio;
+use mod_bookflow\hook\content_types;
 
 /**
- * Registers the Audio content type in FlexBook.
+ * Registers the Audio content type in BookFlow.
  */
 class content_type {
     /**

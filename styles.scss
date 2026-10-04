@@ -1,164 +1,164 @@
-$flexbook-primary: #0b5ed7;
-$flexbook-ink: #172033;
-$flexbook-muted: #667085;
-$flexbook-border: #dce3ee;
-$flexbook-surface: #f7f9fc;
+$bookflow-primary: #0b5ed7;
+$bookflow-ink: #172033;
+$bookflow-muted: #667085;
+$bookflow-border: #dce3ee;
+$bookflow-surface: #f7f9fc;
 
-.mod-flexbook {
+.mod-bookflow {
     background: linear-gradient(180deg, #f9fafb 0, #f0f4f8 100%);
 
-    .flexbook-overview,
-    .flexbook-reader {
+    .bookflow-overview,
+    .bookflow-reader {
         max-width: 1280px;
         margin: 0 auto;
     }
 
-    .flexbook-hero {
+    .bookflow-hero {
         display: grid;
         grid-template-columns: minmax(150px, 220px) 1fr;
         gap: 2rem;
         padding: 2rem;
         background: #fff;
-        border: 1px solid $flexbook-border;
+        border: 1px solid $bookflow-border;
         border-radius: 1.25rem;
         box-shadow: 0 14px 40px rgba(23, 32, 51, .08);
     }
 
-    .flexbook-cover {
+    .bookflow-cover {
         display: grid;
         min-height: 260px;
         place-items: center;
         overflow: hidden;
         color: #fff;
-        background: linear-gradient(145deg, #083b86, $flexbook-primary);
+        background: linear-gradient(145deg, #083b86, $bookflow-primary);
         border-radius: 1rem;
     }
 
-    .flexbook-cover-icon {
+    .bookflow-cover-icon {
         font-size: 5rem;
         font-weight: 800;
         opacity: .9;
     }
 
-    .flexbook-cover img {
+    .bookflow-cover img {
         width: 100%;
         height: 100%;
         object-fit: cover;
     }
 
-    .flexbook-hero h2,
-    .flexbook-chapter h2 {
-        color: $flexbook-ink;
+    .bookflow-hero h2,
+    .bookflow-chapter h2 {
+        color: $bookflow-ink;
         font-weight: 750;
         letter-spacing: -.03em;
     }
 
-    .flexbook-stats {
+    .bookflow-stats {
         display: flex;
         flex-wrap: wrap;
         gap: .75rem;
         margin: 1rem 0;
-        color: $flexbook-muted;
+        color: $bookflow-muted;
     }
 
-    .flexbook-stats span {
+    .bookflow-stats span {
         padding: .4rem .7rem;
-        background: $flexbook-surface;
+        background: $bookflow-surface;
         border-radius: 2rem;
     }
 
-    .flexbook-progress {
+    .bookflow-progress {
         display: grid;
         grid-template-columns: 1fr auto;
         gap: .75rem;
         align-items: center;
     }
 
-    .flexbook-progress .progress {
+    .bookflow-progress .progress {
         height: .75rem;
         background: #e9eef6;
         border-radius: 1rem;
     }
 
-    .flexbook-progress .progress-bar {
+    .bookflow-progress .progress-bar {
         background: linear-gradient(90deg, #0b5ed7, #32a6ff);
     }
 
-    .flexbook-continue {
+    .bookflow-continue {
         display: inline-flex;
         flex-direction: column;
         align-items: flex-start;
         margin-top: 1.25rem;
     }
 
-    .flexbook-continue small {
+    .bookflow-continue small {
         opacity: .8;
     }
 
-    .flexbook-tools {
+    .bookflow-tools {
         display: flex;
         flex-wrap: wrap;
         gap: .75rem;
         margin: 1.25rem 0;
     }
 
-    .flexbook-search,
-    .flexbook-overview-toc {
+    .bookflow-search,
+    .bookflow-overview-toc {
         padding: 1.5rem;
         margin-top: 1rem;
         background: #fff;
-        border: 1px solid $flexbook-border;
+        border: 1px solid $bookflow-border;
         border-radius: 1rem;
     }
 
-    .flexbook-search-results article {
+    .bookflow-search-results article {
         padding: 1rem 0;
-        border-bottom: 1px solid $flexbook-border;
+        border-bottom: 1px solid $bookflow-border;
     }
 
-    .flexbook-toc-list {
+    .bookflow-toc-list {
         padding: 0;
         margin: 0;
         list-style: none;
     }
 
-    .flexbook-toc-list a {
+    .bookflow-toc-list a {
         display: flex;
         gap: .75rem;
         align-items: center;
         padding: .8rem;
-        color: $flexbook-ink;
+        color: $bookflow-ink;
         border-radius: .75rem;
         text-decoration: none;
     }
 
-    .flexbook-toc-list a:hover,
-    .flexbook-toc-list .is-current a {
+    .bookflow-toc-list a:hover,
+    .bookflow-toc-list .is-current a {
         color: #064ea9;
         background: #edf5ff;
     }
 
-    .flexbook-subchapter {
+    .bookflow-subchapter {
         padding-left: 1.5rem;
     }
 
-    .flexbook-toc-contents {
+    .bookflow-toc-contents {
         padding-left: 2.25rem;
         list-style: none;
     }
 
-    .flexbook-toc-contents a {
+    .bookflow-toc-contents a {
         justify-content: space-between;
         padding: .4rem .7rem;
-        color: $flexbook-muted;
+        color: $bookflow-muted;
         font-size: .9rem;
     }
 
-    .flexbook-toc-contents small {
+    .bookflow-toc-contents small {
         text-transform: uppercase;
     }
 
-    .flexbook-toc-number {
+    .bookflow-toc-number {
         display: inline-grid;
         min-width: 2rem;
         height: 2rem;
@@ -168,45 +168,45 @@ $flexbook-surface: #f7f9fc;
         border-radius: 50%;
     }
 
-    .flexbook-status-complete {
+    .bookflow-status-complete {
         margin-left: auto;
         color: #137333;
         font-size: .85rem;
         font-weight: 600;
     }
 
-    .flexbook-reader {
+    .bookflow-reader {
         display: grid;
         grid-template-columns: minmax(230px, 290px) minmax(0, 1fr);
         gap: 2rem;
         align-items: start;
     }
 
-    .flexbook-sidebar {
+    .bookflow-sidebar {
         position: sticky;
         top: 1rem;
         max-height: calc(100vh - 2rem);
         padding: 1rem;
         overflow-y: auto;
         background: #fff;
-        border: 1px solid $flexbook-border;
+        border: 1px solid $bookflow-border;
         border-radius: 1rem;
     }
 
-    .flexbook-chapter {
+    .bookflow-chapter {
         min-width: 0;
         padding: clamp(1rem, 3vw, 2.5rem);
         background: #fff;
-        border: 1px solid $flexbook-border;
+        border: 1px solid $bookflow-border;
         border-radius: 1.25rem;
         box-shadow: 0 12px 32px rgba(23, 32, 51, .06);
     }
 
-    .flexbook-reader-progress {
+    .bookflow-reader-progress {
         margin-bottom: 2rem;
     }
 
-    .flexbook-content {
+    .bookflow-content {
         position: relative;
         padding: 1.5rem;
         margin: 1.25rem 0;
@@ -215,67 +215,67 @@ $flexbook-surface: #f7f9fc;
         scroll-margin-top: 1rem;
     }
 
-    .flexbook-content:focus {
+    .bookflow-content:focus {
         outline: .2rem solid rgba(11, 94, 215, .4);
         outline-offset: .2rem;
     }
 
-    .flexbook-content.is-hidden {
+    .bookflow-content.is-hidden {
         opacity: .58;
         border-style: dashed;
     }
 
-    .flexbook-content.is-dragging {
+    .bookflow-content.is-dragging {
         opacity: .5;
-        border-color: $flexbook-primary;
+        border-color: $bookflow-primary;
     }
 
-    .flexbook-content-actions {
+    .bookflow-content-actions {
         display: flex;
         flex-wrap: wrap;
         gap: .75rem;
         padding-top: .75rem;
         margin-top: 1rem;
-        border-top: 1px solid $flexbook-border;
+        border-top: 1px solid $bookflow-border;
         font-size: .9rem;
     }
 
-    .flexbook-chapter-navigation {
+    .bookflow-chapter-navigation {
         display: flex;
         justify-content: space-between;
         gap: 1rem;
         padding-top: 1.5rem;
         margin-top: 2rem;
-        border-top: 1px solid $flexbook-border;
+        border-top: 1px solid $bookflow-border;
     }
 
-    .flexbook-report-summary {
+    .bookflow-report-summary {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
         gap: 1rem;
         margin-bottom: 1.5rem;
     }
 
-    .flexbook-report-card {
+    .bookflow-report-card {
         display: flex;
         flex-direction: column;
         padding: 1.25rem;
         background: #fff;
-        border: 1px solid $flexbook-border;
+        border: 1px solid $bookflow-border;
         border-radius: 1rem;
     }
 
-    .flexbook-report-card strong {
-        color: $flexbook-primary;
+    .bookflow-report-card strong {
+        color: $bookflow-primary;
         font-size: 1.8rem;
     }
 
 
-    .flexbook-video {
+    .bookflow-video {
         width: 100%;
     }
 
-    .flexbook-video-player {
+    .bookflow-video-player {
         display: block;
         width: 100%;
         max-width: 100%;
@@ -285,7 +285,7 @@ $flexbook-surface: #f7f9fc;
         border-radius: .75rem;
     }
 
-    .flexbook-video-embed {
+    .bookflow-video-embed {
         width: 100%;
         max-width: 100%;
         overflow: hidden;
@@ -293,16 +293,16 @@ $flexbook-surface: #f7f9fc;
         border-radius: .75rem;
     }
 
-    .flexbook-video-embed .mediaplugin,
-    .flexbook-video-embed .mediaplugin > div,
-    .flexbook-video-embed iframe,
-    .flexbook-video-embed video,
-    .flexbook-video-embed object,
-    .flexbook-video-embed embed {
+    .bookflow-video-embed .mediaplugin,
+    .bookflow-video-embed .mediaplugin > div,
+    .bookflow-video-embed iframe,
+    .bookflow-video-embed video,
+    .bookflow-video-embed object,
+    .bookflow-video-embed embed {
         max-width: 100%;
     }
 
-    .flexbook-video-embed iframe {
+    .bookflow-video-embed iframe {
         display: block;
         width: 100% !important;
         height: auto !important;
@@ -310,38 +310,38 @@ $flexbook-surface: #f7f9fc;
         border: 0;
     }
 
-    .flexbook-video-transcript {
+    .bookflow-video-transcript {
         margin-top: 1rem;
     }
 
 }
 
 @media (max-width: 768px) {
-    .mod-flexbook {
-        .flexbook-hero,
-        .flexbook-reader {
+    .mod-bookflow {
+        .bookflow-hero,
+        .bookflow-reader {
             grid-template-columns: 1fr;
         }
 
-        .flexbook-cover {
+        .bookflow-cover {
             min-height: 160px;
         }
 
-        .flexbook-sidebar {
+        .bookflow-sidebar {
             position: static;
             max-height: none;
         }
 
-        .flexbook-chapter-navigation {
+        .bookflow-chapter-navigation {
             flex-direction: column;
         }
     }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .mod-flexbook *,
-    .mod-flexbook *::before,
-    .mod-flexbook *::after {
+    .mod-bookflow *,
+    .mod-bookflow *::before,
+    .mod-bookflow *::after {
         scroll-behavior: auto !important;
         transition-duration: .01ms !important;
         animation-duration: .01ms !important;
@@ -352,36 +352,36 @@ $flexbook-surface: #f7f9fc;
     .navbar,
     .secondary-navigation,
     .drawer,
-    .flexbook-sidebar,
-    .flexbook-tools,
-    .flexbook-search,
-    .flexbook-content-actions,
-    .flexbook-chapter-navigation,
-    .flexbook-reader-progress {
+    .bookflow-sidebar,
+    .bookflow-tools,
+    .bookflow-search,
+    .bookflow-content-actions,
+    .bookflow-chapter-navigation,
+    .bookflow-reader-progress {
         display: none !important;
     }
 
-    .mod-flexbook,
-    .mod-flexbook .flexbook-chapter {
+    .mod-bookflow,
+    .mod-bookflow .bookflow-chapter {
         color: #000;
         background: #fff;
         border: 0;
         box-shadow: none;
     }
 
-    .mod-flexbook .flexbook-reader {
+    .mod-bookflow .bookflow-reader {
         display: block;
     }
 
-    .mod-flexbook .flexbook-content {
+    .mod-bookflow .bookflow-content {
         break-inside: avoid;
     }
 
-    .mod-flexbook .flexbook-chapter > header {
+    .mod-bookflow .bookflow-chapter > header {
         break-before: page;
     }
 
-    .mod-flexbook a[href]::after {
+    .mod-bookflow a[href]::after {
         content: " (" attr(href) ")";
         font-size: .8em;
         word-break: break-all;

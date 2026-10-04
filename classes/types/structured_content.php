@@ -17,16 +17,16 @@
 /**
  * Shared base for ordered title/content collections.
  *
- * @package mod_flexbook
+ * @package mod_bookflow
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_flexbook\types;
+namespace mod_bookflow\types;
 
 use context_module;
-use mod_flexbook\form\content_form;
-use mod_flexbook\form\content_form_mapper;
+use mod_bookflow\form\content_form;
+use mod_bookflow\form\content_form_mapper;
 use stdClass;
 
 /**
@@ -48,11 +48,11 @@ abstract class structured_content extends template_content {
     ): void {
         $mform = $form->get_mform();
         $repeat = [
-            $mform->createElement("text", "itemtitle", get_string("itemtitle", "mod_flexbook"), ["size" => 56]),
+            $mform->createElement("text", "itemtitle", get_string("itemtitle", "mod_bookflow"), ["size" => 56]),
             $mform->createElement(
                 "editor",
                 "itemcontent",
-                get_string("itemcontent", "mod_flexbook"),
+                get_string("itemcontent", "mod_bookflow"),
                 ["rows" => 10],
                 $editoroptions
             ),
@@ -74,7 +74,7 @@ abstract class structured_content extends template_content {
             $options,
             "item_repeats",
             "item_add_fields",
-            get_string("additem", "mod_flexbook")
+            get_string("additem", "mod_bookflow")
         );
     }
 
@@ -87,7 +87,7 @@ abstract class structured_content extends template_content {
             (array) ($data["itemcontent"] ?? [])
         );
         if ($count === 0) {
-            return ["itemtitle[0]" => get_string("interactiveitemrequired", "mod_flexbook")];
+            return ["itemtitle[0]" => get_string("interactiveitemrequired", "mod_bookflow")];
         }
         return [];
     }

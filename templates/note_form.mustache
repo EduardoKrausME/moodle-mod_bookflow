@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mod_flexbook/note_form
+    @template mod_bookflow/note_form
 
     Example context (json):
     {
@@ -23,10 +23,10 @@
     }
 }}
 
-<form data-region="flexbook-note-form">
+<form data-region="bookflow-note-form">
     <input type="hidden" name="chapterid" value="{{chapterid}}">
     <input type="hidden" name="contentid" value="{{contentid}}">
-    <label for="flexbook-note-{{contentid}}">{{#str}}privatenote, mod_flexbook{{/str}}</label>
-    <textarea id="flexbook-note-{{contentid}}" class="form-control" name="note" rows="4" required></textarea>
-    <button class="btn btn-primary mt-2" type="submit">{{#str}}savenote, mod_flexbook{{/str}}</button>
+    <label for="bookflow-note-{{contentid}}">{{#str}}privatenote, mod_bookflow{{/str}}</label>
+    <textarea id="bookflow-note-{{contentid}}" class="form-control" name="note" rows="4" required></textarea>
+    <button class="btn btn-primary mt-2" type="submit">{{#str}}savenote, mod_bookflow{{/str}}</button>
 </form>

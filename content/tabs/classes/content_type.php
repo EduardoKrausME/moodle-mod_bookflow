@@ -17,18 +17,18 @@
 /**
  * content_type.php
  *
- * @package   flexbookcontent_tabs
+ * @package   bookflowcontent_tabs
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace flexbookcontent_tabs;
+namespace bookflowcontent_tabs;
 
-use flexbookcontent_tabs\types\tabs;
-use mod_flexbook\hook\content_types;
+use bookflowcontent_tabs\types\tabs;
+use mod_bookflow\hook\content_types;
 
 /**
- * Registers the Tabs content type in FlexBook.
+ * Registers the Tabs content type in BookFlow.
  */
 class content_type {
     /**

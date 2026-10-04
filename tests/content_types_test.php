@@ -17,24 +17,24 @@
 /**
  * content_types_test.php
  *
- * @package   mod_flexbook
+ * @package   mod_bookflow
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_flexbook;
+namespace mod_bookflow;
 
 use advanced_testcase;
 use coding_exception;
-use mod_flexbook\hook\content_types;
-use mod_flexbook\content_type_manager;
-use mod_flexbook\types\content;
-use flexbookcontent_html\types\html;
+use mod_bookflow\hook\content_types;
+use mod_bookflow\content_type_manager;
+use mod_bookflow\types\content;
+use bookflowcontent_html\types\html;
 
 /**
  * Tests core content type registration and hook validation.
  *
- * @covers \mod_flexbook\content_type_manager
+ * @covers \mod_bookflow\content_type_manager
  */
 final class content_types_test extends advanced_testcase {
     /**
@@ -105,11 +105,11 @@ final class content_types_test extends advanced_testcase {
                 "Content type {$type} must own its render() method."
             );
             $this->assertFileExists(
-                "{$CFG->dirroot}/mod/flexbook/content/{$type}/templates/{$type}.mustache",
+                "{$CFG->dirroot}/mod/bookflow/content/{$type}/templates/{$type}.mustache",
                 "Content type {$type} must own its Mustache template."
             );
             $this->assertFileDoesNotExist(
-                "{$CFG->dirroot}/mod/flexbook/templates/content/{$type}.mustache",
+                "{$CFG->dirroot}/mod/bookflow/templates/content/{$type}.mustache",
                 "Content type {$type} must not render from the parent plugin template directory."
             );
         }

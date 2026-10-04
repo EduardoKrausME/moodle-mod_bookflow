@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mod_flexbook/bookmark_button
+    @template mod_bookflow/bookmark_button
 
     Example context (json):
     {
@@ -25,12 +25,12 @@
 
 <button class="btn btn-sm btn-outline-secondary"
         type="button"
-        data-action="flexbook-bookmark"
+        data-action="bookflow-bookmark"
         data-item-type="{{itemtype}}"
         data-chapter-id="{{chapterid}}"
         data-content-id="{{contentid}}"
         data-bookmark-id="{{bookmarkid}}"
         aria-pressed="{{#bookmarked}}true{{/bookmarked}}{{^bookmarked}}false{{/bookmarked}}">
-    {{#bookmarked}}{{#str}}removebookmark, mod_flexbook{{/str}}{{/bookmarked}}
-    {{^bookmarked}}{{#str}}addbookmark, mod_flexbook{{/str}}{{/bookmarked}}
+    {{#bookmarked}}{{#str}}removebookmark, mod_bookflow{{/str}}{{/bookmarked}}
+    {{^bookmarked}}{{#str}}addbookmark, mod_bookflow{{/str}}{{/bookmarked}}
 </button>

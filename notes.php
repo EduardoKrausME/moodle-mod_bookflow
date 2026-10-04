@@ -17,7 +17,7 @@
 /**
  * notes.php
  *
- * @package   mod_flexbook
+ * @package   mod_bookflow
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -27,48 +27,48 @@ require_once(__DIR__ . "/../../config.php");
 $id = required_param("id", PARAM_INT);
 $delete = optional_param("delete", 0, PARAM_INT);
 
-$cm = get_coursemodule_from_id("flexbook", $id, 0, false, MUST_EXIST);
+$cm = get_coursemodule_from_id("bookflow", $id, 0, false, MUST_EXIST);
 $course = get_course($cm->course);
-$flexbook = $DB->get_record("flexbook", ["id" => $cm->instance], "*", MUST_EXIST);
+$bookflow = $DB->get_record("bookflow", ["id" => $cm->instance], "*", MUST_EXIST);
 $context = context_module::instance($cm->id);
 require_login($course, true, $cm);
-require_capability("mod/flexbook:view", $context);
+require_capability("mod/bookflow:view", $context);
 
-if (!$flexbook->enablenotes) {
-    throw new moodle_exception("notesdisabled", "mod_flexbook");
+if (!$bookflow->enablenotes) {
+    throw new moodle_exception("notesdisabled", "mod_bookflow");
 }
 if ($delete) {
     require_sesskey();
-    $conditions = ["id" => $delete, "flexbookid" => $flexbook->id];
-    if (!has_capability("mod/flexbook:viewallnotes", $context)) {
+    $conditions = ["id" => $delete, "bookflowid" => $bookflow->id];
+    if (!has_capability("mod/bookflow:viewallnotes", $context)) {
         $conditions["userid"] = $USER->id;
     }
-    $note = $DB->get_record("flexbook_notes", $conditions, "*", MUST_EXIST);
-    $DB->delete_records("flexbook_notes", ["id" => $note->id]);
-    redirect(new moodle_url("/mod/flexbook/notes.php", ["id" => $cm->id]));
+    $note = $DB->get_record("bookflow_notes", $conditions, "*", MUST_EXIST);
+    $DB->delete_records("bookflow_notes", ["id" => $note->id]);
+    redirect(new moodle_url("/mod/bookflow/notes.php", ["id" => $cm->id]));
 }
-$PAGE->set_url("/mod/flexbook/notes.php", ["id" => $cm->id]);
-$PAGE->set_title(get_string("mynotes", "mod_flexbook"));
+$PAGE->set_url("/mod/bookflow/notes.php", ["id" => $cm->id]);
+$PAGE->set_title(get_string("mynotes", "mod_bookflow"));
 $PAGE->set_heading(format_string($course->fullname));
 
 $sql = "SELECT n.*, ch.title AS chaptertitle, c.title AS contenttitle
-          FROM {flexbook_notes} n
-     LEFT JOIN {flexbook_chapters} ch ON ch.id = n.chapterid
-     LEFT JOIN {flexbook_contents} c ON c.id = n.contentid
-         WHERE n.flexbookid = :flexbookid
+          FROM {bookflow_notes} n
+     LEFT JOIN {bookflow_chapters} ch ON ch.id = n.chapterid
+     LEFT JOIN {bookflow_contents} c ON c.id = n.contentid
+         WHERE n.bookflowid = :bookflowid
            AND n.userid = :userid
       ORDER BY n.timemodified DESC";
-$records = $DB->get_records_sql($sql, ["flexbookid" => $flexbook->id, "userid" => $USER->id]);
+$records = $DB->get_records_sql($sql, ["bookflowid" => $bookflow->id, "userid" => $USER->id]);
 echo $OUTPUT->header();
-echo $OUTPUT->heading(get_string("mynotes", "mod_flexbook"));
+echo $OUTPUT->heading(get_string("mynotes", "mod_bookflow"));
 if (!$records) {
-    echo $OUTPUT->notification(get_string("nonotes", "mod_flexbook"), "info");
+    echo $OUTPUT->notification(get_string("nonotes", "mod_bookflow"), "info");
 }
 foreach ($records as $record) {
-    $url = new moodle_url("/mod/flexbook/view.php", [
+    $url = new moodle_url("/mod/bookflow/view.php", [
         "id" => $cm->id,
         "chapterid" => $record->chapterid,
-    ], $record->contentid ? "flexbook-content-{$record->contentid}" : null);
+    ], $record->contentid ? "bookflow-content-{$record->contentid}" : null);
     echo html_writer::start_div("card mb-3");
     echo html_writer::start_div("card-body");
     echo html_writer::tag("h3", html_writer::link($url,
@@ -78,7 +78,7 @@ foreach ($records as $record) {
     }
     echo html_writer::tag("p", nl2br(s($record->note)));
     echo html_writer::tag("small", userdate($record->timemodified), ["class" => "text-muted"]);
-    echo html_writer::link(new moodle_url("/mod/flexbook/notes.php", [
+    echo html_writer::link(new moodle_url("/mod/bookflow/notes.php", [
         "id" => $cm->id,
         "delete" => $record->id,
         "sesskey" => sesskey(),

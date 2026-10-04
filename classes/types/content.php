@@ -17,34 +17,34 @@
 /**
  * content.php
  *
- * @package   mod_flexbook
+ * @package   mod_bookflow
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_flexbook\types;
+namespace mod_bookflow\types;
 
 use context_module;
-use mod_flexbook\form\content_form;
+use mod_bookflow\form\content_form;
 use renderer_base;
 use stdClass;
 
 /**
- * Defines the contract implemented by FlexBook content types.
+ * Defines the contract implemented by BookFlow content types.
  */
 abstract class content {
     /**
      * Initializes the content instance.
      *
      * @param stdClass $record Record data.
-     * @param stdClass $flexbook FlexBook record.
+     * @param stdClass $bookflow BookFlow record.
      * @param context_module $context Module context.
      */
     public function __construct(
         /** @var stdClass */
         protected readonly stdClass $record,
         /** @var stdClass */
-        protected readonly stdClass $flexbook,
+        protected readonly stdClass $bookflow,
         /** @var context_module */
         protected readonly context_module $context
     ) {
@@ -75,13 +75,13 @@ abstract class content {
      * Checks whether the current user can create the content type.
      *
      * @param chapter|null $chapter Chapter wrapper.
-     * @param stdClass $flexbook FlexBook record.
+     * @param stdClass $bookflow BookFlow record.
      * @param context_module $context Module context.
      * @return bool
      */
     abstract public static function can_create(
         ?chapter $chapter,
-        stdClass $flexbook,
+        stdClass $bookflow,
         context_module $context
     ): bool;
 
@@ -92,10 +92,10 @@ abstract class content {
      */
     public static function get_completion_options(): array {
         return [
-            "view" => get_string("completeonview", "mod_flexbook"),
-            "timed" => get_string("completeontime", "mod_flexbook"),
-            "manual" => get_string("completemanually", "mod_flexbook"),
-            "none" => get_string("donottrack", "mod_flexbook"),
+            "view" => get_string("completeonview", "mod_bookflow"),
+            "timed" => get_string("completeontime", "mod_bookflow"),
+            "manual" => get_string("completemanually", "mod_bookflow"),
+            "none" => get_string("donottrack", "mod_bookflow"),
         ];
     }
 
@@ -279,11 +279,11 @@ abstract class content {
     /**
      * Requires browser assets needed by this content type.
      *
-     * @param stdClass $flexbook FlexBook record.
+     * @param stdClass $bookflow BookFlow record.
      * @param bool $editing Whether editing mode is enabled.
      * @return void
      */
-    public static function require_page_assets(stdClass $flexbook, bool $editing): void {
+    public static function require_page_assets(stdClass $bookflow, bool $editing): void {
     }
 
     /**
@@ -548,10 +548,10 @@ abstract class content {
     /**
      * Gets optional user-report values keyed by user id.
      *
-     * @param int $flexbookid FlexBook id.
+     * @param int $bookflowid BookFlow id.
      * @return array
      */
-    public static function get_user_report_data(int $flexbookid): array {
+    public static function get_user_report_data(int $bookflowid): array {
         return [];
     }
 

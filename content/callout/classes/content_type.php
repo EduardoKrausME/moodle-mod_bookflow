@@ -17,18 +17,18 @@
 /**
  * content_type.php
  *
- * @package   flexbookcontent_callout
+ * @package   bookflowcontent_callout
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace flexbookcontent_callout;
+namespace bookflowcontent_callout;
 
-use flexbookcontent_callout\types\callout;
-use mod_flexbook\hook\content_types;
+use bookflowcontent_callout\types\callout;
+use mod_bookflow\hook\content_types;
 
 /**
- * Registers the Callout content type in FlexBook.
+ * Registers the Callout content type in BookFlow.
  */
 class content_type {
     /**

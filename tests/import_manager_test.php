@@ -17,12 +17,12 @@
 /**
  * import_manager_test.php
  *
- * @package   mod_flexbook
+ * @package   mod_bookflow
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_flexbook;
+namespace mod_bookflow;
 
 use advanced_testcase;
 use moodle_exception;
@@ -30,7 +30,7 @@ use moodle_exception;
 /**
  * Tests import resource limits before database changes are made.
  *
- * @covers \mod_flexbook\import_manager
+ * @covers \mod_bookflow\import_manager
  */
 final class import_manager_test extends advanced_testcase {
     /**

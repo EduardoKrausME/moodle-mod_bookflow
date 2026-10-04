@@ -17,15 +17,15 @@
 /**
  * Content block editor.
  *
- * @package   mod_flexbook
+ * @package   mod_bookflow
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use mod_flexbook\content_manager;
-use mod_flexbook\content_type_manager;
-use mod_flexbook\form\content_form;
-use mod_flexbook\form\content_form_mapper;
+use mod_bookflow\content_manager;
+use mod_bookflow\content_type_manager;
+use mod_bookflow\form\content_form;
+use mod_bookflow\form\content_form_mapper;
 
 require_once(__DIR__ . "/../../config.php");
 
@@ -34,51 +34,51 @@ $chapterid = optional_param("chapterid", 0, PARAM_INT);
 $contentid = optional_param("contentid", 0, PARAM_INT);
 $type = optional_param("type", "", PARAM_ALPHANUMEXT);
 
-$cm = get_coursemodule_from_id("flexbook", $id, 0, false, MUST_EXIST);
+$cm = get_coursemodule_from_id("bookflow", $id, 0, false, MUST_EXIST);
 $course = get_course($cm->course);
-$flexbook = $DB->get_record("flexbook", ["id" => $cm->instance], "*", MUST_EXIST);
+$bookflow = $DB->get_record("bookflow", ["id" => $cm->instance], "*", MUST_EXIST);
 $context = context_module::instance($cm->id);
 
 require_login($course, true, $cm);
-require_capability("mod/flexbook:managecontent", $context);
+require_capability("mod/bookflow:managecontent", $context);
 
 $chapters = $DB->get_records_menu(
-    "flexbook_chapters",
-    ["flexbookid" => $flexbook->id],
+    "bookflow_chapters",
+    ["bookflowid" => $bookflow->id],
     "sortorder",
     "id, title"
 );
 if (!$chapters) {
     redirect(
-        new moodle_url("/mod/flexbook/chapters.php", ["id" => $cm->id]),
-        get_string("createchapterfirst", "mod_flexbook")
+        new moodle_url("/mod/bookflow/chapters.php", ["id" => $cm->id]),
+        get_string("createchapterfirst", "mod_bookflow")
     );
 }
 
 if (!$chapterid) {
     $chapterid = array_key_first($chapters);
 }
-$DB->get_record("flexbook_chapters", [
+$DB->get_record("bookflow_chapters", [
     "id" => $chapterid,
-    "flexbookid" => $flexbook->id,
+    "bookflowid" => $bookflow->id,
 ], "id", MUST_EXIST);
 
 $classes = content_type_manager::get_classes();
 if (!$classes) {
-    throw new moodle_exception("nocontenttypes", "mod_flexbook");
+    throw new moodle_exception("nocontenttypes", "mod_bookflow");
 }
 $typeoptions = content_type_manager::get_type_options();
 
 $content = null;
 if ($contentid) {
     $sql = "SELECT c.*
-              FROM {flexbook_contents} c
-              JOIN {flexbook_chapters} ch ON ch.id = c.chapterid
+              FROM {bookflow_contents} c
+              JOIN {bookflow_chapters} ch ON ch.id = c.chapterid
              WHERE c.id = :contentid
-               AND ch.flexbookid = :flexbookid";
+               AND ch.bookflowid = :bookflowid";
     $content = $DB->get_record_sql($sql, [
         "contentid" => $contentid,
-        "flexbookid" => $flexbook->id,
+        "bookflowid" => $bookflow->id,
     ], MUST_EXIST);
     $chapterid = (int) $content->chapterid;
     $type = $content->type;
@@ -94,25 +94,25 @@ if ($contentid) {
     $pageparams["type"] = $type;
 }
 
-$PAGE->set_url("/mod/flexbook/content.php", $pageparams);
-$PAGE->set_title(get_string($contentid ? "editcontent" : "addcontent", "mod_flexbook"));
+$PAGE->set_url("/mod/bookflow/content.php", $pageparams);
+$PAGE->set_title(get_string($contentid ? "editcontent" : "addcontent", "mod_bookflow"));
 $PAGE->set_heading(format_string($course->fullname));
 
 if (!$contentid && $type === "") {
     echo $OUTPUT->header();
-    echo $OUTPUT->heading(get_string("selectcontenttype", "mod_flexbook"));
+    echo $OUTPUT->heading(get_string("selectcontenttype", "mod_bookflow"));
     echo html_writer::tag(
         "p",
-        get_string("selectcontenttypedescription", "mod_flexbook"),
+        get_string("selectcontenttypedescription", "mod_bookflow"),
         ["class" => "text-muted mb-4"]
     );
     echo html_writer::start_div("row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3");
     foreach ($classes as $availabletype => $classname) {
-        if (!$classname::can_create(null, $flexbook, $context)) {
+        if (!$classname::can_create(null, $bookflow, $context)) {
             continue;
         }
 
-        $url = new moodle_url("/mod/flexbook/content.php", [
+        $url = new moodle_url("/mod/bookflow/content.php", [
             "id" => $cm->id,
             "chapterid" => $chapterid,
             "type" => $availabletype,
@@ -137,12 +137,12 @@ if (!$contentid && $type === "") {
 }
 
 if (!isset($classes[$type])) {
-    throw new moodle_exception("unknowncontenttype", "mod_flexbook", "", $type);
+    throw new moodle_exception("unknowncontenttype", "mod_bookflow", "", $type);
 }
-if (!$classes[$type]::can_create(null, $flexbook, $context)) {
+if (!$classes[$type]::can_create(null, $bookflow, $context)) {
     throw new required_capability_exception(
         $context,
-        "mod/flexbook:managecontent",
+        "mod/bookflow:managecontent",
         "nopermissions",
         ""
     );
@@ -164,7 +164,7 @@ $structureddraftid = content_form_mapper::prepare_structured_draft(
     $editoroptions
 );
 
-$formurl = new moodle_url("/mod/flexbook/content.php", $pageparams);
+$formurl = new moodle_url("/mod/bookflow/content.php", $pageparams);
 $form = new content_form($formurl->out(false), [
     "chapters" => $chapters,
     "type" => $type,
@@ -203,7 +203,7 @@ if ($content) {
 }
 
 if ($form->is_cancelled()) {
-    redirect(new moodle_url("/mod/flexbook/view.php", [
+    redirect(new moodle_url("/mod/bookflow/view.php", [
         "id" => $cm->id,
         "chapterid" => $chapterid,
     ]));
@@ -217,9 +217,9 @@ if ($form->is_cancelled()) {
     $data->auxint2 = 0;
     $data->auxint3 = 0;
 
-    $DB->get_record("flexbook_chapters", [
+    $DB->get_record("bookflow_chapters", [
         "id" => $data->chapterid,
-        "flexbookid" => $flexbook->id,
+        "bookflowid" => $bookflow->id,
     ], "*", MUST_EXIST);
 
     if ($data->completiontype === "none") {
@@ -260,18 +260,18 @@ if ($form->is_cancelled()) {
 
     redirect(
         new moodle_url(
-            "/mod/flexbook/view.php",
+            "/mod/bookflow/view.php",
             [
                 "id" => $cm->id,
                 "chapterid" => $data->chapterid,
             ],
-            "flexbook-content-{$data->id}"
+            "bookflow-content-{$data->id}"
         ),
-        get_string("contentsaved", "mod_flexbook")
+        get_string("contentsaved", "mod_bookflow")
     );
 }
 
 echo $OUTPUT->header();
-echo $OUTPUT->heading(get_string($contentid ? "editcontent" : "addcontent", "mod_flexbook"));
+echo $OUTPUT->heading(get_string($contentid ? "editcontent" : "addcontent", "mod_bookflow"));
 $form->display();
 echo $OUTPUT->footer();

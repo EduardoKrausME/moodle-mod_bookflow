@@ -17,19 +17,19 @@
 /**
  * accordion.php
  *
- * @package   flexbookcontent_accordion
+ * @package   bookflowcontent_accordion
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace flexbookcontent_accordion\types;
+namespace bookflowcontent_accordion\types;
 
-use mod_flexbook\types\structured_content;
+use mod_bookflow\types\structured_content;
 use renderer_base;
 use stdClass;
 
 /**
- * FlexBook Accordion content type.
+ * BookFlow Accordion content type.
  */
 class accordion extends structured_content {
     /** @var string */
@@ -45,7 +45,7 @@ class accordion extends structured_content {
         $options = parent::get_completion_options();
         $none = $options["none"];
         unset($options["none"]);
-        $options["allitems"] = get_string("completeallitems", "mod_flexbook");
+        $options["allitems"] = get_string("completeallitems", "mod_bookflow");
         $options["none"] = $none;
         return $options;
     }
@@ -53,13 +53,13 @@ class accordion extends structured_content {
     /**
      * Loads accordion behaviour from this subplugin.
      */
-    public static function require_page_assets(stdClass $flexbook, bool $editing): void {
+    public static function require_page_assets(stdClass $bookflow, bool $editing): void {
         global $PAGE;
         if (!$editing) {
             $PAGE->requires->js_call_amd(
-                "flexbookcontent_accordion/accordion",
+                "bookflowcontent_accordion/accordion",
                 "init",
-                [$flexbook->id, !empty($flexbook->enabletracking)]
+                [$bookflow->id, !empty($bookflow->enabletracking)]
             );
         }
     }
@@ -69,7 +69,7 @@ class accordion extends structured_content {
      */
     public function render(renderer_base $output, bool $editing): string {
         return $output->render_from_template(
-            "flexbookcontent_accordion/accordion",
+            "bookflowcontent_accordion/accordion",
             $this->export_data($editing)
         );
     }
@@ -78,7 +78,7 @@ class accordion extends structured_content {
      * Gets the localized content type name.
      */
     public static function get_name(): string {
-        return get_string("pluginname", "flexbookcontent_accordion");
+        return get_string("pluginname", "bookflowcontent_accordion");
     }
 
 }

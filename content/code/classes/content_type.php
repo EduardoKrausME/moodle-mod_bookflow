@@ -17,18 +17,18 @@
 /**
  * content_type.php
  *
- * @package   flexbookcontent_code
+ * @package   bookflowcontent_code
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace flexbookcontent_code;
+namespace bookflowcontent_code;
 
-use flexbookcontent_code\types\code;
-use mod_flexbook\hook\content_types;
+use bookflowcontent_code\types\code;
+use mod_bookflow\hook\content_types;
 
 /**
- * Registers the Code content type in FlexBook.
+ * Registers the Code content type in BookFlow.
  */
 class content_type {
     /**

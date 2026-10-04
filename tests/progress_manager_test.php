@@ -17,20 +17,20 @@
 /**
  * progress_manager_test.php
  *
- * @package   mod_flexbook
+ * @package   mod_bookflow
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_flexbook;
+namespace mod_bookflow;
 
 use advanced_testcase;
 use context_module;
-use mod_flexbook\completion\custom_completion;
-use mod_flexbook\content_manager;
-use mod_flexbook\progress\progress_manager;
-use mod_flexbook\task\recalculate_progress;
-use mod_flexbook_generator;
+use mod_bookflow\completion\custom_completion;
+use mod_bookflow\content_manager;
+use mod_bookflow\progress\progress_manager;
+use mod_bookflow\task\recalculate_progress;
+use mod_bookflow_generator;
 use Override;
 use ReflectionClass;
 use stdClass;
@@ -38,7 +38,7 @@ use stdClass;
 /**
  * Tests weighted progress, completion, permissions, ordering, and reading position.
  *
- * @covers \mod_flexbook\progress\progress_manager
+ * @covers \mod_bookflow\progress\progress_manager
  */
 final class progress_manager_test extends advanced_testcase {
     /** @var stdClass */
@@ -46,11 +46,11 @@ final class progress_manager_test extends advanced_testcase {
     /** @var stdClass */
     private stdClass $user;
     /** @var stdClass */
-    private stdClass $flexbook;
+    private stdClass $bookflow;
     /** @var stdClass */
     private stdClass $chapter;
-    /** @var mod_flexbook_generator */
-    private mod_flexbook_generator $generator;
+    /** @var mod_bookflow_generator */
+    private mod_bookflow_generator $generator;
 
     /**
      * Prepares the test fixture.
@@ -63,15 +63,15 @@ final class progress_manager_test extends advanced_testcase {
         $this->resetAfterTest();
         $this->course = $this->getDataGenerator()->create_course(["enablecompletion" => 1]);
         $this->user = $this->getDataGenerator()->create_and_enrol($this->course, "student");
-        $this->generator = $this->getDataGenerator()->get_plugin_generator("mod_flexbook");
-        $this->flexbook = $this->generator->create_instance([
+        $this->generator = $this->getDataGenerator()->get_plugin_generator("mod_bookflow");
+        $this->bookflow = $this->generator->create_instance([
             "course" => $this->course->id,
-            "name" => "Test FlexBook",
-            "completionmode" => FLEXBOOK_COMPLETION_PERCENTAGE,
+            "name" => "Test BookFlow",
+            "completionmode" => BOOKFLOW_COMPLETION_PERCENTAGE,
             "completionpercentage" => 80,
             "completion" => COMPLETION_TRACKING_AUTOMATIC,
         ]);
-        $this->chapter = $this->generator->create_chapter($this->flexbook, ["title" => "Chapter 1"]);
+        $this->chapter = $this->generator->create_chapter($this->bookflow, ["title" => "Chapter 1"]);
     }
 
     /**
@@ -83,9 +83,9 @@ final class progress_manager_test extends advanced_testcase {
         global $DB;
 
         $content = $this->generator->create_content($this->chapter);
-        $this->assertTrue($DB->record_exists("flexbook", ["id" => $this->flexbook->id]));
-        $this->assertTrue($DB->record_exists("flexbook_chapters", ["id" => $this->chapter->id]));
-        $this->assertTrue($DB->record_exists("flexbook_contents", ["id" => $content->id]));
+        $this->assertTrue($DB->record_exists("bookflow", ["id" => $this->bookflow->id]));
+        $this->assertTrue($DB->record_exists("bookflow_chapters", ["id" => $this->chapter->id]));
+        $this->assertTrue($DB->record_exists("bookflow_contents", ["id" => $content->id]));
     }
 
     /**
@@ -97,11 +97,11 @@ final class progress_manager_test extends advanced_testcase {
         $first = $this->generator->create_content($this->chapter);
         $this->generator->create_content($this->chapter);
         $manager = new progress_manager();
-        $this->assertEquals(0, $manager->calculate_user_progress($this->flexbook->id, $this->user->id));
-        $manager->mark_content_viewed($this->flexbook->id, $this->user->id, $first->id);
-        $this->assertEquals(50, $manager->calculate_user_progress($this->flexbook->id, $this->user->id));
-        $manager->mark_content_viewed($this->flexbook->id, $this->user->id, $first->id);
-        $this->assertEquals(50, $manager->calculate_user_progress($this->flexbook->id, $this->user->id));
+        $this->assertEquals(0, $manager->calculate_user_progress($this->bookflow->id, $this->user->id));
+        $manager->mark_content_viewed($this->bookflow->id, $this->user->id, $first->id);
+        $this->assertEquals(50, $manager->calculate_user_progress($this->bookflow->id, $this->user->id));
+        $manager->mark_content_viewed($this->bookflow->id, $this->user->id, $first->id);
+        $this->assertEquals(50, $manager->calculate_user_progress($this->bookflow->id, $this->user->id));
     }
 
     /**
@@ -114,8 +114,8 @@ final class progress_manager_test extends advanced_testcase {
         $this->generator->create_content($this->chapter, ["weight" => 3]);
         $this->generator->create_content($this->chapter, ["weight" => 100, "trackprogress" => 0]);
         $manager = new progress_manager();
-        $manager->mark_content_viewed($this->flexbook->id, $this->user->id, $light->id);
-        $this->assertEquals(25, $manager->calculate_user_progress($this->flexbook->id, $this->user->id));
+        $manager->mark_content_viewed($this->bookflow->id, $this->user->id, $light->id);
+        $this->assertEquals(25, $manager->calculate_user_progress($this->bookflow->id, $this->user->id));
     }
 
     /**
@@ -126,7 +126,7 @@ final class progress_manager_test extends advanced_testcase {
     public function test_progress_is_limited_and_zero_denominator_is_safe(): void {
         $this->generator->create_content($this->chapter, ["trackprogress" => 0]);
         $manager = new progress_manager();
-        $progress = $manager->calculate_user_progress($this->flexbook->id, $this->user->id);
+        $progress = $manager->calculate_user_progress($this->bookflow->id, $this->user->id);
         $this->assertGreaterThanOrEqual(0, $progress);
         $this->assertLessThanOrEqual(100, $progress);
         $this->assertEquals(0, $progress);
@@ -142,22 +142,22 @@ final class progress_manager_test extends advanced_testcase {
 
         $first = $this->generator->create_content($this->chapter);
         $manager = new progress_manager();
-        $manager->mark_content_viewed($this->flexbook->id, $this->user->id, $first->id);
-        $this->assertEquals(100, $manager->calculate_user_progress($this->flexbook->id, $this->user->id));
+        $manager->mark_content_viewed($this->bookflow->id, $this->user->id, $first->id);
+        $this->assertEquals(100, $manager->calculate_user_progress($this->bookflow->id, $this->user->id));
 
         $second = $this->generator->create_content($this->chapter);
         $this->execute_recalculation_task();
-        $this->assertEquals(50, $DB->get_field("flexbook_user_state", "progress", [
-            "flexbookid" => $this->flexbook->id,
+        $this->assertEquals(50, $DB->get_field("bookflow_user_state", "progress", [
+            "bookflowid" => $this->bookflow->id,
             "userid" => $this->user->id,
         ]));
 
         $second->weight = 3;
         content_manager::update($second);
-        $this->assertEquals(25, $manager->calculate_user_progress($this->flexbook->id, $this->user->id));
+        $this->assertEquals(25, $manager->calculate_user_progress($this->bookflow->id, $this->user->id));
 
         content_manager::delete($second->id);
-        $this->assertEquals(100, $manager->calculate_user_progress($this->flexbook->id, $this->user->id));
+        $this->assertEquals(100, $manager->calculate_user_progress($this->bookflow->id, $this->user->id));
     }
 
     /**
@@ -172,18 +172,18 @@ final class progress_manager_test extends advanced_testcase {
         $optional = $this->generator->create_content($this->chapter, ["weight" => 4]);
         $manager = new progress_manager();
 
-        $this->flexbook->completionmode = FLEXBOOK_COMPLETION_COMBINED;
-        $this->flexbook->completionpercentage = 80;
-        $DB->update_record("flexbook", $this->flexbook);
+        $this->bookflow->completionmode = BOOKFLOW_COMPLETION_COMBINED;
+        $this->bookflow->completionpercentage = 80;
+        $DB->update_record("bookflow", $this->bookflow);
 
-        $manager->mark_content_viewed($this->flexbook->id, $this->user->id, $optional->id);
-        $this->assertFalse($manager->completion_requirements_met($this->flexbook->id, $this->user->id));
-        $manager->mark_content_viewed($this->flexbook->id, $this->user->id, $required->id);
-        $this->assertTrue($manager->completion_requirements_met($this->flexbook->id, $this->user->id));
+        $manager->mark_content_viewed($this->bookflow->id, $this->user->id, $optional->id);
+        $this->assertFalse($manager->completion_requirements_met($this->bookflow->id, $this->user->id));
+        $manager->mark_content_viewed($this->bookflow->id, $this->user->id, $required->id);
+        $this->assertTrue($manager->completion_requirements_met($this->bookflow->id, $this->user->id));
 
-        $this->flexbook->completionmode = FLEXBOOK_COMPLETION_REQUIRED;
-        $DB->update_record("flexbook", $this->flexbook);
-        $this->assertTrue($manager->completion_requirements_met($this->flexbook->id, $this->user->id));
+        $this->bookflow->completionmode = BOOKFLOW_COMPLETION_REQUIRED;
+        $DB->update_record("bookflow", $this->bookflow);
+        $this->assertTrue($manager->completion_requirements_met($this->bookflow->id, $this->user->id));
     }
 
     /**
@@ -195,14 +195,14 @@ final class progress_manager_test extends advanced_testcase {
         global $DB;
 
         $this->chapter->required = 1;
-        $DB->update_record("flexbook_chapters", $this->chapter);
+        $DB->update_record("bookflow_chapters", $this->chapter);
         $content = $this->generator->create_content($this->chapter);
-        $this->flexbook->completionmode = FLEXBOOK_COMPLETION_CHAPTERS;
-        $DB->update_record("flexbook", $this->flexbook);
+        $this->bookflow->completionmode = BOOKFLOW_COMPLETION_CHAPTERS;
+        $DB->update_record("bookflow", $this->bookflow);
         $manager = new progress_manager();
-        $this->assertFalse($manager->completion_requirements_met($this->flexbook->id, $this->user->id));
-        $manager->mark_content_viewed($this->flexbook->id, $this->user->id, $content->id);
-        $this->assertTrue($manager->completion_requirements_met($this->flexbook->id, $this->user->id));
+        $this->assertFalse($manager->completion_requirements_met($this->bookflow->id, $this->user->id));
+        $manager->mark_content_viewed($this->bookflow->id, $this->user->id, $content->id);
+        $this->assertTrue($manager->completion_requirements_met($this->bookflow->id, $this->user->id));
     }
 
     /**
@@ -219,9 +219,9 @@ final class progress_manager_test extends advanced_testcase {
         }
         $manager = new progress_manager();
         foreach (array_slice($contents, 0, 4) as $content) {
-            $manager->mark_content_viewed($this->flexbook->id, $this->user->id, $content->id);
+            $manager->mark_content_viewed($this->bookflow->id, $this->user->id, $content->id);
         }
-        $cm = get_coursemodule_from_instance("flexbook", $this->flexbook->id, $this->course->id);
+        $cm = get_coursemodule_from_instance("bookflow", $this->bookflow->id, $this->course->id);
         $completion = $DB->get_record("course_modules_completion", [
             "coursemoduleid" => $cm->id,
             "userid" => $this->user->id,
@@ -235,11 +235,11 @@ final class progress_manager_test extends advanced_testcase {
      * @return void
      */
     public function test_student_can_view_but_cannot_manage_content(): void {
-        $cm = get_coursemodule_from_instance("flexbook", $this->flexbook->id, $this->course->id);
+        $cm = get_coursemodule_from_instance("bookflow", $this->bookflow->id, $this->course->id);
         $context = context_module::instance($cm->id);
         $this->setUser($this->user);
-        $this->assertTrue(has_capability("mod/flexbook:view", $context));
-        $this->assertFalse(has_capability("mod/flexbook:managecontent", $context));
+        $this->assertTrue(has_capability("mod/bookflow:view", $context));
+        $this->assertFalse(has_capability("mod/bookflow:managecontent", $context));
     }
 
     /**
@@ -251,13 +251,13 @@ final class progress_manager_test extends advanced_testcase {
         $content = $this->generator->create_content($this->chapter);
         $manager = new progress_manager();
         $manager->save_last_position(
-            $this->flexbook->id,
+            $this->bookflow->id,
             $this->user->id,
             $this->chapter->id,
             $content->id,
             450
         );
-        $position = $manager->get_last_position($this->flexbook->id, $this->user->id);
+        $position = $manager->get_last_position($this->bookflow->id, $this->user->id);
         $this->assertEquals($content->id, $position->lastcontentid);
         $this->assertEquals(450, $position->scrollposition);
     }
@@ -273,7 +273,7 @@ final class progress_manager_test extends advanced_testcase {
         $first = $this->generator->create_content($this->chapter);
         $second = $this->generator->create_content($this->chapter);
         content_manager::reorder($this->chapter->id, [$second->id, $first->id]);
-        $ordered = array_values($DB->get_records("flexbook_contents", [
+        $ordered = array_values($DB->get_records("bookflow_contents", [
             "chapterid" => $this->chapter->id,
         ], "sortorder"));
         $this->assertEquals($second->id, $ordered[0]->id);
@@ -319,21 +319,21 @@ final class progress_manager_test extends advanced_testcase {
         $manager = new progress_manager();
 
         $manager->update_content_metric(
-            $this->flexbook->id,
+            $this->bookflow->id,
             $this->user->id,
             $content->id,
             100,
             ["watchedSeconds" => 100, "duration" => 100]
         );
         $manager->update_content_metric(
-            $this->flexbook->id,
+            $this->bookflow->id,
             $this->user->id,
             $content->id,
             100,
             ["watchedSeconds" => 100, "duration" => 100]
         );
 
-        $record = $DB->get_record("flexbook_user_progress", [
+        $record = $DB->get_record("bookflow_user_progress", [
             "userid" => $this->user->id,
             "contentid" => $content->id,
         ], "*", MUST_EXIST);
@@ -351,18 +351,18 @@ final class progress_manager_test extends advanced_testcase {
         global $DB;
 
         $manager = new progress_manager();
-        $this->assertNotNull($manager->get_completion_configuration_warning($this->flexbook->id));
+        $this->assertNotNull($manager->get_completion_configuration_warning($this->bookflow->id));
 
         $content = $this->generator->create_content($this->chapter);
-        $this->assertNull($manager->get_completion_configuration_warning($this->flexbook->id));
+        $this->assertNull($manager->get_completion_configuration_warning($this->bookflow->id));
 
-        $this->flexbook->completionmode = FLEXBOOK_COMPLETION_REQUIRED;
-        $DB->update_record("flexbook", $this->flexbook);
-        $this->assertNotNull($manager->get_completion_configuration_warning($this->flexbook->id));
+        $this->bookflow->completionmode = BOOKFLOW_COMPLETION_REQUIRED;
+        $DB->update_record("bookflow", $this->bookflow);
+        $this->assertNotNull($manager->get_completion_configuration_warning($this->bookflow->id));
 
         $content->required = 1;
         content_manager::update($content);
-        $this->assertNull($manager->get_completion_configuration_warning($this->flexbook->id));
+        $this->assertNull($manager->get_completion_configuration_warning($this->bookflow->id));
     }
 
     /**
@@ -373,7 +373,7 @@ final class progress_manager_test extends advanced_testcase {
     private function execute_recalculation_task(): void {
         $task = new recalculate_progress();
         $task->set_custom_data([
-            "flexbookid" => $this->flexbook->id,
+            "bookflowid" => $this->bookflow->id,
             "afteruserid" => 0,
         ]);
         $task->execute();

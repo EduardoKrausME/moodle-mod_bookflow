@@ -17,14 +17,14 @@
 /**
  * chapters.php
  *
- * @package   mod_flexbook
+ * @package   mod_bookflow
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use mod_flexbook\form\chapter_form;
-use mod_flexbook\chapter_manager;
-use mod_flexbook\progress\progress_manager;
+use mod_bookflow\form\chapter_form;
+use mod_bookflow\chapter_manager;
+use mod_bookflow\progress\progress_manager;
 
 require_once(__DIR__ . "/../../config.php");
 
@@ -33,83 +33,83 @@ $chapterid = optional_param("chapterid", 0, PARAM_INT);
 $delete = optional_param("delete", 0, PARAM_BOOL);
 $confirm = optional_param("confirm", 0, PARAM_BOOL);
 
-$cm = get_coursemodule_from_id("flexbook", $id, 0, false, MUST_EXIST);
+$cm = get_coursemodule_from_id("bookflow", $id, 0, false, MUST_EXIST);
 $course = get_course($cm->course);
-$flexbook = $DB->get_record("flexbook", ["id" => $cm->instance], "*", MUST_EXIST);
+$bookflow = $DB->get_record("bookflow", ["id" => $cm->instance], "*", MUST_EXIST);
 $context = context_module::instance($cm->id);
 require_login($course, true, $cm);
-require_capability("mod/flexbook:managechapters", $context);
+require_capability("mod/bookflow:managechapters", $context);
 
-$PAGE->set_url("/mod/flexbook/chapters.php", ["id" => $cm->id, "chapterid" => $chapterid]);
-$PAGE->set_title(get_string("managechapters", "mod_flexbook"));
+$PAGE->set_url("/mod/bookflow/chapters.php", ["id" => $cm->id, "chapterid" => $chapterid]);
+$PAGE->set_title(get_string("managechapters", "mod_bookflow"));
 $PAGE->set_heading(format_string($course->fullname));
 
-$chapters = $DB->get_records("flexbook_chapters", ["flexbookid" => $flexbook->id], "sortorder, id");
+$chapters = $DB->get_records("bookflow_chapters", ["bookflowid" => $bookflow->id], "sortorder, id");
 $options = [];
 foreach ($chapters as $chapter) {
     if ($chapter->id != $chapterid) {
         $options[$chapter->id] = format_string($chapter->title);
     }
 }
-$formurl = new moodle_url("/mod/flexbook/chapters.php", ["id" => $cm->id]);
+$formurl = new moodle_url("/mod/bookflow/chapters.php", ["id" => $cm->id]);
 $form = new chapter_form($formurl->out(false), ["id" => $cm->id, "chapters" => $options]);
 
 if ($delete && $chapterid) {
     require_sesskey();
-    $chapter = $DB->get_record("flexbook_chapters", [
+    $chapter = $DB->get_record("bookflow_chapters", [
         "id" => $chapterid,
-        "flexbookid" => $flexbook->id,
+        "bookflowid" => $bookflow->id,
     ], "*", MUST_EXIST);
     if (!$confirm) {
         echo $OUTPUT->header();
         echo $OUTPUT->confirm(
-            get_string("confirmdeletechapter", "mod_flexbook", format_string($chapter->title)),
-            new moodle_url("/mod/flexbook/chapters.php", [
+            get_string("confirmdeletechapter", "mod_bookflow", format_string($chapter->title)),
+            new moodle_url("/mod/bookflow/chapters.php", [
                 "id" => $cm->id,
                 "chapterid" => $chapterid,
                 "delete" => 1,
                 "confirm" => 1,
                 "sesskey" => sesskey(),
             ]),
-            new moodle_url("/mod/flexbook/chapters.php", ["id" => $cm->id])
+            new moodle_url("/mod/bookflow/chapters.php", ["id" => $cm->id])
         );
         echo $OUTPUT->footer();
         exit;
     }
     chapter_manager::delete($chapterid);
-    redirect(new moodle_url("/mod/flexbook/chapters.php", ["id" => $cm->id]),
-        get_string("chapterdeleted", "mod_flexbook"));
+    redirect(new moodle_url("/mod/bookflow/chapters.php", ["id" => $cm->id]),
+        get_string("chapterdeleted", "mod_bookflow"));
 }
 
 if ($form->is_cancelled()) {
-    redirect(new moodle_url("/mod/flexbook/view.php", ["id" => $cm->id]));
+    redirect(new moodle_url("/mod/bookflow/view.php", ["id" => $cm->id]));
 } else if ($data = $form->get_data()) {
     $recordid = $data->chapterid;
     unset($data->chapterid);
-    $data->flexbookid = $flexbook->id;
+    $data->bookflowid = $bookflow->id;
     $data->description = $data->description_editor["text"];
     $data->descriptionformat = $data->description_editor["format"];
     unset($data->description_editor);
     if ($recordid) {
         $data->id = $recordid;
-        $existing = $DB->get_record("flexbook_chapters", [
+        $existing = $DB->get_record("bookflow_chapters", [
             "id" => $data->id,
-            "flexbookid" => $flexbook->id,
+            "bookflowid" => $bookflow->id,
         ], "*", MUST_EXIST);
         chapter_manager::update($data);
     } else {
         $data->id = chapter_manager::create($data);
     }
-    redirect(new moodle_url("/mod/flexbook/view.php", [
+    redirect(new moodle_url("/mod/bookflow/view.php", [
         "id" => $cm->id,
         "chapterid" => $data->id,
-    ]), get_string("chaptersaved", "mod_flexbook"));
+    ]), get_string("chaptersaved", "mod_bookflow"));
 }
 
 if ($chapterid) {
-    $chapter = $DB->get_record("flexbook_chapters", [
+    $chapter = $DB->get_record("bookflow_chapters", [
         "id" => $chapterid,
-        "flexbookid" => $flexbook->id,
+        "bookflowid" => $bookflow->id,
     ], "*", MUST_EXIST);
     $chapter->chapterid = $chapter->id;
     $chapter->description_editor = [
@@ -120,15 +120,15 @@ if ($chapterid) {
 }
 
 echo $OUTPUT->header();
-echo $OUTPUT->heading(get_string($chapterid ? "editchapter" : "addchapter", "mod_flexbook"));
+echo $OUTPUT->heading(get_string($chapterid ? "editchapter" : "addchapter", "mod_bookflow"));
 if (!$chapterid) {
     echo $OUTPUT->notification(
-        get_string("chaptercreationhelp", "mod_flexbook"),
+        get_string("chaptercreationhelp", "mod_bookflow"),
         \core\output\notification::NOTIFY_INFO
     );
 }
 if ($cm->completion != COMPLETION_TRACKING_NONE) {
-    $completionwarning = (new progress_manager())->get_completion_configuration_warning($flexbook->id);
+    $completionwarning = (new progress_manager())->get_completion_configuration_warning($bookflow->id);
     if ($completionwarning) {
         echo $OUTPUT->notification($completionwarning, \core\output\notification::NOTIFY_WARNING);
     }
@@ -142,15 +142,15 @@ if ($chapters) {
             "title" => format_string($chapter->title),
             "required" => $chapter->required ? get_string("yes") : get_string("no"),
             "hidden" => $chapter->hidden ? get_string("yes") : get_string("no"),
-            "viewurl" => (new moodle_url("/mod/flexbook/view.php", [
+            "viewurl" => (new moodle_url("/mod/bookflow/view.php", [
                 "id" => $cm->id,
                 "chapterid" => $chapter->id,
             ]))->out(false),
-            "editurl" => (new moodle_url("/mod/flexbook/chapters.php", [
+            "editurl" => (new moodle_url("/mod/bookflow/chapters.php", [
                 "id" => $cm->id,
                 "chapterid" => $chapter->id,
             ]))->out(false),
-            "deleteurl" => (new moodle_url("/mod/flexbook/chapters.php", [
+            "deleteurl" => (new moodle_url("/mod/bookflow/chapters.php", [
                 "id" => $cm->id,
                 "chapterid" => $chapter->id,
                 "delete" => 1,
@@ -158,6 +158,6 @@ if ($chapters) {
             ]))->out(false),
         ];
     }
-    echo $OUTPUT->render_from_template("mod_flexbook/manage_chapters", ["chapters" => $rows]);
+    echo $OUTPUT->render_from_template("mod_bookflow/manage_chapters", ["chapters" => $rows]);
 }
 echo $OUTPUT->footer();

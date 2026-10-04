@@ -17,7 +17,7 @@
 /**
  * search.php
  *
- * @package   mod_flexbook
+ * @package   mod_bookflow
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -27,27 +27,27 @@ require_once(__DIR__ . "/../../config.php");
 $id = required_param("id", PARAM_INT);
 $query = optional_param("q", "", PARAM_TEXT);
 
-$cm = get_coursemodule_from_id("flexbook", $id, 0, false, MUST_EXIST);
+$cm = get_coursemodule_from_id("bookflow", $id, 0, false, MUST_EXIST);
 $course = get_course($cm->course);
-$flexbook = $DB->get_record("flexbook", ["id" => $cm->instance], "*", MUST_EXIST);
+$bookflow = $DB->get_record("bookflow", ["id" => $cm->instance], "*", MUST_EXIST);
 $context = context_module::instance($cm->id);
 require_login($course, true, $cm);
-require_capability("mod/flexbook:view", $context);
+require_capability("mod/bookflow:view", $context);
 
-$PAGE->set_url("/mod/flexbook/search.php", ["id" => $cm->id, "q" => $query]);
-$PAGE->set_title(get_string("searchinside", "mod_flexbook"));
+$PAGE->set_url("/mod/bookflow/search.php", ["id" => $cm->id, "q" => $query]);
+$PAGE->set_title(get_string("searchinside", "mod_bookflow"));
 $PAGE->set_heading(format_string($course->fullname));
 
 $results = [];
-if ($flexbook->enablesearch && core_text::strlen(trim($query)) >= 2) {
+if ($bookflow->enablesearch && core_text::strlen(trim($query)) >= 2) {
     $like = "%" . $DB->sql_like_escape($query) . "%";
-    $hiddenclause = has_capability("mod/flexbook:managecontent", $context)
+    $hiddenclause = has_capability("mod/bookflow:managecontent", $context)
         ? ""
         : " AND ch.hidden = 0 AND c.hidden = 0";
     $sql = "SELECT c.id, c.chapterid, c.type, c.data1, ch.title AS chaptertitle
-              FROM {flexbook_contents} c
-              JOIN {flexbook_chapters} ch ON ch.id = c.chapterid
-             WHERE ch.flexbookid = :flexbookid
+              FROM {bookflow_contents} c
+              JOIN {bookflow_chapters} ch ON ch.id = c.chapterid
+             WHERE ch.bookflowid = :bookflowid
                    {$hiddenclause}
                AND (" . $DB->sql_like("c.title", ":q1", false) . "
                 OR " . $DB->sql_like("c.data1", ":q2", false) . "
@@ -55,7 +55,7 @@ if ($flexbook->enablesearch && core_text::strlen(trim($query)) >= 2) {
                 OR " . $DB->sql_like("c.data3", ":q4", false) . ")
           ORDER BY ch.sortorder, c.sortorder";
     foreach ($DB->get_records_sql($sql, [
-        "flexbookid" => $flexbook->id,
+        "bookflowid" => $bookflow->id,
         "q1" => $like,
         "q2" => $like,
         "q3" => $like,
@@ -65,16 +65,16 @@ if ($flexbook->enablesearch && core_text::strlen(trim($query)) >= 2) {
             "chapter" => format_string($record->chaptertitle),
             "excerpt" => shorten_text(html_to_text($record->data1 ?? "", 0, false), 180),
             "type" => $record->type,
-            "url" => (new moodle_url("/mod/flexbook/view.php", [
+            "url" => (new moodle_url("/mod/bookflow/view.php", [
                 "id" => $cm->id,
                 "chapterid" => $record->chapterid,
-            ], "flexbook-content-{$record->id}"))->out(false),
+            ], "bookflow-content-{$record->id}"))->out(false),
         ];
     }
 }
 
 echo $OUTPUT->header();
-echo $OUTPUT->heading(get_string("searchinside", "mod_flexbook"));
+echo $OUTPUT->heading(get_string("searchinside", "mod_bookflow"));
 echo html_writer::start_tag("form", ["method" => "get"]);
 echo html_writer::empty_tag("input", ["type" => "hidden", "name" => "id", "value" => $cm->id]);
 echo html_writer::start_div("input-group mb-4");
@@ -90,6 +90,6 @@ echo html_writer::tag("button", get_string("search"), ["class" => "btn btn-prima
 echo html_writer::end_div();
 echo html_writer::end_tag("form");
 if ($query) {
-    echo $OUTPUT->render_from_template("mod_flexbook/search_results", ["results" => $results]);
+    echo $OUTPUT->render_from_template("mod_bookflow/search_results", ["results" => $results]);
 }
 echo $OUTPUT->footer();

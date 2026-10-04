@@ -17,18 +17,18 @@
 /**
  * content_type.php
  *
- * @package   flexbookcontent_question
+ * @package   bookflowcontent_question
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace flexbookcontent_question;
+namespace bookflowcontent_question;
 
-use flexbookcontent_question\types\question;
-use mod_flexbook\hook\content_types;
+use bookflowcontent_question\types\question;
+use mod_bookflow\hook\content_types;
 
 /**
- * Registers the Question content type in FlexBook.
+ * Registers the Question content type in BookFlow.
  */
 class content_type {
     /**

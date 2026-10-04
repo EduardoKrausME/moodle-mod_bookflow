@@ -16,14 +16,14 @@
 /**
  * search.js
  *
- * @package   mod_flexbook
+ * @package   mod_bookflow
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 define(["core/ajax", "core/templates", "core/notification"], function(Ajax, Templates, Notification) {
-    const init = function(flexbookId) {
-        const form = document.querySelector("[data-region='flexbook-search']");
+    const init = function(bookflowId) {
+        const form = document.querySelector("[data-region='bookflow-search']");
         if (!form) {
             return;
         }
@@ -34,10 +34,10 @@ define(["core/ajax", "core/templates", "core/notification"], function(Ajax, Temp
                 return;
             }
             Ajax.call([{
-                methodname: "mod_flexbook_search_contents",
-                args: {flexbookid: flexbookId, query: query}
+                methodname: "mod_bookflow_search_contents",
+                args: {bookflowid: bookflowId, query: query}
             }])[0].then(function(results) {
-                return Templates.renderForPromise("mod_flexbook/search_results", {results: results});
+                return Templates.renderForPromise("mod_bookflow/search_results", {results: results});
             }).then(function(result) {
                 Templates.replaceNodeContents(form.querySelector("[data-region='search-results']"),
                     result.html, result.js);

@@ -17,24 +17,24 @@
 /**
  * upgrade.php
  *
- * @package   mod_flexbook
+ * @package   mod_bookflow
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 /**
- * Upgrade mod_flexbook.
+ * Upgrade mod_bookflow.
  *
  * @param int $oldversion Installed plugin version.
  * @return bool
  */
-function xmldb_flexbook_upgrade(int $oldversion): bool {
+function xmldb_bookflow_upgrade(int $oldversion): bool {
     global $DB;
 
     $dbman = $DB->get_manager();
 
     if ($oldversion < 2026092801) {
-        $table = new xmldb_table("flexbook");
+        $table = new xmldb_table("bookflow");
         $field = new xmldb_field(
             "defaultcontenttype",
             XMLDB_TYPE_CHAR,
@@ -48,16 +48,16 @@ function xmldb_flexbook_upgrade(int $oldversion): bool {
 
         $dbman->change_field_default($table, $field);
 
-        upgrade_mod_savepoint(true, 2026092801, "flexbook");
+        upgrade_mod_savepoint(true, 2026092801, "bookflow");
     }
 
     if ($oldversion < 2026092802) {
-        $table = new xmldb_table("flexbook_highlights");
+        $table = new xmldb_table("bookflow_highlights");
         if ($dbman->table_exists($table)) {
             $dbman->drop_table($table);
         }
 
-        upgrade_mod_savepoint(true, 2026092802, "flexbook");
+        upgrade_mod_savepoint(true, 2026092802, "bookflow");
     }
 
     return true;

@@ -17,12 +17,12 @@
 /**
  * import_manager.php
  *
- * @package   mod_flexbook
+ * @package   mod_bookflow
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_flexbook;
+namespace mod_bookflow;
 
 use DOMDocument;
 use DOMXPath;
@@ -31,7 +31,7 @@ use moodle_exception;
 use ZipArchive;
 
 /**
- * Imports supported source formats into a FlexBook.
+ * Imports supported source formats into a BookFlow.
  */
 class import_manager {
     /** @var int Maximum size of a direct import source. */
@@ -59,14 +59,14 @@ class import_manager {
      * Imports content from standard book.
      *
      * @param int $bookid Standard Book activity ID.
-     * @param int $flexbookid FlexBook ID.
+     * @param int $bookflowid BookFlow ID.
      * @return int
      */
-    public static function from_standard_book(int $bookid, int $flexbookid): int {
+    public static function from_standard_book(int $bookid, int $bookflowid): int {
         global $DB;
 
         $book = $DB->get_record("book", ["id" => $bookid], "*", MUST_EXIST);
-        if ($book->course != $DB->get_field("flexbook", "course", ["id" => $flexbookid], MUST_EXIST)) {
+        if ($book->course != $DB->get_field("bookflow", "course", ["id" => $bookflowid], MUST_EXIST)) {
             throw new invalid_parameter_exception("The Book belongs to another course");
         }
         $count = 0;
@@ -77,7 +77,7 @@ class import_manager {
                 $parentid = end($parentmap);
             }
             $chapterid = chapter_manager::create((object) [
-                "flexbookid" => $flexbookid,
+                "bookflowid" => $bookflowid,
                 "parentid" => $parentid,
                 "title" => $bookchapter->title,
                 "description" => "",
@@ -116,20 +116,20 @@ class import_manager {
      * Imports content from Markdown.
      *
      * @param string $markdown Markdown source.
-     * @param int $flexbookid FlexBook ID.
+     * @param int $bookflowid BookFlow ID.
      * @param string $fallbacktitle Fallback chapter title.
      * @return int
      */
-    public static function from_markdown(string $markdown, int $flexbookid, string $fallbacktitle = ""): int {
+    public static function from_markdown(string $markdown, int $bookflowid, string $fallbacktitle = ""): int {
         self::validate_source_size($markdown);
         $chaptercount = self::count_markdown_chapters($markdown);
         if ($chaptercount > self::MAX_IMPORTED_CHAPTERS) {
-            throw new moodle_exception("importchapterlimit", "mod_flexbook", "", self::MAX_IMPORTED_CHAPTERS);
+            throw new moodle_exception("importchapterlimit", "mod_bookflow", "", self::MAX_IMPORTED_CHAPTERS);
         }
 
         $parts = preg_split("/^(#{1,2})\s+(.+)$/m", $markdown, -1, PREG_SPLIT_DELIM_CAPTURE);
         if (!$parts || count($parts) < 4) {
-            self::create_text_chapter($flexbookid, $fallbacktitle ?: get_string("importedcontent", "mod_flexbook"),
+            self::create_text_chapter($bookflowid, $fallbacktitle ?: get_string("importedcontent", "mod_bookflow"),
                 $markdown, "markdown", 0);
             return 1;
         }
@@ -142,7 +142,7 @@ class import_manager {
             $body = trim($parts[$index + 2] ?? "");
             $chapterparent = $level == 2 ? $parentid : 0;
             $chapterid = self::create_text_chapter(
-                $flexbookid,
+                $bookflowid,
                 $title,
                 $body,
                 "markdown",
@@ -160,11 +160,11 @@ class import_manager {
      * Imports content from HTML.
      *
      * @param string $html HTML source.
-     * @param int $flexbookid FlexBook ID.
+     * @param int $bookflowid BookFlow ID.
      * @param string $fallbacktitle Fallback chapter title.
      * @return int
      */
-    public static function from_html(string $html, int $flexbookid, string $fallbacktitle = ""): int {
+    public static function from_html(string $html, int $bookflowid, string $fallbacktitle = ""): int {
         self::validate_source_size($html);
         $document = new DOMDocument();
         $previous = libxml_use_internal_errors(true);
@@ -175,16 +175,16 @@ class import_manager {
         libxml_clear_errors();
         libxml_use_internal_errors($previous);
         if (!$loaded) {
-            throw new moodle_exception("invalidhtml", "mod_flexbook");
+            throw new moodle_exception("invalidhtml", "mod_bookflow");
         }
 
         $xpath = new DOMXPath($document);
         $headings = $xpath->query("//h1|//h2");
         if ($headings && $headings->length > self::MAX_IMPORTED_CHAPTERS) {
-            throw new moodle_exception("importchapterlimit", "mod_flexbook", "", self::MAX_IMPORTED_CHAPTERS);
+            throw new moodle_exception("importchapterlimit", "mod_bookflow", "", self::MAX_IMPORTED_CHAPTERS);
         }
         if (!$headings || !$headings->length) {
-            self::create_text_chapter($flexbookid, $fallbacktitle ?: get_string("importedcontent", "mod_flexbook"),
+            self::create_text_chapter($bookflowid, $fallbacktitle ?: get_string("importedcontent", "mod_bookflow"),
                 $html, "html", 0);
             return 1;
         }
@@ -200,7 +200,7 @@ class import_manager {
             }
             $level = strtolower($heading->nodeName) == "h2" ? 2 : 1;
             $chapterid = self::create_text_chapter(
-                $flexbookid,
+                $bookflowid,
                 trim($heading->textContent),
                 $body,
                 "html",
@@ -218,15 +218,15 @@ class import_manager {
      * Imports content from Markdown ZIP.
      *
      * @param string $path Source file path.
-     * @param int $flexbookid FlexBook ID.
+     * @param int $bookflowid BookFlow ID.
      * @return int
      */
-    public static function from_markdown_zip(string $path, int $flexbookid): int {
+    public static function from_markdown_zip(string $path, int $bookflowid): int {
         $filesize = filesize($path);
         if ($filesize !== false && $filesize > self::MAX_SOURCE_BYTES) {
             throw new moodle_exception(
                 "importsourceoversize",
-                "mod_flexbook",
+                "mod_bookflow",
                 "",
                 (int) (self::MAX_SOURCE_BYTES / 1024 / 1024)
             );
@@ -234,12 +234,12 @@ class import_manager {
 
         $zip = new ZipArchive();
         if ($zip->open($path) !== true) {
-            throw new moodle_exception("invalidzip", "mod_flexbook");
+            throw new moodle_exception("invalidzip", "mod_bookflow");
         }
 
         try {
             if ($zip->numFiles > self::MAX_ZIP_ENTRIES) {
-                throw new moodle_exception("importzipentries", "mod_flexbook", "", self::MAX_ZIP_ENTRIES);
+                throw new moodle_exception("importzipentries", "mod_bookflow", "", self::MAX_ZIP_ENTRIES);
             }
 
             $markdownfiles = 0;
@@ -255,7 +255,7 @@ class import_manager {
                 if ($markdownfiles > self::MAX_ZIP_MARKDOWN_FILES) {
                     throw new moodle_exception(
                         "importzipmarkdownfiles",
-                        "mod_flexbook",
+                        "mod_bookflow",
                         "",
                         self::MAX_ZIP_MARKDOWN_FILES
                     );
@@ -266,7 +266,7 @@ class import_manager {
                 if ($entrybytes > self::MAX_ZIP_ENTRY_BYTES) {
                     throw new moodle_exception(
                         "importzipentryoversize",
-                        "mod_flexbook",
+                        "mod_bookflow",
                         "",
                         (int) (self::MAX_ZIP_ENTRY_BYTES / 1024 / 1024)
                     );
@@ -276,7 +276,7 @@ class import_manager {
                 if ($expandedbytes > self::MAX_ZIP_EXPANDED_BYTES) {
                     throw new moodle_exception(
                         "importzipexpandedoversize",
-                        "mod_flexbook",
+                        "mod_bookflow",
                         "",
                         (int) (self::MAX_ZIP_EXPANDED_BYTES / 1024 / 1024)
                     );
@@ -284,13 +284,13 @@ class import_manager {
 
                 $markdown = $zip->getFromIndex($index);
                 if ($markdown === false) {
-                    throw new moodle_exception("invalidzip", "mod_flexbook");
+                    throw new moodle_exception("invalidzip", "mod_bookflow");
                 }
                 $chaptercount += self::count_markdown_chapters($markdown);
                 if ($chaptercount > self::MAX_ZIP_IMPORTED_CHAPTERS) {
                     throw new moodle_exception(
                         "importzipchapterlimit",
-                        "mod_flexbook",
+                        "mod_bookflow",
                         "",
                         self::MAX_ZIP_IMPORTED_CHAPTERS
                     );
@@ -305,10 +305,10 @@ class import_manager {
                 }
                 $markdown = $zip->getFromIndex($index);
                 if ($markdown === false) {
-                    throw new moodle_exception("invalidzip", "mod_flexbook");
+                    throw new moodle_exception("invalidzip", "mod_bookflow");
                 }
                 $title = pathinfo(basename($name), PATHINFO_FILENAME);
-                $count += self::from_markdown($markdown, $flexbookid, $title);
+                $count += self::from_markdown($markdown, $bookflowid, $title);
             }
             return $count;
         } finally {
@@ -319,7 +319,7 @@ class import_manager {
     /**
      * Creates a chapter containing an imported text block.
      *
-     * @param int $flexbookid FlexBook ID.
+     * @param int $bookflowid BookFlow ID.
      * @param string $title Imported chapter title.
      * @param string $body Imported chapter content.
      * @param string $type Content type identifier.
@@ -327,14 +327,14 @@ class import_manager {
      * @return int
      */
     private static function create_text_chapter(
-        int $flexbookid,
+        int $bookflowid,
         string $title,
         string $body,
         string $type,
         int $parentid
     ): int {
         $chapterid = chapter_manager::create((object) [
-            "flexbookid" => $flexbookid,
+            "bookflowid" => $bookflowid,
             "parentid" => $parentid,
             "title" => clean_param($title, PARAM_TEXT),
             "description" => "",
@@ -374,7 +374,7 @@ class import_manager {
         if (strlen($source) > self::MAX_SOURCE_BYTES) {
             throw new moodle_exception(
                 "importsourceoversize",
-                "mod_flexbook",
+                "mod_bookflow",
                 "",
                 (int) (self::MAX_SOURCE_BYTES / 1024 / 1024)
             );

@@ -17,18 +17,18 @@
 /**
  * code.php
  *
- * @package   flexbookcontent_code
+ * @package   bookflowcontent_code
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace flexbookcontent_code\types;
+namespace bookflowcontent_code\types;
 
-use mod_flexbook\types\raw_content;
+use mod_bookflow\types\raw_content;
 use renderer_base;
 
 /**
- * FlexBook Code content type.
+ * BookFlow Code content type.
  */
 class code extends raw_content {
     /** @var string */
@@ -38,7 +38,7 @@ class code extends raw_content {
      * Gets the raw textarea label.
      */
     protected static function get_raw_label(): string {
-        return get_string("codecontent", "mod_flexbook");
+        return get_string("codecontent", "mod_bookflow");
     }
 
     /**
@@ -69,7 +69,7 @@ class code extends raw_content {
      */
     public function render(renderer_base $output, bool $editing): string {
         return $output->render_from_template(
-            "flexbookcontent_code/code",
+            "bookflowcontent_code/code",
             $this->export_data($editing)
         );
     }
@@ -78,7 +78,7 @@ class code extends raw_content {
      * Gets the localized content type name.
      */
     public static function get_name(): string {
-        return get_string("pluginname", "flexbookcontent_code");
+        return get_string("pluginname", "bookflowcontent_code");
     }
 
 }

@@ -17,18 +17,18 @@
 /**
  * content_type.php
  *
- * @package   flexbookcontent_disclosure
+ * @package   bookflowcontent_disclosure
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace flexbookcontent_disclosure;
+namespace bookflowcontent_disclosure;
 
-use flexbookcontent_disclosure\types\disclosure;
-use mod_flexbook\hook\content_types;
+use bookflowcontent_disclosure\types\disclosure;
+use mod_bookflow\hook\content_types;
 
 /**
- * Registers the Disclosure content type in FlexBook.
+ * Registers the Disclosure content type in BookFlow.
  */
 class content_type {
     /**

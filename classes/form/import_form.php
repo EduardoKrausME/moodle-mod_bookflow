@@ -17,12 +17,12 @@
 /**
  * import_form.php
  *
- * @package   mod_flexbook
+ * @package   mod_bookflow
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_flexbook\form;
+namespace mod_bookflow\form;
 
 use moodleform;
 use Override;
@@ -45,13 +45,13 @@ class import_form extends moodleform {
         $mform = $this->_form;
         $mform->addElement("hidden", "id");
         $mform->setType("id", PARAM_INT);
-        $mform->addElement("select", "format", get_string("importformat", "mod_flexbook"), [
-            "book" => get_string("importbook", "mod_flexbook"),
-            "markdown" => get_string("importmarkdown", "mod_flexbook"),
-            "html" => get_string("importhtml", "mod_flexbook"),
-            "zip" => get_string("importmarkdownzip", "mod_flexbook"),
+        $mform->addElement("select", "format", get_string("importformat", "mod_bookflow"), [
+            "book" => get_string("importbook", "mod_bookflow"),
+            "markdown" => get_string("importmarkdown", "mod_bookflow"),
+            "html" => get_string("importhtml", "mod_bookflow"),
+            "zip" => get_string("importmarkdownzip", "mod_bookflow"),
         ]);
-        $mform->addElement("text", "bookid", get_string("bookid", "mod_flexbook"));
+        $mform->addElement("text", "bookid", get_string("bookid", "mod_bookflow"));
         $mform->setType("bookid", PARAM_INT);
         $mform->hideIf("bookid", "format", "neq", "book");
         $mform->addElement("filepicker", "importfile", get_string("file"), null, [
@@ -59,6 +59,6 @@ class import_form extends moodleform {
             "maxbytes" => 10 * 1024 * 1024,
         ]);
         $mform->hideIf("importfile", "format", "eq", "book");
-        $this->add_action_buttons(true, get_string("import", "mod_flexbook"));
+        $this->add_action_buttons(true, get_string("import", "mod_bookflow"));
     }
 }

@@ -14,19 +14,19 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Handles FlexBook question submission.
+ * Handles BookFlow question submission.
  *
- * @package flexbookcontent_question
+ * @package bookflowcontent_question
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 define(
-    ["core/ajax", "core/notification", "mod_flexbook/progress_tracker"],
+    ["core/ajax", "core/notification", "mod_bookflow/progress_tracker"],
     function(Ajax, Notification, ProgressTracker) {
-        const init = function(flexbookId) {
+        const init = function(bookflowId) {
             document.addEventListener("submit", function(event) {
-                const form = event.target.closest("[data-flexbook-question]");
+                const form = event.target.closest("[data-bookflow-question]");
                 if (!form) {
                     return;
                 }
@@ -38,10 +38,10 @@ define(
                 }
 
                 Ajax.call([{
-                    methodname: "flexbookcontent_question_submit_answer",
+                    methodname: "bookflowcontent_question_submit_answer",
                     args: {
-                        flexbookid: flexbookId,
-                        contentid: Number(form.dataset.flexbookQuestion),
+                        bookflowid: bookflowId,
+                        contentid: Number(form.dataset.bookflowQuestion),
                         answer: JSON.stringify(selected.value)
                     }
                 }])[0].then(function(result) {
@@ -50,8 +50,8 @@ define(
                         feedback.textContent = result.feedback;
                     }
                     return Ajax.call([{
-                        methodname: "mod_flexbook_get_user_progress",
-                        args: {flexbookid: flexbookId}
+                        methodname: "mod_bookflow_get_user_progress",
+                        args: {bookflowid: bookflowId}
                     }])[0];
                 }).then(ProgressTracker.updateProgress).catch(Notification.exception);
             });

@@ -17,43 +17,43 @@
 /**
  * time_estimator.php
  *
- * @package   mod_flexbook
+ * @package   mod_bookflow
  * @copyright 2026 Eduardo Kraus
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_flexbook;
+namespace mod_bookflow;
 
 /**
- * Calculates the estimated study time for a FlexBook.
+ * Calculates the estimated study time for a BookFlow.
  */
 class time_estimator {
     /**
-     * Calculates the estimated study time for a FlexBook.
+     * Calculates the estimated study time for a BookFlow.
      *
-     * @param int $flexbookid FlexBook ID.
+     * @param int $bookflowid BookFlow ID.
      * @return int
      */
-    public static function for_flexbook(int $flexbookid): int {
+    public static function for_bookflow(int $bookflowid): int {
         global $DB;
 
-        $flexbook = $DB->get_record("flexbook", ["id" => $flexbookid], "*", MUST_EXIST);
-        if ($flexbook->estimatedtime > 0) {
-            return (int) $flexbook->estimatedtime;
+        $bookflow = $DB->get_record("bookflow", ["id" => $bookflowid], "*", MUST_EXIST);
+        if ($bookflow->estimatedtime > 0) {
+            return (int) $bookflow->estimatedtime;
         }
 
-        $cm = get_coursemodule_from_instance("flexbook", $flexbookid, $flexbook->course, false, MUST_EXIST);
+        $cm = get_coursemodule_from_instance("bookflow", $bookflowid, $bookflow->course, false, MUST_EXIST);
         $context = \context_module::instance($cm->id);
         $sql = "SELECT c.*
-                  FROM {flexbook_contents} c
-                  JOIN {flexbook_chapters} ch ON ch.id = c.chapterid
-                 WHERE ch.flexbookid = :flexbookid
+                  FROM {bookflow_contents} c
+                  JOIN {bookflow_chapters} ch ON ch.id = c.chapterid
+                 WHERE ch.bookflowid = :bookflowid
                    AND ch.hidden = 0
                    AND c.hidden = 0";
 
         $seconds = 0;
-        foreach ($DB->get_records_sql($sql, ["flexbookid" => $flexbookid]) as $record) {
-            $content = content_type_manager::create_content($record, $flexbook, $context);
+        foreach ($DB->get_records_sql($sql, ["bookflowid" => $bookflowid]) as $record) {
+            $content = content_type_manager::create_content($record, $bookflow, $context);
             $seconds += $content->estimate_time();
         }
         return $seconds;

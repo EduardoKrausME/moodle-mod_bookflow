@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template flexbookcontent_download/download
+    @template bookflowcontent_download/download
 
     Example context (json):
     {
@@ -23,8 +23,8 @@
     }
 }}
 
-<div class="flexbook-download">
+<div class="bookflow-download">
     {{#title}}<h3>{{title}}</h3>{{/title}}
     {{#data2}}<p>{{data2}}</p>{{/data2}}
-    <a class="btn btn-outline-primary" href="{{{source}}}" download data-flexbook-download="{{id}}">{{#str}}download{{/str}}</a>
+    <a class="btn btn-outline-primary" href="{{{source}}}" download data-bookflow-download="{{id}}">{{#str}}download{{/str}}</a>
 </div>

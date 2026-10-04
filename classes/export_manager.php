@@ -17,43 +17,43 @@
 /**
  * export_manager.php
  *
- * @package   mod_flexbook
+ * @package   mod_bookflow
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_flexbook;
+namespace mod_bookflow;
 
 use context_module;
 use renderer_base;
 
 /**
- * Exports a FlexBook to supported output formats.
+ * Exports a BookFlow to supported output formats.
  */
 class export_manager {
     /**
-     * Exports the FlexBook to Markdown.
+     * Exports the BookFlow to Markdown.
      *
-     * @param int $flexbookid FlexBook ID.
+     * @param int $bookflowid BookFlow ID.
      * @param context_module $context Module context.
      * @return string
      */
-    public static function to_markdown(int $flexbookid, context_module $context): string {
+    public static function to_markdown(int $bookflowid, context_module $context): string {
         global $DB;
 
-        $flexbook = $DB->get_record("flexbook", ["id" => $flexbookid], "*", MUST_EXIST);
-        $markdown = "# " . format_string($flexbook->name, true, ["context" => $context]) . "\n\n";
-        $markdown .= trim(html_to_text($flexbook->intro ?? "", 0, false)) . "\n\n";
-        foreach ($DB->get_records("flexbook_chapters", ["flexbookid" => $flexbookid], "sortorder, id") as $chapter) {
+        $bookflow = $DB->get_record("bookflow", ["id" => $bookflowid], "*", MUST_EXIST);
+        $markdown = "# " . format_string($bookflow->name, true, ["context" => $context]) . "\n\n";
+        $markdown .= trim(html_to_text($bookflow->intro ?? "", 0, false)) . "\n\n";
+        foreach ($DB->get_records("bookflow_chapters", ["bookflowid" => $bookflowid], "sortorder, id") as $chapter) {
             $markdown .= ($chapter->parentid ? "## " : "# ") . format_string($chapter->title) . "\n\n";
-            foreach ($DB->get_records("flexbook_contents", ["chapterid" => $chapter->id], "sortorder, id") as $content) {
+            foreach ($DB->get_records("bookflow_contents", ["chapterid" => $chapter->id], "sortorder, id") as $content) {
                 if ($content->hidden) {
                     continue;
                 }
                 if ($content->title) {
                     $markdown .= "### " . format_string($content->title) . "\n\n";
                 }
-                $type = content_type_manager::create_content($content, $flexbook, $context);
+                $type = content_type_manager::create_content($content, $bookflow, $context);
                 $markdown .= $type->export_markdown();
             }
         }
@@ -61,24 +61,24 @@ class export_manager {
     }
 
     /**
-     * Exports the FlexBook to HTML.
+     * Exports the BookFlow to HTML.
      *
-     * @param int $flexbookid FlexBook ID.
+     * @param int $bookflowid BookFlow ID.
      * @param context_module $context Module context.
      * @param renderer_base $output Moodle renderer used to render the Mustache template.
      * @param bool $showanswers Whether hidden answers must be included.
      * @return string
      */
     public static function to_html(
-        int $flexbookid,
+        int $bookflowid,
         context_module $context,
         renderer_base $output,
         bool $showanswers = false
     ): string {
         global $DB;
 
-        $flexbook = $DB->get_record("flexbook", ["id" => $flexbookid], "*", MUST_EXIST);
-        $chapters = $DB->get_records("flexbook_chapters", ["flexbookid" => $flexbookid], "sortorder, id");
+        $bookflow = $DB->get_record("bookflow", ["id" => $bookflowid], "*", MUST_EXIST);
+        $chapters = $DB->get_records("bookflow_chapters", ["bookflowid" => $bookflowid], "sortorder, id");
         $toc = "";
         $body = "";
         foreach ($chapters as $chapter) {
@@ -90,12 +90,12 @@ class export_manager {
             $level = $chapter->parentid ? "h2" : "h1";
             $body .= "<section class=\"chapter\" id=\"chapter-{$chapter->id}\"><{$level}>{$title}</{$level}>";
 
-            $contents = $DB->get_records("flexbook_contents", ["chapterid" => $chapter->id], "sortorder, id");
+            $contents = $DB->get_records("bookflow_contents", ["chapterid" => $chapter->id], "sortorder, id");
             foreach ($contents as $content) {
                 if ($content->hidden) {
                     continue;
                 }
-                $type = content_type_manager::create_content($content, $flexbook, $context);
+                $type = content_type_manager::create_content($content, $bookflow, $context);
                 $body .= "<div class=\"content content-{$content->type}\">"
                     . $type->render($output, false)
                     . "</div>";
@@ -103,7 +103,7 @@ class export_manager {
             }
             $body .= "</section>";
         }
-        $name = format_string($flexbook->name);
+        $name = format_string($bookflow->name);
         $language = s(current_language());
         return "<!doctype html><html lang=\"{$language}\"><head><meta charset=\"utf-8\">"
             . "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
@@ -112,34 +112,34 @@ class export_manager {
             . "img,video{max-width:100%}.chapter{break-before:page}.content{margin:1.5rem 0}"
             . "@media print{a[href]::after{content:' (' attr(href) ')';font-size:.8em}}"
             . "</style></head><body><header><h1>{$name}</h1>"
-            . format_text($flexbook->intro, $flexbook->introformat, ["context" => $context])
-            . "</header><nav><h2>" . get_string("tableofcontents", "mod_flexbook") . "</h2><ol>{$toc}</ol></nav>"
+            . format_text($bookflow->intro, $bookflow->introformat, ["context" => $context])
+            . "</header><nav><h2>" . get_string("tableofcontents", "mod_bookflow") . "</h2><ol>{$toc}</ol></nav>"
             . $body . "</body></html>";
     }
 
     /**
      * Creates a ZIP archive containing the exported book and its files.
      *
-     * @param int $flexbookid FlexBook ID.
+     * @param int $bookflowid BookFlow ID.
      * @param context_module $context Module context.
      * @param renderer_base $output Moodle renderer used to render the Mustache template.
      * @return string
      */
     public static function create_zip(
-        int $flexbookid,
+        int $bookflowid,
         context_module $context,
         renderer_base $output
     ): string {
         $directory = make_request_directory();
         $htmlpath = $directory . "/index.html";
-        $markdownpath = $directory . "/flexbook.md";
-        file_put_contents($htmlpath, self::to_html($flexbookid, $context, $output));
-        file_put_contents($markdownpath, self::to_markdown($flexbookid, $context));
-        $zippath = $directory . "/flexbook.zip";
+        $markdownpath = $directory . "/bookflow.md";
+        file_put_contents($htmlpath, self::to_html($bookflowid, $context, $output));
+        file_put_contents($markdownpath, self::to_markdown($bookflowid, $context));
+        $zippath = $directory . "/bookflow.zip";
         $packer = get_file_packer("application/zip");
         $packer->archive_to_pathname([
             "index.html" => $htmlpath,
-            "flexbook.md" => $markdownpath,
+            "bookflow.md" => $markdownpath,
         ], $zippath);
         return $zippath;
     }
@@ -153,7 +153,7 @@ class export_manager {
      */
     public static function create_text_file(string $content, string $extension): string {
         $directory = make_request_directory();
-        $path = $directory . "/flexbook." . clean_param($extension, PARAM_ALPHANUMEXT);
+        $path = $directory . "/bookflow." . clean_param($extension, PARAM_ALPHANUMEXT);
         file_put_contents($path, $content);
         return $path;
     }

@@ -17,18 +17,18 @@
 /**
  * content_type.php
  *
- * @package   flexbookcontent_flashcards
+ * @package   bookflowcontent_flashcards
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace flexbookcontent_flashcards;
+namespace bookflowcontent_flashcards;
 
-use flexbookcontent_flashcards\types\flashcards;
-use mod_flexbook\hook\content_types;
+use bookflowcontent_flashcards\types\flashcards;
+use mod_bookflow\hook\content_types;
 
 /**
- * Registers the Flashcards content type in FlexBook.
+ * Registers the Flashcards content type in BookFlow.
  */
 class content_type {
     /**

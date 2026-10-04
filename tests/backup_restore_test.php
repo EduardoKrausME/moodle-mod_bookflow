@@ -17,12 +17,12 @@
 /**
  * backup_restore_test.php
  *
- * @package   mod_flexbook
+ * @package   mod_bookflow
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_flexbook;
+namespace mod_bookflow;
 
 use advanced_testcase;
 
@@ -42,15 +42,15 @@ final class backup_restore_test extends advanced_testcase {
 
         $this->resetAfterTest();
         $course = $this->getDataGenerator()->create_course();
-        $generator = $this->getDataGenerator()->get_plugin_generator("mod_flexbook");
-        $flexbook = $generator->create_instance(["course" => $course->id]);
-        $chapter = $generator->create_chapter($flexbook);
+        $generator = $this->getDataGenerator()->get_plugin_generator("mod_bookflow");
+        $bookflow = $generator->create_instance(["course" => $course->id]);
+        $chapter = $generator->create_chapter($bookflow);
         $content = $generator->create_content($chapter);
 
-        $this->assertTrue(flexbook_supports(FEATURE_BACKUP_MOODLE2));
-        $this->assertTrue(flexbook_delete_instance($flexbook->id));
-        $this->assertFalse($DB->record_exists("flexbook", ["id" => $flexbook->id]));
-        $this->assertFalse($DB->record_exists("flexbook_chapters", ["id" => $chapter->id]));
-        $this->assertFalse($DB->record_exists("flexbook_contents", ["id" => $content->id]));
+        $this->assertTrue(bookflow_supports(FEATURE_BACKUP_MOODLE2));
+        $this->assertTrue(bookflow_delete_instance($bookflow->id));
+        $this->assertFalse($DB->record_exists("bookflow", ["id" => $bookflow->id]));
+        $this->assertFalse($DB->record_exists("bookflow_chapters", ["id" => $chapter->id]));
+        $this->assertFalse($DB->record_exists("bookflow_contents", ["id" => $content->id]));
     }
 }

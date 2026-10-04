@@ -17,23 +17,23 @@
 /**
  * lib.php
  *
- * @package   mod_flexbook
+ * @package   mod_bookflow
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use mod_flexbook\chapter_manager;
-use mod_flexbook\content_manager;
+use mod_bookflow\chapter_manager;
+use mod_bookflow\content_manager;
 
 defined('MOODLE_INTERNAL') || die;
 require_once(__DIR__ . "/../../lib.php");
 
 /**
- * Generates FlexBook fixtures for automated tests.
+ * Generates BookFlow fixtures for automated tests.
  */
-class mod_flexbook_generator extends testing_module_generator {
+class mod_bookflow_generator extends testing_module_generator {
     /**
-     * Creates a FlexBook activity fixture.
+     * Creates a BookFlow activity fixture.
      *
      * @param mixed $record Record data.
      * @param array|null $options Generator options.
@@ -42,9 +42,9 @@ class mod_flexbook_generator extends testing_module_generator {
     #[Override]
     public function create_instance($record = null, ?array $options = null): stdClass {
         $record = (object) ($record ?? []);
-        $record->numbering = $record->numbering ?? FLEXBOOK_NUMBERING_NUMERIC;
+        $record->numbering = $record->numbering ?? BOOKFLOW_NUMBERING_NUMERIC;
         $record->defaultcontenttype = $record->defaultcontenttype ?? "html";
-        $record->completionmode = $record->completionmode ?? FLEXBOOK_COMPLETION_PERCENTAGE;
+        $record->completionmode = $record->completionmode ?? BOOKFLOW_COMPLETION_PERCENTAGE;
         $record->completionpercentage = $record->completionpercentage ?? 80;
         $record->requiremandatory = $record->requiremandatory ?? 0;
         $record->enablebookmarks = $record->enablebookmarks ?? 1;
@@ -56,17 +56,17 @@ class mod_flexbook_generator extends testing_module_generator {
     }
 
     /**
-     * Creates a FlexBook chapter fixture.
+     * Creates a BookFlow chapter fixture.
      *
-     * @param stdClass $flexbook FlexBook record.
+     * @param stdClass $bookflow BookFlow record.
      * @param array $data Record data.
      * @return stdClass
      */
-    public function create_chapter(stdClass $flexbook, array $data = []): stdClass {
+    public function create_chapter(stdClass $bookflow, array $data = []): stdClass {
         global $DB;
 
         $record = (object) array_merge([
-            "flexbookid" => $flexbook->id,
+            "bookflowid" => $bookflow->id,
             "parentid" => 0,
             "title" => "Chapter",
             "description" => "",
@@ -76,11 +76,11 @@ class mod_flexbook_generator extends testing_module_generator {
             "estimatedtime" => 0,
         ], $data);
         $record->id = chapter_manager::create($record);
-        return $DB->get_record("flexbook_chapters", ["id" => $record->id], "*", MUST_EXIST);
+        return $DB->get_record("bookflow_chapters", ["id" => $record->id], "*", MUST_EXIST);
     }
 
     /**
-     * Creates a FlexBook content block fixture.
+     * Creates a BookFlow content block fixture.
      *
      * @param stdClass $chapter Chapter wrapper.
      * @param array $data Record data.
@@ -110,6 +110,6 @@ class mod_flexbook_generator extends testing_module_generator {
             "estimatedtime" => 0,
         ], $data);
         $record->id = content_manager::create($record);
-        return $DB->get_record("flexbook_contents", ["id" => $record->id], "*", MUST_EXIST);
+        return $DB->get_record("bookflow_contents", ["id" => $record->id], "*", MUST_EXIST);
     }
 }

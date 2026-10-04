@@ -17,7 +17,7 @@
 /**
  * index.php
  *
- * @package   mod_flexbook
+ * @package   mod_bookflow
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -28,20 +28,20 @@ $id = required_param("id", PARAM_INT);
 $course = get_course($id);
 require_course_login($course);
 
-$PAGE->set_url("/mod/flexbook/index.php", ["id" => $course->id]);
-$PAGE->set_title(get_string("modulenameplural", "mod_flexbook"));
+$PAGE->set_url("/mod/bookflow/index.php", ["id" => $course->id]);
+$PAGE->set_title(get_string("modulenameplural", "mod_bookflow"));
 $PAGE->set_heading(format_string($course->fullname));
 
-$instances = get_all_instances_in_course("flexbook", $course);
+$instances = get_all_instances_in_course("bookflow", $course);
 
 echo $OUTPUT->header();
-echo $OUTPUT->heading(get_string("modulenameplural", "mod_flexbook"));
+echo $OUTPUT->heading(get_string("modulenameplural", "mod_bookflow"));
 if (!$instances) {
-    echo $OUTPUT->notification(get_string("noflexbooks", "mod_flexbook"), "info");
+    echo $OUTPUT->notification(get_string("nobookflows", "mod_bookflow"), "info");
 } else {
     echo html_writer::start_tag("div", ["class" => "list-group"]);
     foreach ($instances as $instance) {
-        $url = new moodle_url("/mod/flexbook/view.php", ["id" => $instance->coursemodule]);
+        $url = new moodle_url("/mod/bookflow/view.php", ["id" => $instance->coursemodule]);
         echo html_writer::link($url, format_string($instance->name), [
             "class" => "list-group-item list-group-item-action",
         ]);

@@ -17,18 +17,18 @@
 /**
  * version.php
  *
- * @package   flexbookcontent_video
+ * @package   bookflowcontent_video
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die;
 
-$plugin->component = "flexbookcontent_video";
+$plugin->component = "bookflowcontent_video";
 $plugin->version = 2026092801;
 $plugin->requires = 2024042200;
 $plugin->maturity = MATURITY_STABLE;
 $plugin->release = "0.1.7";
 $plugin->dependencies = [
-    "mod_flexbook" => 2026081300,
+    "mod_bookflow" => 2026081300,
 ];

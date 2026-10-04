@@ -17,12 +17,12 @@
 /**
  * template_content.php
  *
- * @package   mod_flexbook
+ * @package   mod_bookflow
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_flexbook\types;
+namespace mod_bookflow\types;
 
 use context_module;
 use renderer_base;
@@ -56,7 +56,7 @@ abstract class template_content extends content {
      * @return string
      */
     public static function get_name(): string {
-        return get_string("pluginname", "flexbookcontent_" . static::$type);
+        return get_string("pluginname", "bookflowcontent_" . static::$type);
     }
 
     /**
@@ -72,19 +72,19 @@ abstract class template_content extends content {
      * Checks whether the current user can create the content type.
      *
      * @param chapter|null $chapter Chapter wrapper.
-     * @param stdClass $flexbook FlexBook record.
+     * @param stdClass $bookflow BookFlow record.
      * @param context_module $context Module context.
      * @return bool
      */
     public static function can_create(
         ?chapter $chapter,
-        stdClass $flexbook,
+        stdClass $bookflow,
         context_module $context
     ): bool {
-        if (!has_capability("mod/flexbook:managecontent", $context)) {
+        if (!has_capability("mod/bookflow:managecontent", $context)) {
             return false;
         }
-        return static::is_safe() || has_capability("mod/flexbook:editunsafecontent", $context);
+        return static::is_safe() || has_capability("mod/bookflow:editunsafecontent", $context);
     }
 
     /**
@@ -96,7 +96,7 @@ abstract class template_content extends content {
      */
     public function render(renderer_base $output, bool $editing): string {
         return $output->render_from_template(
-            "flexbookcontent_" . static::$type . "/" . static::$type,
+            "bookflowcontent_" . static::$type . "/" . static::$type,
             $this->export_data($editing)
         );
     }
@@ -117,7 +117,7 @@ abstract class template_content extends content {
                 "context" => $this->context,
                 "filter" => true,
                 "noclean" => !static::is_safe() && has_capability(
-                    "mod/flexbook:editunsafecontent",
+                    "mod/bookflow:editunsafecontent",
                     $this->context
                 ),
             ]),
@@ -143,7 +143,7 @@ abstract class template_content extends content {
             $this->record->data1 ?? "",
             "pluginfile.php",
             $this->context->id,
-            "mod_flexbook",
+            "mod_bookflow",
             static::$filearea,
             $this->record->id
         );

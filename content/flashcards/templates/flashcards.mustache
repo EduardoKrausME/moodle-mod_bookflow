@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template flexbookcontent_flashcards/flashcards
+    @template bookflowcontent_flashcards/flashcards
 
     Example context (json):
     {
@@ -24,9 +24,9 @@
 }}
 
 {{#title}}<h3>{{title}}</h3>{{/title}}
-<div class="flexbook-flashcards" data-flexbook-interactive="{{id}}">
+<div class="bookflow-flashcards" data-bookflow-interactive="{{id}}">
     {{#items}}
-        <button class="flexbook-flashcard" type="button" data-item-index="{{index}}" aria-pressed="false">
+        <button class="bookflow-flashcard" type="button" data-item-index="{{index}}" aria-pressed="false">
             <span class="front">{{front}}</span><span class="back">{{back}}</span>
         </button>
     {{/items}}

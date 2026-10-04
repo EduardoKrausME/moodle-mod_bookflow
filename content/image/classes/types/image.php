@@ -17,21 +17,21 @@
 /**
  * image.php
  *
- * @package   flexbookcontent_image
+ * @package   bookflowcontent_image
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace flexbookcontent_image\types;
+namespace bookflowcontent_image\types;
 
-use mod_flexbook\form\content_form;
-use mod_flexbook\form\content_form_mapper;
-use mod_flexbook\types\source_content;
+use mod_bookflow\form\content_form;
+use mod_bookflow\form\content_form_mapper;
+use mod_bookflow\types\source_content;
 use renderer_base;
 use stdClass;
 
 /**
- * FlexBook Image content type.
+ * BookFlow Image content type.
  */
 class image extends source_content {
     /** @var string */
@@ -52,9 +52,9 @@ class image extends source_content {
     ): void {
         parent::add_form_fields($form, $editoroptions, $fileoptions, $repeatcount, $structureddraftid);
         $mform = $form->get_mform();
-        $mform->addElement("text", "imagealt", get_string("imagealt", "mod_flexbook"), ["size" => 64]);
+        $mform->addElement("text", "imagealt", get_string("imagealt", "mod_bookflow"), ["size" => 64]);
         $mform->setType("imagealt", PARAM_TEXT);
-        $mform->addElement("text", "caption", get_string("caption", "mod_flexbook"), ["size" => 64]);
+        $mform->addElement("text", "caption", get_string("caption", "mod_bookflow"), ["size" => 64]);
         $mform->setType("caption", PARAM_TEXT);
     }
 
@@ -98,7 +98,7 @@ class image extends source_content {
      */
     public function render(renderer_base $output, bool $editing): string {
         return $output->render_from_template(
-            "flexbookcontent_image/image",
+            "bookflowcontent_image/image",
             $this->export_data($editing)
         );
     }
@@ -107,7 +107,7 @@ class image extends source_content {
      * Gets the localized content type name.
      */
     public static function get_name(): string {
-        return get_string("pluginname", "flexbookcontent_image");
+        return get_string("pluginname", "bookflowcontent_image");
     }
 
 }

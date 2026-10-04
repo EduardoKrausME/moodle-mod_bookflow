@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mod_flexbook/content_tools
+    @template mod_bookflow/content_tools
 
     Example context (json):
     {
@@ -23,22 +23,22 @@
     }
 }}
 
-<div class="flexbook-content-tools">
+<div class="bookflow-content-tools">
     {{#manual}}
         <button class="btn btn-sm btn-primary"
                 type="button"
-                data-action="flexbook-complete-manual"
+                data-action="bookflow-complete-manual"
                 data-content-id="{{contentid}}">
-            {{#str}}markcomplete, mod_flexbook{{/str}}
+            {{#str}}markcomplete, mod_bookflow{{/str}}
         </button>
     {{/manual}}
     {{#enablebookmarks}}
-        {{> mod_flexbook/bookmark_button}}
+        {{> mod_bookflow/bookmark_button}}
     {{/enablebookmarks}}
     {{#enablenotes}}
-        <details class="flexbook-note-panel">
-            <summary>{{#str}}addnote, mod_flexbook{{/str}}</summary>
-            {{> mod_flexbook/note_form}}
+        <details class="bookflow-note-panel">
+            <summary>{{#str}}addnote, mod_bookflow{{/str}}</summary>
+            {{> mod_bookflow/note_form}}
         </details>
     {{/enablenotes}}
 </div>

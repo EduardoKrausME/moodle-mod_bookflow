@@ -17,21 +17,21 @@
 /**
  * audio.php
  *
- * @package   flexbookcontent_audio
+ * @package   bookflowcontent_audio
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace flexbookcontent_audio\types;
+namespace bookflowcontent_audio\types;
 
-use mod_flexbook\form\content_form;
-use mod_flexbook\form\content_form_mapper;
-use mod_flexbook\types\media_content;
+use mod_bookflow\form\content_form;
+use mod_bookflow\form\content_form_mapper;
+use mod_bookflow\types\media_content;
 use renderer_base;
 use stdClass;
 
 /**
- * FlexBook Audio content type.
+ * BookFlow Audio content type.
  */
 class audio extends media_content {
     /** @var string */
@@ -55,7 +55,7 @@ class audio extends media_content {
         $mform->addElement(
             "textarea",
             "transcript",
-            get_string("transcript", "mod_flexbook"),
+            get_string("transcript", "mod_bookflow"),
             ["rows" => 8, "cols" => 90]
         );
         $mform->setType("transcript", PARAM_RAW);
@@ -68,8 +68,8 @@ class audio extends media_content {
         $options = parent::get_completion_options();
         $none = $options["none"];
         unset($options["none"]);
-        $options["percent"] = get_string("completeonpercent", "mod_flexbook");
-        $options["end"] = get_string("completeonend", "mod_flexbook");
+        $options["percent"] = get_string("completeonpercent", "mod_bookflow");
+        $options["end"] = get_string("completeonend", "mod_bookflow");
         $options["none"] = $none;
         return $options;
     }
@@ -109,13 +109,13 @@ class audio extends media_content {
     /**
      * Loads audio progress tracking from this subplugin.
      */
-    public static function require_page_assets(stdClass $flexbook, bool $editing): void {
+    public static function require_page_assets(stdClass $bookflow, bool $editing): void {
         global $PAGE;
-        if (!$editing && !empty($flexbook->enabletracking)) {
+        if (!$editing && !empty($bookflow->enabletracking)) {
             $PAGE->requires->js_call_amd(
-                "flexbookcontent_audio/audio_progress",
+                "bookflowcontent_audio/audio_progress",
                 "init",
-                [$flexbook->id]
+                [$bookflow->id]
             );
         }
     }
@@ -125,7 +125,7 @@ class audio extends media_content {
      */
     public function render(renderer_base $output, bool $editing): string {
         return $output->render_from_template(
-            "flexbookcontent_audio/audio",
+            "bookflowcontent_audio/audio",
             $this->export_data($editing)
         );
     }
@@ -134,7 +134,7 @@ class audio extends media_content {
      * Gets the localized content type name.
      */
     public static function get_name(): string {
-        return get_string("pluginname", "flexbookcontent_audio");
+        return get_string("pluginname", "bookflowcontent_audio");
     }
 
 }

@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mod_flexbook/progress_bar
+    @template mod_bookflow/progress_bar
 
     Example context (json):
     {
@@ -23,7 +23,7 @@
     }
 }}
 
-<div class="flexbook-progress" data-region="progress" aria-label="{{#str}}progress, mod_flexbook{{/str}}">
+<div class="bookflow-progress" data-region="progress" aria-label="{{#str}}progress, mod_bookflow{{/str}}">
     <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{progressrounded}}">
         <div class="progress-bar" style="width: {{progressrounded}}%"></div>
     </div>

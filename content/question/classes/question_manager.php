@@ -17,15 +17,15 @@
 /**
  * question_manager.php
  *
- * @package   flexbookcontent_question
+ * @package   bookflowcontent_question
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace flexbookcontent_question;
+namespace bookflowcontent_question;
 
-use flexbookcontent_question\event\question_answered;
-use mod_flexbook\progress\progress_manager;
+use bookflowcontent_question\event\question_answered;
+use mod_bookflow\progress\progress_manager;
 use moodle_exception;
 
 /**
@@ -41,15 +41,15 @@ class question_manager {
     public static function sync_from_content(int $contentid): void {
         global $DB;
 
-        $content = $DB->get_record("flexbook_contents", ["id" => $contentid, "type" => "question"], "*",
+        $content = $DB->get_record("bookflow_contents", ["id" => $contentid, "type" => "question"], "*",
             MUST_EXIST);
         $options = json_decode($content->data2 ?? "[]", true);
         $configuration = json_decode($content->data3 ?? "{}", true);
         if (!is_array($options) || !is_array($configuration)) {
-            throw new moodle_exception("invalidquestionconfiguration", "mod_flexbook");
+            throw new moodle_exception("invalidquestionconfiguration", "mod_bookflow");
         }
 
-        $record = $DB->get_record("flexbook_questions", ["contentid" => $contentid]);
+        $record = $DB->get_record("bookflow_questions", ["contentid" => $contentid]);
         $now = time();
         if (!$record) {
             $record = (object) [
@@ -66,9 +66,9 @@ class question_manager {
         $record->timemodified = $now;
 
         if (!empty($record->id)) {
-            $DB->update_record("flexbook_questions", $record);
+            $DB->update_record("bookflow_questions", $record);
         } else {
-            $DB->insert_record("flexbook_questions", $record);
+            $DB->insert_record("bookflow_questions", $record);
         }
     }
 
@@ -81,24 +81,24 @@ class question_manager {
     public static function delete_for_content(int $contentid): void {
         global $DB;
 
-        $questionids = $DB->get_fieldset_select("flexbook_questions", "id", "contentid = ?", [$contentid]);
+        $questionids = $DB->get_fieldset_select("bookflow_questions", "id", "contentid = ?", [$contentid]);
         if ($questionids) {
             [$insql, $params] = $DB->get_in_or_equal($questionids);
-            $DB->delete_records_select("flexbook_question_attempts", "questionid {$insql}", $params);
+            $DB->delete_records_select("bookflow_question_attempts", "questionid {$insql}", $params);
         }
-        $DB->delete_records("flexbook_questions", ["contentid" => $contentid]);
+        $DB->delete_records("bookflow_questions", ["contentid" => $contentid]);
     }
     /**
      * Submits and evaluates one answer.
      *
-     * @param int $flexbookid FlexBook id.
+     * @param int $bookflowid BookFlow id.
      * @param int $contentid Content id.
      * @param int $userid User id.
      * @param string $answer JSON-encoded answer.
      * @return array
      */
     public static function submit_answer(
-        int $flexbookid,
+        int $bookflowid,
         int $contentid,
         int $userid,
         string $answer
@@ -107,20 +107,20 @@ class question_manager {
 
         $content = $DB->get_record_sql(
             "SELECT c.*
-               FROM {flexbook_contents} c
-               JOIN {flexbook_chapters} ch ON ch.id = c.chapterid
+               FROM {bookflow_contents} c
+               JOIN {bookflow_chapters} ch ON ch.id = c.chapterid
               WHERE c.id = :contentid
                 AND c.type = :type
-                AND ch.flexbookid = :flexbookid",
+                AND ch.bookflowid = :bookflowid",
             [
                 "contentid" => $contentid,
                 "type" => "question",
-                "flexbookid" => $flexbookid,
+                "bookflowid" => $bookflowid,
             ],
             MUST_EXIST
         );
         $question = $DB->get_record(
-            "flexbook_questions",
+            "bookflow_questions",
             ["contentid" => $contentid],
             "*",
             MUST_EXIST
@@ -133,13 +133,13 @@ class question_manager {
 
         $expected = json_decode($question->answerjson ?? "null", true);
         $iscorrect = $expected !== null && $decoded == $expected;
-        $attemptnumber = $DB->count_records("flexbook_question_attempts", [
+        $attemptnumber = $DB->count_records("bookflow_question_attempts", [
             "questionid" => $question->id,
             "userid" => $userid,
         ]) + 1;
 
         $transaction = $DB->start_delegated_transaction();
-        $DB->insert_record("flexbook_question_attempts", (object) [
+        $DB->insert_record("bookflow_question_attempts", (object) [
             "questionid" => $question->id,
             "userid" => $userid,
             "answerjson" => json_encode($decoded),
@@ -149,16 +149,16 @@ class question_manager {
         ]);
 
         $progress = new progress_manager();
-        $progress->mark_content_viewed($flexbookid, $userid, $contentid);
+        $progress->mark_content_viewed($bookflowid, $userid, $contentid);
         $shouldcomplete = in_array($content->completiontype, ["answer", "attempt"], true)
             || ($content->completiontype === "correct" && $iscorrect);
         if ($shouldcomplete) {
-            $progress->mark_content_completed($flexbookid, $userid, $contentid);
+            $progress->mark_content_completed($bookflowid, $userid, $contentid);
         }
         $transaction->allow_commit();
 
         question_answered::create_from_ids(
-            $flexbookid,
+            $bookflowid,
             $content->chapterid,
             $content->id,
             $userid

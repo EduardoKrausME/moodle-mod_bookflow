@@ -17,20 +17,20 @@
 /**
  * Tests type-specific content form mapping.
  *
- * @package   mod_flexbook
+ * @package   mod_bookflow
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_flexbook;
+namespace mod_bookflow;
 
 use advanced_testcase;
-use mod_flexbook\form\content_form_mapper;
+use mod_bookflow\form\content_form_mapper;
 
 /**
  * Tests conversion between friendly forms and generic content storage.
  *
- * @covers \mod_flexbook\form\content_form_mapper
+ * @covers \mod_bookflow\form\content_form_mapper
  */
 final class content_form_mapper_test extends advanced_testcase {
     /**
