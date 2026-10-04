@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="mod/bookflow/db" VERSION="20260928" COMMENT="XMLDB file for mod_bookflow"
+<XMLDB PATH="mod/bookflow/db" VERSION="20261004" COMMENT="XMLDB file for mod_bookflow"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd">
   <TABLES>
