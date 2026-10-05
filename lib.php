@@ -22,12 +22,6 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-// The plugin was renamed from FlexBook to BookFlow. A stale checkout may still exist
-// in mod/flexbook during deployment; do not register BookFlow callbacks from that path.
-if (basename(__DIR__) !== "bookflow") {
-    return;
-}
-
 use mod_bookflow\content_type_manager;
 use mod_bookflow\instance_manager;
 
