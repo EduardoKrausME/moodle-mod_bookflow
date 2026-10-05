@@ -74,4 +74,14 @@ class restore_bookflow_activity_task extends restore_activity_task {
             new restore_decode_rule("BOOKFLOWVIEWBYID", "/mod/bookflow/view.php?id=$1", "course_module"),
         ];
     }
+    /**
+     * Defines restore log rules.
+     *
+     * @return array
+     */
+    #[Override]
+    public static function define_restore_log_rules(): array {
+        return [];
+    }
+
 }
