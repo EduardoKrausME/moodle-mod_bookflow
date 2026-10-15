@@ -46,7 +46,6 @@ $PAGE->set_title(format_string($bookflow->name));
 $PAGE->set_heading(format_string($course->fullname));
 $PAGE->set_context($context);
 $PAGE->add_body_class("mod-bookflow");
-$PAGE->requires->css("/mod/bookflow/styles.css");
 $PAGE->requires->strings_for_js([
     "activitycompletedmessage",
 ], "mod_bookflow");
