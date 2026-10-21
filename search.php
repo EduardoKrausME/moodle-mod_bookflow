@@ -39,7 +39,7 @@ $PAGE->set_title(get_string("searchinside", "mod_bookflow"));
 $PAGE->set_heading(format_string($course->fullname));
 
 $results = [];
-if ($bookflow->enablesearch && core_text::strlen(trim($query)) >= 2) {
+if ($bookflow->enablesearch && strlen(trim($query)) >= 2) {
     $like = "%" . $DB->sql_like_escape($query) . "%";
     $hiddenclause = has_capability("mod/bookflow:managecontent", $context)
         ? ""

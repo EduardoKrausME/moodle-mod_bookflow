@@ -25,7 +25,6 @@
 namespace mod_bookflow\external;
 
 use context_module;
-use core_text;
 use external_api;
 use external_function_parameters;
 use external_multiple_structure;
@@ -673,7 +672,7 @@ class api extends external_api {
         $params = self::validate_parameters(self::search_contents_parameters(), compact("bookflowid", "query"));
         [$bookflow, $cm, $context] = self::require_instance($params["bookflowid"]);
         self::validate_context($context);
-        if (!$bookflow->enablesearch || core_text::strlen(trim($params["query"])) < 2) {
+        if (!$bookflow->enablesearch || strlen(trim($params["query"])) < 2) {
             return [];
         }
         $like = "%" . $DB->sql_like_escape($params["query"]) . "%";
