@@ -60,6 +60,8 @@ final class security_regression_test extends advanced_testcase {
      * Search must never inspect option metadata or private answer keys.
      *
      * @covers \mod_bookflow\external\api::search_contents
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
      */
     public function test_search_excludes_stored_answer_metadata(): void {
         $this->resetAfterTest();
@@ -79,6 +81,7 @@ final class security_regression_test extends advanced_testcase {
             "data3" => '{"answer":"private_answer_token"}',
         ]);
         $this->setUser($student);
+        $_POST["sesskey"] = sesskey();
         $this->assertCount(0, api::search_contents($bookflow->id, "private_option_token"));
         $this->assertCount(0, api::search_contents($bookflow->id, "private_answer_token"));
         $this->assertCount(1, api::search_contents($bookflow->id, "Visible explanation"));
@@ -92,6 +95,8 @@ final class security_regression_test extends advanced_testcase {
      * @covers \mod_bookflow\external\api::save_user_position
      * @covers \mod_bookflow\external\api::mark_contents_viewed
      * @covers \mod_bookflow\external\api::get_user_progress
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
      */
     public function test_guest_cannot_store_or_read_shared_state(): void {
         global $DB;
@@ -105,7 +110,7 @@ final class security_regression_test extends advanced_testcase {
         ]);
         $chapter = $generator->create_chapter($bookflow);
         $content = $generator->create_content($chapter);
-        $this->setUser(get_guest_user());
+        $this->setGuestUser();
         $this->assertTrue(isguestuser());
 
         $operations = [
