@@ -24,8 +24,8 @@
 
 defined('MOODLE_INTERNAL') || die;
 
-$plugin->version = 2026101900;
-$plugin->release = "1.3.3";
+$plugin->version = 2026102300;
+$plugin->release = "1.3.4";
 $plugin->component = "mod_bookflow";
 $plugin->requires = 2024042200;
 $plugin->maturity = MATURITY_STABLE;
