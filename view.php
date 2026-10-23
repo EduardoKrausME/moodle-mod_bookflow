@@ -22,7 +22,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use mod_bookflow\event\bookflow_viewed;
+use mod_bookflow\event\course_module_viewed;
 use mod_bookflow\content_type_manager;
 use mod_bookflow\time_estimator;
 use mod_bookflow\progress\progress_manager;
@@ -51,9 +51,10 @@ $PAGE->requires->strings_for_js([
 ], "mod_bookflow");
 
 $editing = has_capability("mod/bookflow:managecontent", $context) && $PAGE->user_is_editing();
+$canpersist = !isguestuser();
 $progressmanager = new progress_manager();
-$progress = $progressmanager->calculate_user_progress($bookflow->id, $USER->id);
-$lastposition = $progressmanager->get_last_position($bookflow->id, $USER->id);
+$progress = $canpersist ? $progressmanager->calculate_user_progress($bookflow->id, $USER->id) : 0;
+$lastposition = $canpersist ? $progressmanager->get_last_position($bookflow->id, $USER->id) : false;
 $chapters = $DB->get_records("bookflow_chapters", ["bookflowid" => $bookflow->id], "sortorder, id");
 $haschapters = !empty($chapters);
 $canmanagechapters = has_capability("mod/bookflow:managechapters", $context);
@@ -61,7 +62,7 @@ if (!$editing) {
     $chapters = array_filter($chapters, fn($chapter) => !$chapter->hidden);
 }
 
-bookflow_viewed::create_from_ids($bookflow->id, 0, 0, $USER->id)->trigger();
+course_module_viewed::create(["objectid" => $bookflow->id, "context" => $context])->trigger();
 
 $toc = [];
 $chapterindex = 0;
@@ -81,7 +82,7 @@ foreach ($chapters as $chapter) {
             ], "bookflow-content-{$toccontent->id}"))->out(false),
         ];
     }
-    $completedcount = $DB->count_records_sql(
+    $completedcount = $canpersist ? $DB->count_records_sql(
         "SELECT COUNT(c.id)
            FROM {bookflow_contents} c
           WHERE c.chapterid = :chapterid
@@ -98,7 +99,7 @@ foreach ($chapters as $chapter) {
             "userid" => $USER->id,
             "completed" => progress_manager::STATUS_COMPLETED,
         ]
-    );
+    ) : 0;
     $totalcount = $DB->count_records("bookflow_contents", [
         "chapterid" => $chapter->id,
         "trackprogress" => 1,
@@ -146,13 +147,13 @@ if (!$haschapters) {
 }
 
 if (!$chapterid) {
-    $accessedchapters = $DB->count_records_sql(
+    $accessedchapters = $canpersist ? $DB->count_records_sql(
         "SELECT COUNT(DISTINCT p.chapterid)
            FROM {bookflow_chapter_progress} p
           WHERE p.bookflowid = :bookflowid
             AND p.userid = :userid",
         ["bookflowid" => $bookflow->id, "userid" => $USER->id]
-    );
+    ) : 0;
     $estimated = time_estimator::for_bookflow($bookflow->id);
     $coverfiles = get_file_storage()->get_area_files(
         $context->id,
@@ -205,32 +206,32 @@ if (!$chapterid) {
         "notesurl" => (new moodle_url("/mod/bookflow/notes.php", ["id" => $cm->id]))->out(false),
         "reporturl" => (new moodle_url("/mod/bookflow/report.php", ["id" => $cm->id]))->out(false),
         "canreport" => has_capability("mod/bookflow:viewreports", $context),
-        "enablebookmarks" => $bookflow->enablebookmarks,
-        "enablenotes" => $bookflow->enablenotes,
+        "enablebookmarks" => $canpersist && $bookflow->enablebookmarks,
+        "enablenotes" => $canpersist && $bookflow->enablenotes,
         "enablesearch" => $bookflow->enablesearch,
         "booktools" => $OUTPUT->render_from_template("mod_bookflow/content_tools", [
-            "enablebookmarks" => $bookflow->enablebookmarks,
+            "enablebookmarks" => $canpersist && $bookflow->enablebookmarks,
             "enablenotes" => false,
             "itemtype" => "book",
             "chapterid" => 0,
             "contentid" => 0,
-            "bookmarkid" => $DB->get_field("bookflow_bookmarks", "id", [
+            "bookmarkid" => $canpersist ? $DB->get_field("bookflow_bookmarks", "id", [
                 "bookflowid" => $bookflow->id,
                 "userid" => $USER->id,
                 "itemtype" => "book",
-            ]),
-            "bookmarked" => $DB->record_exists("bookflow_bookmarks", [
+            ]) : false,
+            "bookmarked" => $canpersist ? $DB->record_exists("bookflow_bookmarks", [
                 "bookflowid" => $bookflow->id,
                 "userid" => $USER->id,
                 "itemtype" => "book",
-            ]),
+            ]) : false,
         ]),
     ];
     echo $OUTPUT->render_from_template("mod_bookflow/activity_overview", $data);
     if ($bookflow->enablesearch) {
         $PAGE->requires->js_call_amd("mod_bookflow/search", "init", [$bookflow->id]);
     }
-    if ($bookflow->enablebookmarks) {
+    if ($canpersist && $bookflow->enablebookmarks) {
         $PAGE->requires->js_call_amd("mod_bookflow/bookmark", "init", [$bookflow->id]);
     }
 } else {
@@ -252,24 +253,24 @@ if (!$chapterid) {
         $type = content_type_manager::create_content($content, $bookflow, $context);
         $contentclasses[$content->type] = get_class($type);
         $toolshtml = $OUTPUT->render_from_template("mod_bookflow/content_tools", [
-            "enablebookmarks" => $bookflow->enablebookmarks,
-            "enablenotes" => $bookflow->enablenotes,
+            "enablebookmarks" => $canpersist && $bookflow->enablebookmarks,
+            "enablenotes" => $canpersist && $bookflow->enablenotes,
             "itemtype" => "content",
             "chapterid" => $chapter->id,
             "contentid" => $content->id,
-            "bookmarkid" => $DB->get_field("bookflow_bookmarks", "id", [
+            "bookmarkid" => $canpersist ? $DB->get_field("bookflow_bookmarks", "id", [
                 "bookflowid" => $bookflow->id,
                 "userid" => $USER->id,
                 "itemtype" => "content",
                 "contentid" => $content->id,
-            ]),
-            "bookmarked" => $DB->record_exists("bookflow_bookmarks", [
+            ]) : false,
+            "bookmarked" => $canpersist ? $DB->record_exists("bookflow_bookmarks", [
                 "bookflowid" => $bookflow->id,
                 "userid" => $USER->id,
                 "itemtype" => "content",
                 "contentid" => $content->id,
-            ]),
-            "manual" => $content->completiontype == "manual",
+            ]) : false,
+            "manual" => $canpersist && $content->completiontype == "manual",
         ]);
         $renderedcontents[] = [
             "id" => $content->id,
@@ -322,9 +323,11 @@ if (!$chapterid) {
     $position = array_search($chapter->id, $chapterids);
     $previousid = $position !== false && $position > 0 ? $chapterids[$position - 1] : 0;
     $nextid = $position !== false && isset($chapterids[$position + 1]) ? $chapterids[$position + 1] : 0;
-    $progressmanager->save_last_position($bookflow->id, $USER->id, $chapter->id, $contentid ?: null);
-    if (!$chapter->hidden) {
-        $progressmanager->mark_chapter_viewed($bookflow->id, $USER->id, $chapter->id);
+    if ($canpersist) {
+        $progressmanager->save_last_position($bookflow->id, $USER->id, $chapter->id, $contentid ?: null);
+        if (!$chapter->hidden) {
+            $progressmanager->mark_chapter_viewed($bookflow->id, $USER->id, $chapter->id);
+        }
     }
 
     $addcontenttypes = [];
@@ -364,23 +367,23 @@ if (!$chapterid) {
         "progress" => $progress,
         "progressrounded" => round($progress),
         "chaptertools" => $OUTPUT->render_from_template("mod_bookflow/content_tools", [
-            "enablebookmarks" => $bookflow->enablebookmarks,
-            "enablenotes" => $bookflow->enablenotes,
+            "enablebookmarks" => $canpersist && $bookflow->enablebookmarks,
+            "enablenotes" => $canpersist && $bookflow->enablenotes,
             "itemtype" => "chapter",
             "chapterid" => $chapter->id,
             "contentid" => 0,
-            "bookmarkid" => $DB->get_field("bookflow_bookmarks", "id", [
+            "bookmarkid" => $canpersist ? $DB->get_field("bookflow_bookmarks", "id", [
                 "bookflowid" => $bookflow->id,
                 "userid" => $USER->id,
                 "itemtype" => "chapter",
                 "chapterid" => $chapter->id,
-            ]),
-            "bookmarked" => $DB->record_exists("bookflow_bookmarks", [
+            ]) : false,
+            "bookmarked" => $canpersist ? $DB->record_exists("bookflow_bookmarks", [
                 "bookflowid" => $bookflow->id,
                 "userid" => $USER->id,
                 "itemtype" => "chapter",
                 "chapterid" => $chapter->id,
-            ]),
+            ]) : false,
         ]),
         "overviewurl" => (new moodle_url("/mod/bookflow/view.php", ["id" => $cm->id]))->out(false),
         "addcontenturl" => (new moodle_url("/mod/bookflow/content.php", [
@@ -397,7 +400,7 @@ if (!$chapterid) {
             : "",
     ]);
 
-    if ($bookflow->enabletracking && !$editing) {
+    if ($canpersist && $bookflow->enabletracking && !$editing) {
         $PAGE->requires->js_call_amd("mod_bookflow/progress_tracker", "init", [
             $bookflow->id,
             $chapter->id,
@@ -412,10 +415,10 @@ if (!$chapterid) {
         ]);
     }
     $PAGE->requires->js_call_amd("mod_bookflow/chapter_navigation", "init", []);
-    if ($bookflow->enablebookmarks) {
+    if ($canpersist && $bookflow->enablebookmarks) {
         $PAGE->requires->js_call_amd("mod_bookflow/bookmark", "init", [$bookflow->id]);
     }
-    if ($bookflow->enablenotes) {
+    if ($canpersist && $bookflow->enablenotes) {
         $PAGE->requires->js_call_amd("mod_bookflow/notes", "init", [$bookflow->id]);
     }
 }

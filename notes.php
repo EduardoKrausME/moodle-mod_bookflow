@@ -33,6 +33,9 @@ $bookflow = $DB->get_record("bookflow", ["id" => $cm->instance], "*", MUST_EXIST
 $context = context_module::instance($cm->id);
 require_login($course, true, $cm);
 require_capability("mod/bookflow:view", $context);
+if (isguestuser()) {
+    throw new moodle_exception("guestsnotallowed", "error");
+}
 
 if (!$bookflow->enablenotes) {
     throw new moodle_exception("notesdisabled", "mod_bookflow");

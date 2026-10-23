@@ -50,16 +50,12 @@ if ($bookflow->enablesearch && strlen(trim($query)) >= 2) {
              WHERE ch.bookflowid = :bookflowid
                    {$hiddenclause}
                AND (" . $DB->sql_like("c.title", ":q1", false) . "
-                OR " . $DB->sql_like("c.data1", ":q2", false) . "
-                OR " . $DB->sql_like("c.data2", ":q3", false) . "
-                OR " . $DB->sql_like("c.data3", ":q4", false) . ")
+                OR " . $DB->sql_like("c.data1", ":q2", false) . ")
           ORDER BY ch.sortorder, c.sortorder";
     foreach ($DB->get_records_sql($sql, [
         "bookflowid" => $bookflow->id,
         "q1" => $like,
         "q2" => $like,
-        "q3" => $like,
-        "q4" => $like,
     ], 0, 100) as $record) {
         $results[] = [
             "chapter" => format_string($record->chaptertitle),

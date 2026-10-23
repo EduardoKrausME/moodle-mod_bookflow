@@ -23,6 +23,7 @@
     }
 }}
 
+{{#cananswer}}
 <form class="bookflow-question" data-bookflow-question="{{id}}">
     {{#title}}<h3>{{title}}</h3>{{/title}}
     <div class="mb-3">{{{content}}}</div>
@@ -37,3 +38,10 @@
     <button class="btn btn-primary" type="submit">{{#str}}submitanswer, mod_bookflow{{/str}}</button>
     <div data-region="question-feedback" aria-live="polite"></div>
 </form>
+{{/cananswer}}
+{{^cananswer}}
+<div class="bookflow-question">
+    {{#title}}<h3>{{title}}</h3>{{/title}}
+    <div class="mb-3">{{{content}}}</div>
+</div>
+{{/cananswer}}

@@ -263,6 +263,7 @@ class question extends editor_content {
         global $DB;
 
         $data = parent::export_data($editing);
+        $data["cananswer"] = !isguestuser();
         $question = $DB->get_record("bookflow_questions", ["contentid" => $this->record->id]);
         if (!$question) {
             $data["items"] = [];

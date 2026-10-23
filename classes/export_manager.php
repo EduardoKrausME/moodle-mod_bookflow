@@ -45,6 +45,9 @@ class export_manager {
         $markdown = "# " . format_string($bookflow->name, true, ["context" => $context]) . "\n\n";
         $markdown .= trim(html_to_text($bookflow->intro ?? "", 0, false)) . "\n\n";
         foreach ($DB->get_records("bookflow_chapters", ["bookflowid" => $bookflowid], "sortorder, id") as $chapter) {
+            if ($chapter->hidden) {
+                continue;
+            }
             $markdown .= ($chapter->parentid ? "## " : "# ") . format_string($chapter->title) . "\n\n";
             foreach ($DB->get_records("bookflow_contents", ["chapterid" => $chapter->id], "sortorder, id") as $content) {
                 if ($content->hidden) {

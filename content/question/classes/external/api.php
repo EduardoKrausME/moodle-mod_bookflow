@@ -61,6 +61,10 @@ class api extends external_api {
             compact("bookflowid", "contentid", "answer")
         );
 
+        if (isguestuser()) {
+            throw new \moodle_exception("guestsnotallowed", "error");
+        }
+
         $bookflow = $DB->get_record("bookflow", ["id" => $params["bookflowid"]], "*", MUST_EXIST);
         $cm = get_coursemodule_from_instance(
             "bookflow",

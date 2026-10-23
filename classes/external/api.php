@@ -77,6 +77,7 @@ class api extends external_api {
             "bookflowid" => $bookflowid,
             "contentids" => $contentids,
         ]);
+        self::require_authenticated_user();
         $context = self::require_instance($params["bookflowid"])[2];
         self::validate_context($context);
         $manager = new progress_manager();
@@ -134,6 +135,7 @@ class api extends external_api {
             "metric",
             "details"
         ));
+        self::require_authenticated_user();
         $context = self::require_instance($params["bookflowid"])[2];
         self::validate_context($context);
         $decoded = json_decode($params["details"], true);
@@ -197,6 +199,7 @@ class api extends external_api {
             "contentid",
             "scrollposition"
         ));
+        self::require_authenticated_user();
         $context = self::require_instance($params["bookflowid"])[2];
         self::validate_context($context);
         $manager = new progress_manager();
@@ -242,6 +245,7 @@ class api extends external_api {
         global $USER;
 
         $params = self::validate_parameters(self::get_user_progress_parameters(), compact("bookflowid"));
+        self::require_authenticated_user();
         $context = self::require_instance($params["bookflowid"])[2];
         self::validate_context($context);
         return self::progress_result($params["bookflowid"], $USER->id);
@@ -282,6 +286,7 @@ class api extends external_api {
             "bookflowid",
             "chapterid"
         ));
+        self::require_authenticated_user();
         $context = self::require_instance($params["bookflowid"])[2];
         self::validate_context($context);
         $DB->get_record("bookflow_chapters", [
@@ -366,6 +371,7 @@ class api extends external_api {
             "chapterid",
             "contentid"
         ));
+        self::require_authenticated_user();
         [$bookflow, , $context] = self::require_instance($params["bookflowid"]);
         self::validate_context($context);
         if (!$bookflow->enablebookmarks || !in_array($params["itemtype"], ["book", "chapter", "content"])) {
@@ -436,6 +442,7 @@ class api extends external_api {
             "bookflowid",
             "bookmarkid"
         ));
+        self::require_authenticated_user();
         $context = self::require_instance($params["bookflowid"])[2];
         self::validate_context($context);
         $bookmark = $DB->get_record("bookflow_bookmarks", [
@@ -503,6 +510,7 @@ class api extends external_api {
             "note",
             "selectiontext"
         ));
+        self::require_authenticated_user();
         [$bookflow, , $context] = self::require_instance($params["bookflowid"]);
         self::validate_context($context);
         if (!$bookflow->enablenotes) {
@@ -570,6 +578,7 @@ class api extends external_api {
             "noteid",
             "note"
         ));
+        self::require_authenticated_user();
         $context = self::require_instance($params["bookflowid"])[2];
         self::validate_context($context);
         $record = $DB->get_record("bookflow_notes", [
@@ -621,6 +630,7 @@ class api extends external_api {
         global $DB, $USER;
 
         $params = self::validate_parameters(self::delete_note_parameters(), compact("bookflowid", "noteid"));
+        self::require_authenticated_user();
         $context = self::require_instance($params["bookflowid"])[2];
         self::validate_context($context);
         $record = $DB->get_record("bookflow_notes", [
@@ -679,23 +689,19 @@ class api extends external_api {
         $hiddenclause = has_capability("mod/bookflow:managecontent", $context)
             ? ""
             : " AND ch.hidden = 0 AND c.hidden = 0";
-        $sql = "SELECT c.id, c.chapterid, c.type, c.title, c.data1, c.data2, c.data3,
+        $sql = "SELECT c.id, c.chapterid, c.type, c.title, c.data1,
                        ch.title AS chaptertitle
                   FROM {bookflow_contents} c
                   JOIN {bookflow_chapters} ch ON ch.id = c.chapterid
                  WHERE ch.bookflowid = :bookflowid
                    {$hiddenclause}
                    AND (" . $DB->sql_like("c.title", ":q1", false) . "
-                    OR " . $DB->sql_like("c.data1", ":q2", false) . "
-                    OR " . $DB->sql_like("c.data2", ":q3", false) . "
-                    OR " . $DB->sql_like("c.data3", ":q4", false) . ")
+                    OR " . $DB->sql_like("c.data1", ":q2", false) . ")
               ORDER BY ch.sortorder, c.sortorder";
         $records = $DB->get_records_sql($sql, [
             "bookflowid" => $params["bookflowid"],
             "q1" => $like,
             "q2" => $like,
-            "q3" => $like,
-            "q4" => $like,
         ], 0, 100);
         $results = [];
         foreach ($records as $record) {
@@ -768,6 +774,17 @@ class api extends external_api {
      */
     public static function reorder_contents_returns(): external_single_structure {
         return new external_single_structure(["saved" => new external_value(PARAM_BOOL, "Saved")]);
+    }
+
+    /**
+     * Prevents reads and writes to data shared by all guest sessions.
+     *
+     * @return void
+     */
+    private static function require_authenticated_user(): void {
+        if (isguestuser()) {
+            throw new moodle_exception("guestsnotallowed", "error");
+        }
     }
 
     /**
