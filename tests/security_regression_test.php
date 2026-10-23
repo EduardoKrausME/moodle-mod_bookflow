@@ -61,7 +61,6 @@ final class security_regression_test extends advanced_testcase {
      *
      * @covers \mod_bookflow\external\api::search_contents
      * @runInSeparateProcess
-     * @preserveGlobalState disabled
      */
     public function test_search_excludes_stored_answer_metadata(): void {
         $this->resetAfterTest();
@@ -96,7 +95,6 @@ final class security_regression_test extends advanced_testcase {
      * @covers \mod_bookflow\external\api::mark_contents_viewed
      * @covers \mod_bookflow\external\api::get_user_progress
      * @runInSeparateProcess
-     * @preserveGlobalState disabled
      */
     public function test_guest_cannot_store_or_read_shared_state(): void {
         global $DB;
