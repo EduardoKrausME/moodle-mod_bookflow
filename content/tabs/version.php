@@ -24,11 +24,11 @@
 
 defined('MOODLE_INTERNAL') || die;
 
-$plugin->component = "bookflowcontent_tabs";
 $plugin->version = 2026081300;
+$plugin->release = "0.1.5";
+$plugin->component = "bookflowcontent_tabs";
 $plugin->requires = 2024042200;
 $plugin->maturity = MATURITY_STABLE;
-$plugin->release = "0.1.5";
 $plugin->dependencies = [
     "mod_bookflow" => 2026081300,
 ];
