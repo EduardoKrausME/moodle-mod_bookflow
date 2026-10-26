@@ -26,16 +26,6 @@ weighted progress and updates Moodle activity completion through
 No custom renderer or renderable class is used. PHP classes pass data directly
 to Mustache through Moodle's standard `$OUTPUT->render_from_template()` method.
 
-## Installation
-
-Copy the `bookflow` directory to:
-
-```text
-mod/bookflow
-```
-
-Then open Site administration and complete the Moodle upgrade.
-
 ## Progress rules
 
 Only visible blocks with `trackprogress = 1` enter the denominator:
