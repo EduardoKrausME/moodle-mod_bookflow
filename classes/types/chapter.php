@@ -30,14 +30,17 @@ use stdClass;
  * Represents a BookFlow chapter.
  */
 class chapter {
+    /** @var stdClass */
+    public readonly stdClass $record;
+
     /**
      * Initializes the chapter instance.
      *
      * @param stdClass $record Record data.
      */
     public function __construct(
-        /** @var stdClass */
-        public readonly stdClass $record
+        stdClass $record
     ) {
+        $this->record = $record;
     }
 }
