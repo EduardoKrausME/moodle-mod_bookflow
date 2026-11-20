@@ -33,6 +33,15 @@ use stdClass;
  * Defines the contract implemented by BookFlow content types.
  */
 abstract class content {
+    /** @var stdClass */
+    protected readonly stdClass $record;
+
+    /** @var stdClass */
+    protected readonly stdClass $bookflow;
+
+    /** @var context_module */
+    protected readonly context_module $context;
+
     /**
      * Initializes the content instance.
      *
@@ -41,13 +50,13 @@ abstract class content {
      * @param context_module $context Module context.
      */
     public function __construct(
-        /** @var stdClass */
-        protected readonly stdClass $record,
-        /** @var stdClass */
-        protected readonly stdClass $bookflow,
-        /** @var context_module */
-        protected readonly context_module $context
+        stdClass $record,
+        stdClass $bookflow,
+        context_module $context
     ) {
+        $this->record = $record;
+        $this->bookflow = $bookflow;
+        $this->context = $context;
     }
 
     /**
